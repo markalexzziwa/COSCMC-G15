@@ -7,6 +7,7 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthLayout from '@/layouts/auth-layout';
 
 type RegisterForm = {
@@ -14,6 +15,7 @@ type RegisterForm = {
     email: string;
     password: string;
     password_confirmation: string;
+    role: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer';
 };
 
 export default function Register() {
@@ -22,6 +24,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        role: 'customer',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -67,6 +70,31 @@ export default function Register() {
                             placeholder="email@example.com"
                         />
                         <InputError message={errors.email} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Select
+                            name="role"
+                            value={data.role}
+                            onValueChange={(
+                                value: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer'
+                            ) => setData('role', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="customer">Customer</SelectItem>
+                                <SelectItem value="farmer">Farmer</SelectItem>
+                                <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
+                                <SelectItem value="manufacturer">Manufacturer</SelectItem>
+                                <SelectItem value="factory_store">Factory Store</SelectItem>
+                                <SelectItem value="distributor">Distributor</SelectItem>
+                                <SelectItem value="retail">Retail</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.role} />
                     </div>
 
                     <div className="grid gap-2">
