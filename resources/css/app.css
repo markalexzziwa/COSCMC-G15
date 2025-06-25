@@ -1,3 +1,8 @@
+/* The entire content of this file is being replaced with the standard Tailwind directives to fix the build process. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';

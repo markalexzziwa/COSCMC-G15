@@ -1,30 +1,21 @@
+import { FarmStatsCard } from '@/components/farm-stats-card'
+import { HarvestSummaryCard } from '@/components/harvest-summary-card'
 import AppLayout from '@/layouts/app-layout'
 import { Head } from '@inertiajs/react'
-import { useEffect, useState } from 'react'
 
 export default function FarmerDashboard() {
-    const [isVisible, setIsVisible] = useState(true)
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsVisible(false)
-        }, 4000)
-
-        return () => clearTimeout(timer)
-    }, [])
     return (
         <AppLayout>
             <Head title="Farmer Dashboard" />
 
-            <div className="py-12">
+            <div className="py-12" style={{ backgroundColor: '#374151' }}>
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div
-                            className={`p-6 text-gray-900 transition-opacity duration-1000 ${
-                                isVisible ? 'opacity-100' : 'opacity-0'
-                            }`}
-                        >
-                            You're logged in as a Farmer!
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        <div className="lg:col-span-2">
+                            <HarvestSummaryCard />
+                        </div>
+                        <div className="lg:col-span-1">
+                            <FarmStatsCard />
                         </div>
                     </div>
                 </div>

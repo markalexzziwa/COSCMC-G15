@@ -50,6 +50,22 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/yield-tracking', function () {
+        return Inertia::render('yield-tracking');
+    })->name('yield.tracking');
+
+    Route::get('/resource-management', function () {
+        return Inertia::render('resource-management');
+    })->name('resource.management');
+
+    Route::get('/groves', function () {
+        return Inertia::render('groves');
+    })->name('groves');
+
+    Route::get('/financials', function () {
+        return Inertia::render('financials');
+    })->name('financials');
+
     Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 });
 
