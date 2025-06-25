@@ -24,7 +24,7 @@ class RoleMiddleware
 
         if (empty($roles) || ! in_array($user->role, $roles)) {
             // Redirect to the generic dashboard route, which will then resolve to the correct one
-            return redirect()->route('dashboard');
+            abort(403, 'Unauthorized action.');
         }
 
         return $next($request);

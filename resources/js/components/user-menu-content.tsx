@@ -1,9 +1,10 @@
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
+import { useAppearance } from '@/hooks/use-appearance';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Monitor, Moon, Settings, Sun } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -11,6 +12,7 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const { updateAppearance } = useAppearance();
 
     const handleLogout = () => {
         cleanup();
@@ -31,6 +33,22 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         <Settings className="mr-2" />
                         Settings
                     </Link>
+                </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+                <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => updateAppearance('light')}>
+                    <Sun className="mr-2" />
+                    Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => updateAppearance('dark')}>
+                    <Moon className="mr-2" />
+                    Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => updateAppearance('system')}>
+                    <Monitor className="mr-2" />
+                    System
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
