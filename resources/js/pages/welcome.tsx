@@ -18,9 +18,9 @@ export default function Welcome() {
                         {auth.user ? (
                             <Link
                                 href={route('dashboard')}
-                                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                className="inline-block rounded-sm border border-transparent bg-blue-500 px-5 py-1.5 text-sm leading-normal text-white hover:bg-blue-600"
                             >
-                                Dashboard
+                                MENU
                             </Link>
                         ) : (
                             <div className="space-x-2">
@@ -56,15 +56,14 @@ export default function Welcome() {
                                 We are glad to have you here. Please log in or register to get started.
                             </p>
                         </div>
-                        <div className="flex-1 rounded-tr-lg rounded-tl-lg bg-white p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tr-none lg:rounded-br-lg lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
-                            <img
+                        <div className="flex-1 rounded-tr-lg rounded-tl-lg bg-red-500 p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tr-none lg:rounded-br-lg lg:p-20 dark:bg-red-700 dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
+                        <img
                                 src="/apple-touch-icon.png"
                                 alt="Site Logo"
                             />
                         </div>
                     </main>
                 </div>
-                <div className="hidden h-14.5 lg:block"></div>
             </div>
         </>
     );

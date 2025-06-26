@@ -30,7 +30,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'CK-OILS') }}</title>
 
         <link rel="icon" href="/favicon.svg" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
