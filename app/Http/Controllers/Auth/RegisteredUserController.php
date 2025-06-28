@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,17 +39,25 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', Rule::in(['farmer', 'inventory_manager', 'manufacturer', 'factory_store', 'distributor', 'retail', 'customer'])],
         ]);
 
+        $roleNameMapping = [
+            'factory_store' => 'Factory Store',
+            'inventory_manager' => 'Inventory Manager',
+        ];
+
+        $roleName = $roleNameMapping[$request->role] ?? ucfirst($request->role);
+        $role = Role::where('name', $roleName)->first();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role_id' => $role->id,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }

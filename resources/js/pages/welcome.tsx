@@ -5,6 +5,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
+import { products } from '@/lib/products';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
@@ -113,42 +114,22 @@ export default function Welcome() {
                     <div className="mt-8 w-full max-w-4xl">
                         <h2 className="mb-4 text-center text-3xl font-bold">Our Products</h2>
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                            <div className="flex flex-col items-center rounded-lg bg-pink-100 p-6 shadow-lg dark:bg-pink-900">
-                                <img
-                                    src="/cooking oil.jpg"
-                                    alt="Cooking Oil"
-                                    className="mb-4 h-48 w-full rounded-md object-cover"
-                                />
-                                <h3 className="text-xl font-semibold">Cooking Oil</h3>
-                                <p className="text-center text-gray-600 dark:text-gray-300">
-                                    High-quality cooking oil, perfect for all your culinary needs.
-                                </p>
-                                <p className="mt-4 text-lg font-bold text-green-600">Ugx 123,400</p>
-                            </div>
-                            <div className="flex flex-col items-center rounded-lg bg-pink-100 p-6 shadow-lg dark:bg-pink-900">
-                                <img
-                                    src="/shampoo.jpg"
-                                    alt="Shampoo"
-                                    className="mb-4 h-48 w-full rounded-md object-cover"
-                                />
-                                <h3 className="text-xl font-semibold">Shampoo</h3>
-                                <p className="text-center text-gray-600 dark:text-gray-300">
-                                    Invigorating shampoo that leaves your hair fresh and clean.
-                                </p>
-                                <p className="mt-4 text-lg font-bold text-green-600">Ugx 2,453</p>
-                            </div>
-                            <div className="flex flex-col items-center rounded-lg bg-pink-100 p-6 shadow-lg dark:bg-pink-900">
-                                <img
-                                    src="/soft magarine.jpg"
-                                    alt="Soft Margarine"
-                                    className="mb-4 h-48 w-full rounded-md object-cover"
-                                />
-                                <h3 className="text-xl font-semibold">Soft Margarine</h3>
-                                <p className="text-center text-gray-600 dark:text-gray-300">
-                                    Smooth and creamy margarine, a perfect spread.
-                                </p>
-                                <p className="mt-4 text-lg font-bold text-green-600">Ugx 6,000</p>
-                            </div>
+                            {products.map(product => (
+                                <div key={product.id} className="flex flex-col items-center rounded-lg bg-pink-100 p-6 shadow-lg dark:bg-pink-900">
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="mb-4 h-48 w-full rounded-md object-cover"
+                                    />
+                                    <h3 className="text-xl font-semibold">{product.name}</h3>
+                                    <p className="text-center text-gray-600 dark:text-gray-300">
+                                        {product.description}
+                                    </p>
+                                    <p className="mt-4 text-lg font-bold text-green-600">
+                                        Ugx {product.price.toLocaleString()}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
                         <div className="mt-8 text-center">
                             <button

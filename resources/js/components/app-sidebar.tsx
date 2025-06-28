@@ -15,11 +15,54 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
+const dashboardNavItems: NavItem[] = [
+    {
+        title: 'Admin',
+        href: '/admin-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Customer',
+        href: '/customer-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Distributor',
+        href: '/distributor-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Editor',
+        href: '/editor-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Factory Store',
+        href: '/factory-store-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Inventory Manager',
+        href: '/inventory-manager-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Manufacturer',
+        href: '/manufacturer-dashboard',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Retail',
+        href: '/retail-dashboard',
+        icon: LayoutGrid,
+    },
+];
+
 export function AppSidebar() {
     const { auth } = usePage<{ auth: { user: User } }>().props;
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" className="bg-black">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

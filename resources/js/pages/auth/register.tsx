@@ -90,10 +90,11 @@ export default function Register() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="customer">Customer</SelectItem>
+                                <SelectItem value="editor">Editor</SelectItem>
+                                <SelectItem value="factory_store">Factory Store</SelectItem>
                                 <SelectItem value="farmer">Farmer</SelectItem>
                                 <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                                 <SelectItem value="manufacturer">Manufacturer</SelectItem>
-                                <SelectItem value="factory_store">Factory Store</SelectItem>
                                 <SelectItem value="distributor">Distributor</SelectItem>
                                 <SelectItem value="retail">Retail</SelectItem>
                             </SelectContent>

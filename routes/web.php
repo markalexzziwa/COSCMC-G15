@@ -11,23 +11,25 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     $user = Auth::user();
-    switch ($user->role) {
-        case 'admin':
+    switch ($user->role->name) {
+        case 'Admin':
             return Inertia::render('admin-dashboard');
-        case 'farmer':
+        case 'Farmer':
             return Inertia::render('farmer-dashboard');
-        case 'inventory_manager':
+        case 'Inventory Manager':
             return Inertia::render('inventory-manager-dashboard');
-        case 'manufacturer':
+        case 'Manufacturer':
             return Inertia::render('manufacturer-dashboard');
-        case 'factory_store':
+        case 'Factory Store':
             return Inertia::render('factory-store-dashboard');
-        case 'distributor':
+        case 'Distributor':
             return Inertia::render('distributor-dashboard');
-        case 'retail':
+        case 'Retail':
             return Inertia::render('retail-dashboard');
-        default:
+        case 'Customer':
             return Inertia::render('customer-dashboard');
+        default:
+            return Inertia::render('welcome');
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
