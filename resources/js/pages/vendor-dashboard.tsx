@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout'
 import { Head } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 
-export default function EditorDashboard() {
+export default function VendorDashboard() {
     const [isVisible, setIsVisible] = useState(true)
 
     useEffect(() => {
@@ -14,7 +14,7 @@ export default function EditorDashboard() {
     }, [])
     return (
         <AppLayout>
-            <Head title="Editor Dashboard" />
+            <Head title="Vendor Dashboard" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -24,7 +24,7 @@ export default function EditorDashboard() {
                                 isVisible ? 'opacity-100' : 'opacity-0'
                             }`}
                         >
-                            You're logged in as an Editor!
+                            You're logged in as a Vendor!
                         </div>
                     </div>
                 </div>

@@ -32,8 +32,8 @@ const dashboardNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Editor',
-        href: '/editor-dashboard',
+        title: 'Vendor',
+        href: '/vendor-dashboard',
         icon: LayoutGrid,
     },
     {

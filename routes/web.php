@@ -28,6 +28,8 @@ Route::get('/dashboard', function () {
             return Inertia::render('retail-dashboard');
         case 'Customer':
             return Inertia::render('customer-dashboard');
+        case 'Vendor':
+            return Inertia::render('vendor-dashboard');
         default:
             return Inertia::render('welcome');
     }
@@ -39,10 +41,10 @@ Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
     })->name('user.dashboard');
 });
 
-Route::middleware(['auth', 'verified', 'role:editor'])->group(function () {
-    Route::get('/editor/dashboard', function () {
-        return Inertia::render('editor-dashboard');
-    })->name('editor.dashboard');
+Route::middleware(['auth', 'verified', 'role:vendor'])->group(function () {
+    Route::get('/vendor/dashboard', function () {
+        return Inertia::render('vendor-dashboard');
+    })->name('vendor.dashboard');
 });
 
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {

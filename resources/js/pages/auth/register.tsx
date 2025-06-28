@@ -15,7 +15,7 @@ type RegisterForm = {
     email: string;
     password: string;
     password_confirmation: string;
-    role: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer';
+    role: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor';
 };
 
 export default function Register() {
@@ -38,7 +38,7 @@ export default function Register() {
         <AuthCardLayout
             title="Create an account"
             description="Enter your details below to create your account"
-            className="bg-red-900"
+            className="bg-blue-400"
         >
             <Head title="Register" />
             <form className="flex flex-col gap-6 bg-green-100 p-4 rounded-lg" onSubmit={submit}>
@@ -82,7 +82,7 @@ export default function Register() {
                             name="role"
                             value={data.role}
                             onValueChange={(
-                                value: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer'
+                                value: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor'
                             ) => setData('role', value)}
                         >
                             <SelectTrigger>
@@ -90,13 +90,13 @@ export default function Register() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="customer">Customer</SelectItem>
-                                <SelectItem value="editor">Editor</SelectItem>
-                                <SelectItem value="factory_store">Factory Store</SelectItem>
+                                <SelectItem value="vendor">Vendor</SelectItem>
+                                <SelectItem value="factory-store">Factory Store</SelectItem>
                                 <SelectItem value="farmer">Farmer</SelectItem>
-                                <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
+                                <SelectItem value="inventory-manager">Inventory Manager</SelectItem>
                                 <SelectItem value="manufacturer">Manufacturer</SelectItem>
                                 <SelectItem value="distributor">Distributor</SelectItem>
-                                <SelectItem value="retail">Retail</SelectItem>
+                                <SelectItem value="retail-store">Retail Store</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError message={errors.role} />

@@ -16,7 +16,7 @@ export default function AuthCardLayout({
     className?: string;
 }>) {
     return (
-        <div className={cn('flex min-h-svh flex-col items-center justify-center gap-6 bg-green-900 p-6 md:p-10', className)}>
+        <div className={cn('flex min-h-svh flex-col items-center justify-center gap-6 bg-amber-200 p-6 md:p-10', className)}>
             <div className="flex w-full max-w-md flex-col gap-6">
                 <Link href={route('home')} className="flex items-center gap-2 self-center font-medium">
                     <div className="flex h-9 w-9 items-center justify-center">

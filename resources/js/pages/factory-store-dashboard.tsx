@@ -3,32 +3,26 @@ import { Head } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 
 export default function FactoryStoreDashboard() {
-    const [isVisible, setIsVisible] = useState(true)
+    const [notification, setNotification] = useState<string | null>(null)
 
     useEffect(() => {
+        setNotification("You're logged in as a Factory Store user!")
         const timer = setTimeout(() => {
-            setIsVisible(false)
+            setNotification(null)
         }, 4000)
 
         return () => clearTimeout(timer)
     }, [])
+
     return (
         <AppLayout>
             <Head title="Factory Store Dashboard" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div
-                            className={`p-6 text-gray-900 transition-opacity duration-1000 ${
-                                isVisible ? 'opacity-100' : 'opacity-0'
-                            }`}
-                        >
-                            You're logged in as a Factory Store user!
-                        </div>
-                    </div>
+            {notification && (
+                <div className="fixed top-24 right-5 z-50 rounded-md bg-blue-200 p-4 text-black shadow-lg animate-in fade-in-0 slide-in-from-top-5">
+                    <p>{notification}</p>
                 </div>
-            </div>
+            )}
         </AppLayout>
     )
 } 

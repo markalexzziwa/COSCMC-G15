@@ -39,7 +39,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <AuthCardLayout title="Log in to your account" description="Enter your email and password below to log in">
             <Head title="Log in" />
 
-            <form className="flex flex-col gap-6 bg-green-100 p-4 rounded-lg" onSubmit={submit}>
+            <form className="flex flex-col gap-6 bg-pink-100 p-4 rounded-lg" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email address</Label>
@@ -109,7 +109,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             </form>
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+            {status && <div className="mb-4 text-center text-sm font-medium text-orange-100">{status}</div>}
         </AuthCardLayout>
     );
 }

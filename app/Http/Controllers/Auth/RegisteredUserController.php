@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', Rule::in(['farmer', 'inventory_manager', 'manufacturer', 'factory_store', 'distributor', 'retail', 'customer'])],
+            'role' => ['required', 'string', Rule::in(['farmer', 'inventory_manager', 'manufacturer', 'factory_store', 'distributor', 'retail', 'customer', 'vendor'])],
         ]);
 
         $roleNameMapping = [
