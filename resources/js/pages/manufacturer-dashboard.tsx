@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import useStockStore from '@/store/useStockStore';
 
 // Mock data for the chart is now initial state
 const initialProductionData = [
@@ -32,6 +33,7 @@ export default function ManufacturerDashboard() {
     const [notification, setNotification] = useState<string | null>(null)
     const [activeView, setActiveView] = useState('dashboard')
     const [productionData, setProductionData] = useState(initialProductionData)
+    const { addStock } = useStockStore();
 
     const { totalProduction, averageProduction, productNames } = useMemo(() => {
         const productNames =
@@ -105,6 +107,8 @@ export default function ManufacturerDashboard() {
                 return [...prevData, newEntry].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             }
         });
+        addStock(newData.product, newData.quantity);
+        setNotification(`Added ${newData.quantity} units of ${newData.product}. Factory store stock updated.`);
     };
 
     const renderView = () => {
