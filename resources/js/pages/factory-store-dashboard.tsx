@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import useStockStore from '@/store/useStockStore'
-import { Plus, Minus } from 'lucide-react'
+import useChatStore from '@/store/useChatStore'
+import { Plus, Minus, Send } from 'lucide-react'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts'
 
 export default function FactoryStoreDashboard() {
     const [notification, setNotification] = useState<string | null>(null)
     const { stock, updateStock, addStock } = useStockStore()
+    const { messages, addMessage } = useChatStore()
 
     const graphData = useMemo(() => {
         return stock.map(item => {
@@ -60,8 +62,13 @@ export default function FactoryStoreDashboard() {
                     <StockByBoxCard stock={stock} />
                     <UpdateStockCard currentStock={stock} onUpdateStock={handleStockUpdate} />
                     <UpdateByPackageCard currentStock={stock} onAddStock={handleStockAdd} />
-                    <div className="md:col-span-2">
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div className="md:col-span-1">
                         <StockByBoxGraphCard data={graphData} />
+                    </div>
+                    <div className="md:col-span-1">
+                        <ChatCard />
                     </div>
                 </div>
             </div>
@@ -69,8 +76,57 @@ export default function FactoryStoreDashboard() {
     )
 }
 
+const ChatCard = () => {
+    const { messages, addMessage } = useChatStore();
+    const [newMessage, setNewMessage] = useState('');
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+
+        addMessage({
+            sender: 'Factory Store',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        });
+
+        setNewMessage('');
+    };
+
+    return (
+        <Card className="bg-pink-50">
+            <CardHeader>
+                <CardTitle>Manufacturer Chat</CardTitle>
+                <CardDescription>View and send messages to the manufacturer.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md">
+                    {messages.map((message, index) => (
+                        <div key={index} className={`flex ${message.sender === 'Factory Store' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`p-3 rounded-lg ${message.sender === 'Factory Store' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                                <p className="font-semibold">{message.sender}</p>
+                                <p>{message.text}</p>
+                                <p className="text-xs mt-1">{new Date(message.timestamp).toLocaleTimeString()}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex space-x-2">
+                    <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                    />
+                    <Button onClick={handleSendMessage} variant="info" size="icon">
+                        <Send className="h-4 w-4" />
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 const StockByBoxGraphCard = ({ data }: { data: { name: string, boxes: number }[] }) => (
-    <Card>
+    <Card className="bg-pink-50">
         <CardHeader>
             <CardTitle>Stock by Box (Graph)</CardTitle>
             <CardDescription>A visual representation of the number of boxes for each product.</CardDescription>
@@ -91,7 +147,7 @@ const StockByBoxGraphCard = ({ data }: { data: { name: string, boxes: number }[]
 );
 
 const StockByBoxCard = ({ stock }: { stock: { name: string; quantity: number, image: string, unit: string, packageSize: number, packageUnit: string, boxSize: number }[] }) => (
-    <Card>
+    <Card className="bg-pink-50">
         <CardHeader>
             <CardTitle>Stock by Box</CardTitle>
             <CardDescription>Total number of boxes for each product.</CardDescription>
@@ -117,7 +173,7 @@ const StockByBoxCard = ({ stock }: { stock: { name: string; quantity: number, im
 );
 
 const TotalStockCard = ({ stock }: { stock: { name: string; quantity: number, image: string, unit: string }[] }) => (
-    <Card>
+    <Card className="bg-pink-50">
         <CardHeader>
             <CardTitle>Available Stock in units</CardTitle>
             <CardDescription>Total stock for each product.</CardDescription>
@@ -157,7 +213,7 @@ const UpdateByPackageCard = ({
     };
 
     return (
-        <Card>
+        <Card className="bg-pink-50">
             <CardHeader>
                 <CardTitle>Add Stock by Package</CardTitle>
                 <CardDescription>Add stock based on the number of packages.</CardDescription>
@@ -221,7 +277,7 @@ const UpdateStockCard = ({
     };
 
     return (
-        <Card>
+        <Card className="bg-pink-50">
             <CardHeader>
                 <CardTitle>Update Stock by units</CardTitle>
                 <CardDescription>Adjust stock using the buttons or enter a value manually.</CardDescription>

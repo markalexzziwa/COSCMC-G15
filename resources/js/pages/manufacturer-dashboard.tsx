@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ResponsiveContainer, BarChart, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, Line } from 'recharts'
-import { Home, BarChart2, PieChart as PieChartIcon, ArrowLeft, MessageSquare } from 'lucide-react'
+import { Home, BarChart2, PieChart as PieChartIcon, ArrowLeft, MessageSquare, Send, Inbox, FileText, AlertOctagon, Trash2 } from 'lucide-react'
 import {
     Select,
     SelectContent,
@@ -15,6 +15,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import useStockStore from '@/store/useStockStore';
+import useChatStore, { Message, MessageCategory } from '@/store/useChatStore';
+import useInventoryChatStore, { InventoryMessage } from '@/store/useInventoryChatStore';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 // Mock data for the chart is now initial state
 const initialProductionData = [
@@ -142,32 +146,131 @@ export default function ManufacturerDashboard() {
     )
 }
 
-const ChatCard = () => (
-    <Card className="md:col-span-3 bg-purple-100">
-        <CardHeader>
-            <CardTitle className="text-purple-800">Communications</CardTitle>
-            <CardDescription>Start a conversation</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card
-                onClick={() => alert('Chat with Inventory Manager clicked!')}
-                className="hover:shadow-lg transition-shadow cursor-pointer p-4 flex flex-col items-center justify-center"
-                style={{ backgroundColor: '#FFF5F7' }}
-            >
-                <MessageSquare className="h-8 w-8 text-purple-500 mb-2" />
-                <p className="font-semibold text-center text-purple-800">Chat with Inventory Manager</p>
-            </Card>
-            <Card
-                onClick={() => alert('Chat with Factory Store clicked!')}
-                className="hover:shadow-lg transition-shadow cursor-pointer p-4 flex flex-col items-center justify-center"
-                style={{ backgroundColor: '#FFF5F7' }}
-            >
-                <MessageSquare className="h-8 w-8 text-indigo-500 mb-2" />
-                <p className="font-semibold text-center text-purple-800">Chat with Factory Store</p>
-            </Card>
-        </CardContent>
-    </Card>
-);
+const ChatCard = () => {
+    const {
+        messages: factoryStoreMessages,
+        addMessage: addFactoryStoreMessage,
+        moveMessage: moveFactoryStoreMessage,
+    } = useChatStore();
+    const {
+        messages: inventoryManagerMessages,
+        addMessage: addInventoryManagerMessage,
+        moveMessage: moveInventoryManagerMessage,
+    } = useInventoryChatStore();
+
+    const [activeChat, setActiveChat] = useState<'factoryStore' | 'inventoryManager'>('factoryStore');
+    const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
+    const [newMessage, setNewMessage] = useState('');
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+
+        const messagePayload = {
+            sender: 'Manufacturer' as const,
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+
+        if (activeChat === 'factoryStore') {
+            addFactoryStoreMessage(messagePayload, 'sent');
+        } else {
+            addInventoryManagerMessage(messagePayload, 'sent');
+        }
+
+        setNewMessage('');
+    };
+
+    const currentMessages = activeChat === 'factoryStore' ? factoryStoreMessages : inventoryManagerMessages;
+    const chatTitle = activeChat === 'factoryStore' ? 'Factory Store Chat' : 'Inventory Manager Chat';
+    const moveMessage = activeChat === 'factoryStore' ? moveFactoryStoreMessage : moveInventoryManagerMessage;
+
+    const filteredMessages = currentMessages.filter(m => {
+        if (activeCategory === 'inbox') return m.category === 'inbox';
+        if (activeCategory === 'sent') return m.category === 'sent';
+        if (activeCategory === 'draft') return m.category === 'draft';
+        if (activeCategory === 'spam') return m.category === 'spam';
+        if (activeCategory === 'trash') return m.category === 'trash';
+        return false;
+    });
+
+    return (
+        <Card className="bg-purple-800 flex text-purple-100 rounded-2xl">
+            <div className="w-1/4 border-r border-purple-600">
+                <CardHeader>
+                    <CardTitle className="text-purple-100 text-base">Mailbox</CardTitle>
+                </CardHeader>
+                <CardContent className="p-2">
+                    <nav className="flex flex-col space-y-1">
+                        <CategoryButton category="inbox" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Inbox size={16} />} />
+                        <CategoryButton category="sent" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Send size={16} />} />
+                        <CategoryButton category="draft" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<FileText size={16} />} />
+                        <CategoryButton category="spam" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<AlertOctagon size={16} />} />
+                        <CategoryButton category="trash" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Trash2 size={16} />} />
+                    </nav>
+                </CardContent>
+            </div>
+            <div className="w-3/4">
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle className="text-purple-100 text-base">{chatTitle}</CardTitle>
+                            <CardDescription className="capitalize text-purple-300">{activeCategory}</CardDescription>
+                        </div>
+                        <div className="flex space-x-2">
+                            <Button onClick={() => setActiveChat('factoryStore')} variant={activeChat === 'factoryStore' ? 'default' : 'outline'} size="sm">Factory Store</Button>
+                            <Button onClick={() => setActiveChat('inventoryManager')} variant={activeChat === 'inventoryManager' ? 'default' : 'outline'} size="sm">Inventory Manager</Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2 h-48 overflow-y-auto mb-4 p-2 border border-purple-600 rounded-md">
+                        {filteredMessages.length > 0 ? filteredMessages.map((message) => (
+                            <div key={message.id} className="group">
+                                <div className={`flex text-sm ${message.sender === 'Manufacturer' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`p-2 rounded-lg ${message.sender === 'Manufacturer' ? 'bg-green-500 text-white' : 'bg-purple-700 text-purple-100'}`}>
+                                        <p className="font-semibold text-xs">{message.sender}</p>
+                                        <p>{message.text}</p>
+                                        <p className="text-xs mt-1 opacity-75">{new Date(message.timestamp).toLocaleTimeString()}</p>
+                                    </div>
+                                </div>
+                                <div className="hidden group-hover:flex justify-end space-x-1 mt-1">
+                                    {activeCategory !== 'trash' && <Button variant="outline" size="sm" onClick={() => moveMessage(message.id, 'trash')}><Trash2 size={12} /></Button>}
+                                    {activeCategory !== 'spam' && <Button variant="outline" size="sm" onClick={() => moveMessage(message.id, 'spam')}><AlertOctagon size={12} /></Button>}
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="text-center text-purple-300 py-10">No messages in {activeCategory}.</div>
+                        )}
+                    </div>
+                    {activeCategory === 'inbox' || activeCategory === 'draft' || activeCategory === 'sent' ? (
+                        <div className="flex space-x-2">
+                            <Input
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                placeholder="Type a message..."
+                                className="text-sm bg-purple-700 border-purple-600 placeholder:text-purple-300"
+                            />
+                            <Button onClick={handleSendMessage} variant="default" size="icon">
+                                <Send className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : null}
+                </CardContent>
+            </div>
+        </Card>
+    );
+};
+
+const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: { category: MessageCategory, activeCategory: MessageCategory, setActiveCategory: (c: MessageCategory) => void, icon: React.ReactNode }) => (
+    <Button
+        variant={activeCategory === category ? 'secondary' : 'ghost'}
+        className="w-full justify-start capitalize"
+        onClick={() => setActiveCategory(category)}
+    >
+        {icon}
+        <span className="ml-2">{category}</span>
+    </Button>
+)
 
 const DashboardHome = ({ setActiveView }: { setActiveView: (view: string) => void }) => (
     <div>
@@ -192,7 +295,18 @@ const DashboardHome = ({ setActiveView }: { setActiveView: (view: string) => voi
                 icon={<BarChart2 className="h-10 w-10 text-blue-500" />}
                 onClick={() => setActiveView('chart')}
             />
-            <ChatCard />
+            <Dialog>
+                <DialogTrigger asChild>
+                    <DashboardCard
+                        title="Communications"
+                        description="Chat with other departments."
+                        icon={<MessageSquare className="h-10 w-10 text-purple-500" />}
+                    />
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                    <ChatCard />
+                </DialogContent>
+            </Dialog>
         </div>
     </div>
 )
@@ -257,10 +371,12 @@ const ChartView = ({ setActiveView, productionData, handleAddProductionData }: {
                     </CardContent>
                 </Card>
             </div>
-            <AddProductionDataCard onAddData={handleAddProductionData} />
+            <div className="md:col-span-1">
+                <AddProductionDataCard onAddData={handleAddProductionData} />
+            </div>
         </div>
     </div>
-)
+);
 
 const AddProductionDataCard = ({ onAddData }: { onAddData: (data: { date: string, product: string, quantity: number }) => void }) => {
     const [date, setDate] = useState('');
@@ -269,30 +385,29 @@ const AddProductionDataCard = ({ onAddData }: { onAddData: (data: { date: string
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (date && product && quantity) {
-            onAddData({
-                date,
-                product,
-                quantity: parseInt(quantity, 10),
-            });
-            setDate('');
-            setQuantity('');
-        }
+        onAddData({
+            date,
+            product,
+            quantity: parseInt(quantity, 10),
+        });
+        setDate('');
+        setProduct('Cooking Oil');
+        setQuantity('');
     };
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Add Production Data</CardTitle>
-                <CardDescription>Add product quantity for a specific date.</CardDescription>
+                <CardDescription>Add a new production entry.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
+                    <div className="space-y-2">
                         <Label htmlFor="date">Date</Label>
                         <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
                     </div>
-                    <div>
+                    <div className="space-y-2">
                         <Label htmlFor="product">Product</Label>
                         <Select value={product} onValueChange={setProduct}>
                             <SelectTrigger>
@@ -305,15 +420,15 @@ const AddProductionDataCard = ({ onAddData }: { onAddData: (data: { date: string
                             </SelectContent>
                         </Select>
                     </div>
-                    <div>
+                    <div className="space-y-2">
                         <Label htmlFor="quantity">Quantity</Label>
-                        <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 120" required />
+                        <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full">Add Data</Button>
+                    <Button type="submit">Add Entry</Button>
                 </form>
             </CardContent>
         </Card>
-    )
+    );
 }
 
 const AnalyticsView = ({ setActiveView, analyticsData, averageProduction }: { setActiveView: (view: string) => void, analyticsData: { name: string, value: number }[], averageProduction: Record<string, number> }) => (
@@ -321,24 +436,16 @@ const AnalyticsView = ({ setActiveView, analyticsData, averageProduction }: { se
         <Button onClick={() => setActiveView('dashboard')} variant="outline" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
         </Button>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
-                    <CardTitle>Production Distribution</CardTitle>
+                    <CardTitle>Production Analytics</CardTitle>
+                    <CardDescription>Total production distribution.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[400px]">
+                <CardContent className="h-[400px] w-full">
                     <ResponsiveContainer>
                         <PieChart>
-                            <Pie
-                                data={analyticsData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={150}
-                                dataKey="value"
-                                nameKey="name"
-                                label
-                            >
+                            <Pie data={analyticsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
                                 {analyticsData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
@@ -351,17 +458,20 @@ const AnalyticsView = ({ setActiveView, analyticsData, averageProduction }: { se
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Key Metrics</CardTitle>
+                    <CardTitle>Average Production</CardTitle>
+                    <CardDescription>Average production per product.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    {Object.entries(averageProduction).map(([name, value]) => (
-                        <div key={name} className="flex justify-between items-center">
-                            <span className="font-medium">{name} (Average)</span>
-                            <span className="text-lg font-bold">{value.toFixed(2)} units</span>
-                        </div>
-                    ))}
+                <CardContent>
+                    <ul className="space-y-2">
+                        {Object.entries(averageProduction).map(([name, avg]) => (
+                            <li key={name} className="flex justify-between">
+                                <span>{name}</span>
+                                <strong>{avg.toFixed(2)}</strong>
+                            </li>
+                        ))}
+                    </ul>
                 </CardContent>
             </Card>
         </div>
     </div>
-) 
+); 
