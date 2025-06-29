@@ -15,7 +15,7 @@ type RegisterForm = {
     email: string;
     password: string;
     password_confirmation: string;
-    role: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor';
+    role: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor' | 'admin';
 };
 
 export default function Register() {
@@ -82,7 +82,7 @@ export default function Register() {
                             name="role"
                             value={data.role}
                             onValueChange={(
-                                value: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor'
+                                value: 'farmer' | 'inventory_manager' | 'manufacturer' | 'factory_store' | 'distributor' | 'retail' | 'customer' | 'vendor' | 'admin'
                             ) => setData('role', value)}
                         >
                             <SelectTrigger>
@@ -97,6 +97,7 @@ export default function Register() {
                                 <SelectItem value="manufacturer">Manufacturer</SelectItem>
                                 <SelectItem value="distributor">Distributor</SelectItem>
                                 <SelectItem value="retail-store">Retail Store</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError message={errors.role} />
