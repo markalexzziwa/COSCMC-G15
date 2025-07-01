@@ -210,7 +210,7 @@ const ChatCard = () => {
                 </CardContent>
             </div>
             <div className="w-3/4">
-                <CardHeader>
+        <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
                             <CardTitle className="text-purple-100 text-base">{chatTitle}</CardTitle>
@@ -221,7 +221,7 @@ const ChatCard = () => {
                             <Button onClick={() => setActiveChat('inventoryManager')} variant={activeChat === 'inventoryManager' ? 'default' : 'outline'} size="sm">Inventory Manager</Button>
                         </div>
                     </div>
-                </CardHeader>
+        </CardHeader>
                 <CardContent>
                     <div className="space-y-2 h-48 overflow-y-auto mb-4 p-2 border border-purple-600 rounded-md">
                         {filteredMessages.length > 0 ? filteredMessages.map((message) => (
@@ -255,10 +255,10 @@ const ChatCard = () => {
                             </Button>
                         </div>
                     ) : null}
-                </CardContent>
+        </CardContent>
             </div>
-        </Card>
-    );
+    </Card>
+);
 };
 
 const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: { category: MessageCategory, activeCategory: MessageCategory, setActiveCategory: (c: MessageCategory) => void, icon: React.ReactNode }) => (
@@ -304,7 +304,7 @@ const DashboardHome = ({ setActiveView }: { setActiveView: (view: string) => voi
                     />
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
-                    <ChatCard />
+            <ChatCard />
                 </DialogContent>
             </Dialog>
         </div>
@@ -372,7 +372,7 @@ const ChartView = ({ setActiveView, productionData, handleAddProductionData }: {
                 </Card>
             </div>
             <div className="md:col-span-1">
-                <AddProductionDataCard onAddData={handleAddProductionData} />
+            <AddProductionDataCard onAddData={handleAddProductionData} />
             </div>
         </div>
     </div>
@@ -385,14 +385,14 @@ const AddProductionDataCard = ({ onAddData }: { onAddData: (data: { date: string
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onAddData({
-            date,
-            product,
-            quantity: parseInt(quantity, 10),
-        });
-        setDate('');
+            onAddData({
+                date,
+                product,
+                quantity: parseInt(quantity, 10),
+            });
+            setDate('');
         setProduct('Cooking Oil');
-        setQuantity('');
+            setQuantity('');
     };
 
     return (

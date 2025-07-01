@@ -91,12 +91,12 @@ export default function Register() {
                             <SelectContent>
                                 <SelectItem value="customer">Customer</SelectItem>
                                 <SelectItem value="vendor">Vendor</SelectItem>
-                                <SelectItem value="factory-store">Factory Store</SelectItem>
+                                <SelectItem value="factory_store">Factory Store</SelectItem>
                                 <SelectItem value="farmer">Farmer</SelectItem>
-                                <SelectItem value="inventory-manager">Inventory Manager</SelectItem>
+                                <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                                 <SelectItem value="manufacturer">Manufacturer</SelectItem>
                                 <SelectItem value="distributor">Distributor</SelectItem>
-                                <SelectItem value="retail-store">Retail Store</SelectItem>
+                                <SelectItem value="retail">Retail</SelectItem>
                                 <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                         </Select>
