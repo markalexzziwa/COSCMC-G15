@@ -23,13 +23,14 @@ class RegisteredUserController extends Controller
     public function create(): Response
     {
         return Inertia::render('auth/register');
-    }
-
+    
+}
     /**
      * Handle an incoming registration request.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -47,6 +48,10 @@ class RegisteredUserController extends Controller
         $roleName = $roleNameMapping[$request->role] ?? ucfirst($request->role);
         $role = Role::where('name', $roleName)->first();
 
+        if (!$role) {
+            return back()->withErrors(['role' => 'Selected role is invalid. Please contact administrator.'])->withInput();
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -59,5 +64,5 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
-    }
-}
+    } }
+// ...existing code...
