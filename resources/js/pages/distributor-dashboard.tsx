@@ -2,6 +2,28 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FiPackage, FiTruck, FiDollarSign, FiAlertCircle, FiTrendingUp, FiUsers } from 'react-icons/fi';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+} from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title
+);
 
 interface Order {
   id: number;
@@ -29,11 +51,23 @@ interface SalesData {
   daily: number;
 }
 
+interface DistributionData {
+  byProduct: {
+    labels: string[];
+    data: number[];
+  };
+  byRegion: {
+    labels: string[];
+    data: number[];
+  };
+}
+
 interface DashboardData {
   inventory: InventoryData;
   orders: OrdersData;
   sales: SalesData;
   recentOrders: Order[];
+  distribution: DistributionData;
 }
 
 export default function DistributorDashboard() {
@@ -62,7 +96,17 @@ export default function DistributorDashboard() {
             { id: 1002, customer: 'Hotel B', product: 'Vegetable Oil 20L', quantity: 5, status: 'processing' },
             { id: 1003, customer: 'Catering C', product: 'Sunflower Oil 10L', quantity: 8, status: 'pending' },
             { id: 1004, customer: 'Bakery D', product: 'Coconut Oil 5L', quantity: 15, status: 'shipped' }
-        ]
+        ],
+        distribution: {
+            byProduct: {
+                labels: ['Vegetable Oil', 'Olive Oil', 'Sunflower Oil', 'Coconut Oil', 'Others'],
+                data: [45, 30, 15, 8, 2]
+            },
+            byRegion: {
+                labels: ['North', 'South', 'East', 'West'],
+                data: [35, 25, 20, 20]
+            }
+        }
     });
 
     useEffect(() => {
@@ -305,17 +349,115 @@ export default function DistributorDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Sales Trend Chart (Placeholder) */}
-                                <div className="bg-white shadow rounded-lg overflow-hidden">
-                                    <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">Sales Trend</h3>
-                                        <p className="mt-1 text-sm text-gray-500">Monthly cooking oil sales performance</p>
+                                {/* Distribution Graphs */}
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                    {/* Product Distribution Pie Chart */}
+                                    <div className="bg-white shadow rounded-lg overflow-hidden">
+                                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">Product Distribution</h3>
+                                            <p className="mt-1 text-sm text-gray-500">Breakdown of cooking oil products in inventory</p>
+                                        </div>
+                                        <div className="px-4 py-5 sm:p-6">
+                                            <div className="h-80">
+                                                <Pie 
+                                                    data={{
+                                                        labels: dashboardData.distribution.byProduct.labels,
+                                                        datasets: [
+                                                            {
+                                                                data: dashboardData.distribution.byProduct.data,
+                                                                backgroundColor: [
+                                                                    'rgba(234, 179, 8, 0.7)',  // yellow-500
+                                                                    'rgba(16, 185, 129, 0.7)',  // green-500
+                                                                    'rgba(59, 130, 246, 0.7)',  // blue-500
+                                                                    'rgba(139, 92, 246, 0.7)',  // purple-500
+                                                                    'rgba(239, 68, 68, 0.7)'    // red-500
+                                                                ],
+                                                                borderColor: [
+                                                                    'rgba(234, 179, 8, 1)',
+                                                                    'rgba(16, 185, 129, 1)',
+                                                                    'rgba(59, 130, 246, 1)',
+                                                                    'rgba(139, 92, 246, 1)',
+                                                                    'rgba(239, 68, 68, 1)'
+                                                                ],
+                                                                borderWidth: 1,
+                                                            },
+                                                        ],
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        plugins: {
+                                                            legend: {
+                                                                position: 'right',
+                                                            },
+                                                            tooltip: {
+                                                                callbacks: {
+                                                                    label: function(context) {
+                                                                        const label = context.label || '';
+                                                                        const value = context.raw || 0;
+                                                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                                    const numericValue = typeof value === 'number' ? value : Number(value);
+                                                                    const numericTotal = Array.isArray(context.dataset.data)
+                                                                        ? context.dataset.data.reduce((a, b) => Number(a) + Number(b), 0)
+                                                                        : Number(total);
+                                                                    const percentage = numericTotal > 0 ? Math.round((numericValue / numericTotal) * 100) : 0;
+                                                                    return `${label}: ${numericValue} units (${percentage}%)`;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="px-4 py-5 sm:p-6">
-                                        <div className="h-64 bg-gray-50 rounded-md flex items-center justify-center">
-                                            <div className="text-center">
-                                                <FiTrendingUp className="mx-auto h-12 w-12 text-gray-400" />
-                                                <p className="mt-2 text-sm text-gray-500">Sales chart visualization would appear here</p>
+
+                                    {/* Regional Distribution Bar Chart */}
+                                    <div className="bg-white shadow rounded-lg overflow-hidden">
+                                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">Regional Distribution</h3>
+                                            <p className="mt-1 text-sm text-gray-500">Sales by region for cooking oil products</p>
+                                        </div>
+                                        <div className="px-4 py-5 sm:p-6">
+                                            <div className="h-80">
+                                                <Bar
+                                                    data={{
+                                                        labels: dashboardData.distribution.byRegion.labels,
+                                                        datasets: [
+                                                            {
+                                                                label: 'Sales Volume (%)',
+                                                                data: dashboardData.distribution.byRegion.data,
+                                                                backgroundColor: 'rgba(234, 179, 8, 0.7)',
+                                                                borderColor: 'rgba(234, 179, 8, 1)',
+                                                                borderWidth: 1,
+                                                            },
+                                                        ],
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        scales: {
+                                                            y: {
+                                                                beginAtZero: true,
+                                                                max: 100,
+                                                                ticks: {
+                                                                    callback: function(value) {
+                                                                        return value + '%';
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        plugins: {
+                                                            tooltip: {
+                                                                callbacks: {
+                                                                    label: function(context) {
+                                                                        return context.raw + '% of total sales';
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                     </div>
