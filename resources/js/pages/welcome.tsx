@@ -42,7 +42,7 @@ export default function Welcome() {
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen flex-col bg-yellow-100 text-[#1b1b18] dark:bg-yellow-900">
+            <div className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/oil.jpg')" }}>
                 <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <div className="container flex h-24 max-w-screen-2xl items-center justify-between">
                         <Link href="/" className="flex items-center gap-2">
