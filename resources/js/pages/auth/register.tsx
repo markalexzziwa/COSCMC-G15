@@ -39,10 +39,9 @@ export default function Register() {
             <AuthCardLayout
                 title="Create an account"
                 description="Enter your details below to create your account"
-                className="bg-blue-400"
             >
                 <Head title="Register" />
-                <form className="flex flex-col gap-6 bg-green-100 p-4 rounded-lg" onSubmit={submit}>
+                <form className="flex flex-col gap-6 bg-blue-300/60 backdrop-blur-md shadow-xl border border-white/40 p-4 rounded-lg" onSubmit={submit}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>

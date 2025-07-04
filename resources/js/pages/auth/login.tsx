@@ -40,7 +40,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <AuthCardLayout title="Welcome Back" description="Log in to your account to continue">
                 <Head title="Log in" />
 
-                <form className="flex flex-col gap-6 bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-lg w-full max-w-md" onSubmit={submit}>
+                <form className="flex flex-col gap-6 bg-orange-150/60 backdrop-blur-md p-8 rounded-2xl shadow-lg w-full max-w-md" onSubmit={submit}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
@@ -76,7 +76,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 autoComplete="current-password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
-                                placeholder="••••••••"
+                                placeholder="♦♦♦♦♦♦♦♦♦"
                                 className="border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-200 rounded-lg"
                             />
                             <InputError message={errors.password} />
