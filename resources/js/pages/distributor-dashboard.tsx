@@ -116,18 +116,29 @@ export default function DistributorDashboard() {
 
         return () => clearTimeout(timer);
     }, []);
+    // Notification state for welcome message
+    const [showNotification, setShowNotification] = useState(true);
+
+    useEffect(() => {
+        if (showNotification) {
+            const timer = setTimeout(() => setShowNotification(false), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [showNotification]);
 
     return (
         <AppLayout>
             <Head title="Distributor Dashboard" />
 
             <div className="min-h-screen bg-gray-50">
-                {/* Welcome Banner */}
-                <div className={`bg-gradient-to-r from-yellow-400 to-yellow-600 p-4 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="mx-auto max-w-7xl text-white text-center">
-                        <p className="text-lg font-medium">Welcome back! You're logged in as a Cooking Oil Distributor</p>
+                {/* Welcome Notification (top-right corner) */}
+                {showNotification && (
+                    <div className="fixed top-6 right-6 z-50">
+                        <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-fade-in-out">
+                            <span className="font-medium">Welcome back! You're logged in as a Cooking Oil Distributor</span>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Main Dashboard Content */}
                 <div className="py-8">
