@@ -42,7 +42,7 @@ export default function Welcome() {
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen flex-col bg-yellow-100 text-[#1b1b18] dark:bg-yellow-900">
+            <div className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/oil.jpg')" }}>
                 <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <div className="container flex h-24 max-w-screen-2xl items-center justify-between">
                         <Link href="/" className="flex items-center gap-2">
@@ -91,19 +91,10 @@ export default function Welcome() {
                 <div className="flex w-full grow flex-col items-center justify-center p-6 lg:p-8">
                     <main className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
                         <div className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
-                            <div className="flex-1 rounded-br-lg rounded-bl-lg bg-yellow-200 p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-yellow-600 dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
-                                <h1 className="text-6xl font-bold tracking-tight text-black dark:text-white">
-                                    Welcome to<br />CK-OILS.
-                                </h1>
-                                <p className="text-lg text-black dark:text-orange-100">
-                                    At this site tasks are done by a click or touch and we are glad to have you here. Please login or register to get started now.
-                                </p>
-                            </div>
-                            <div className="flex-1 rounded-lg-br rounded-lg-bl bg-pink-100 p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tr-none lg:rounded-br-lg lg:p-20 dark:bg-yellow-500 dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
-                                <img
-                                    src="/apple-touch-icon.png"
-                                    alt="Site Logo"
-                                />
+                            <div className="flex-1 rounded-br-lg rounded-bl-lg bg-white/20 backdrop-blur-sm p-3 pb-3 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-5 dark:bg-white/5 dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] flex justify-center items-center flex-col">
+                                <img src="/apple-touch-icon.png" alt="CK-Oils Icon" className="max-w-[300px] lg:max-w-[400px]" />
+                                <p className="mt-4 text-lg text-black dark:text-white text-center">Welcome to CK-Oils Company Ltd Uganda</p>
+                                <p className="mt-2 text-md text-black dark:text-white text-center">For your favourite oil products</p>
                             </div>
                         </div>
                     </main>

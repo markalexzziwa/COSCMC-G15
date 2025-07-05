@@ -11,7 +11,7 @@ export function FarmStatsCard() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-secondary">Farm Statistics</CardTitle>
+                <CardTitle className="text-black">Farm Statistics</CardTitle>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">
