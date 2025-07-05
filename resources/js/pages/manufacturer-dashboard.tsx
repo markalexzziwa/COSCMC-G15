@@ -194,13 +194,13 @@ const ChatCard = () => {
     });
 
     return (
-        <Card className="bg-purple-800 flex text-purple-100 rounded-2xl">
-            <div className="w-1/4 border-r border-purple-600">
+        <Card className="bg-purple-800 flex flex-col text-purple-50 rounded-2xl max-w-md mx-auto">
+            <div className="w-full border-b border-purple-600">
                 <CardHeader>
                     <CardTitle className="text-purple-100 text-base">Mailbox</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2">
-                    <nav className="flex flex-col space-y-1">
+                    <nav className="flex flex-row space-x-1 justify-center">
                         <CategoryButton category="inbox" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Inbox size={16} />} />
                         <CategoryButton category="sent" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Send size={16} />} />
                         <CategoryButton category="draft" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<FileText size={16} />} />
@@ -209,7 +209,7 @@ const ChatCard = () => {
                     </nav>
                 </CardContent>
             </div>
-            <div className="w-3/4">
+            <div className="w-full">
         <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
@@ -217,8 +217,22 @@ const ChatCard = () => {
                             <CardDescription className="capitalize text-purple-300">{activeCategory}</CardDescription>
                         </div>
                         <div className="flex space-x-2">
-                            <Button onClick={() => setActiveChat('factoryStore')} variant={activeChat === 'factoryStore' ? 'default' : 'outline'} size="sm">Factory Store</Button>
-                            <Button onClick={() => setActiveChat('inventoryManager')} variant={activeChat === 'inventoryManager' ? 'default' : 'outline'} size="sm">Inventory Manager</Button>
+                            <Button
+                                onClick={() => setActiveChat('factoryStore')}
+                                variant={activeChat === 'factoryStore' ? 'default' : 'outline'}
+                                size="sm"
+                                className={activeChat !== 'factoryStore' ? 'text-black' : ''}
+                            >
+                                Factory Store
+                            </Button>
+                            <Button
+                                onClick={() => setActiveChat('inventoryManager')}
+                                variant={activeChat === 'inventoryManager' ? 'default' : 'outline'}
+                                size="sm"
+                                className={activeChat !== 'inventoryManager' ? 'text-black' : ''}
+                            >
+                                Inventory Manager
+                            </Button>
                         </div>
                     </div>
         </CardHeader>
