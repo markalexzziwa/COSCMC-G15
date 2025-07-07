@@ -17,7 +17,7 @@ import AppLogoIcon from './app-logo-icon';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'CK-OILS manufacturer',
+        title: 'CK-OILS',
         href: '/dashboard',
         icon: LayoutGrid,
     },

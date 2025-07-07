@@ -17,17 +17,18 @@ export default function AdminDashboard() {
         <AppLayout>
             <Head title="Admin Dashboard" />
 
+            {/* Notification (top-right corner) */}
+            {isVisible && (
+                <div className="fixed top-6 right-6 z-50">
+                    <div className="bg-blue-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-fade-in-out">
+                        <span className="font-medium">You're logged in as an Admin!</span>
+                    </div>
+                </div>
+            )}
+
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-gray-100 shadow-sm sm:rounded-lg">
-                        <div
-                            className={`p-6 text-gray-900 transition-opacity duration-1000 ${
-                                isVisible ? 'opacity-100' : 'opacity-0'
-                            }`}
-                        >
-                            You're logged in as an Admin!
-                        </div>
-                    </div>
+                    {/* ...rest of dashboard content... */}
                 </div>
             </div>
         </AppLayout>

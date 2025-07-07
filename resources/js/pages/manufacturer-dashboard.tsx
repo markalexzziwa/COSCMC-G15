@@ -22,13 +22,13 @@ import { cn } from '@/lib/utils';
 
 // Mock data for the chart is now initial state
 const initialProductionData = [
-    { date: '2024-07-01', 'Cooking Oil': 400, Shampoo: 240, Margarine: 300 },
-    { date: '2024-07-02', 'Cooking Oil': 300, Shampoo: 139, Margarine: 450 },
-    { date: '2024-07-03', 'Cooking Oil': 200, Shampoo: 980, Margarine: 200 },
-    { date: '2024-07-04', 'Cooking Oil': 278, Shampoo: 390, Margarine: 350 },
-    { date: '2024-07-05', 'Cooking Oil': 189, Shampoo: 480, Margarine: 250 },
-    { date: '2024-07-06', 'Cooking Oil': 239, Shampoo: 380, Margarine: 280 },
-    { date: '2024-07-07', 'Cooking Oil': 349, Shampoo: 430, Margarine: 210 },
+    { date: '2025-07-01', 'Cooking Oil': 400, Shampoo: 240, Margarine: 300 },
+    { date: '2025-07-02', 'Cooking Oil': 300, Shampoo: 139, Margarine: 450 },
+    { date: '2025-07-03', 'Cooking Oil': 200, Shampoo: 240, Margarine: 200 },
+    { date: '2025-07-04', 'Cooking Oil': 278, Shampoo: 390, Margarine: 350 },
+    { date: '2025-07-05', 'Cooking Oil': 189, Shampoo: 480, Margarine: 250 },
+    { date: '2025-07-06', 'Cooking Oil': 239, Shampoo: 380, Margarine: 280 },
+    { date: '2025-07-07', 'Cooking Oil': 349, Shampoo: 430, Margarine: 210 },
 ]
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b']
