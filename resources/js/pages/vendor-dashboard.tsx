@@ -54,14 +54,14 @@ export default function VendorDashboard() {
                         {/* PDF Upload Card */}
                         <div className="max-w-md w-full">
                             <div className="bg-green-50 border border-green-200 rounded-xl shadow-md p-6 flex flex-col items-center h-full">
-                                <div className="text-2xl font-bold text-green-700 mb-2">PDF Upload</div>
+                                <div className="text-2xl font-bold text-green-700 mb-2">Application Submission</div>
                                 <div className="text-gray-600 text-center mb-2">Save your application as "username".pdf before proceeding. Select and upload your application as a PDF file.</div>
                                 <button
                                     className="mt-2 px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition font-semibold text-lg"
                                     onClick={() => window.open('http://localhost:8080/', '_blank')}
                                     type="button"
                                 >
-                                    Open Upload Page
+                                    Proceed
                                 </button>
                             </div>
                         </div>
