@@ -51,7 +51,7 @@ const supplyTrendData = [
 ];
 
 const criticalItems = [
-  { id: 1, name: 'Sunflower Oil', current: 150, threshold: 200 },
+  { id: 1, name: 'Palm Oil', current: 150, threshold: 200 },
   { id: 2, name: 'Olive Oil', current: 180, threshold: 250 },
 ];
 
