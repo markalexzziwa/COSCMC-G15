@@ -51,9 +51,116 @@ const supplyTrendData = [
 ];
 
 const criticalItems = [
-  { id: 1, name: 'Sunflower Oil', current: 150, threshold: 200 },
+  { id: 1, name: 'Palm Oil', current: 150, threshold: 200 },
   { id: 2, name: 'Olive Oil', current: 180, threshold: 250 },
 ];
+
+// Mock farmer data
+const farmerData = {
+  name: 'John Mukiibi',
+  location: 'Kampala, Uganda',
+  produce: 'Palm Oil',
+};
+
+const FarmerCard = ({ farmer }: { farmer: { name: string; location: string; produce: string } }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Farmer Info</CardTitle>
+      <CardDescription>Details about the farmer</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <p><strong>Name:</strong> {farmer.name}</p>
+      <p><strong>Location:</strong> {farmer.location}</p>
+      <p><strong>Produce:</strong> {farmer.produce}</p>
+    </CardContent>
+  </Card>
+);
+
+// Farmer chat store (simple local state for demo)
+const useFarmerChatStore = () => {
+  const [messages, setMessages] = useState([
+    {
+      sender: 'Farmer',
+      text: 'Hello, I have fresh Palm Oil ready for delivery.',
+      timestamp: new Date().toISOString(),
+    },
+  ]);
+
+  const addMessage = (message: { sender: string; text: string; timestamp: string }) => {
+    setMessages((prev) => [...prev, message]);
+  };
+
+  return { messages, addMessage };
+};
+
+const FarmerChatCard = () => {
+  const { messages, addMessage } = useFarmerChatStore();
+  const [newMessage, setNewMessage] = useState('');
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() === '') return;
+    addMessage({
+      sender: 'Farmer',
+      text: newMessage,
+      timestamp: new Date().toISOString(),
+    });
+    setNewMessage('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSendMessage();
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Farmer Chat</CardTitle>
+        <CardDescription>Chat with Inventory Manager</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md">
+          {messages.length > 0 ? (
+            messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.sender === 'Farmer' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`p-3 rounded-lg max-w-xs md:max-w-md ${
+                    message.sender === 'Farmer' ? 'bg-green-500 text-white' : 'bg-gray-200 text-black'
+                  }`}
+                >
+                  <p className="font-semibold">{message.sender}</p>
+                  <p>{message.text}</p>
+                  <p className="text-xs mt-1 opacity-70">
+                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p>No messages yet. Start a conversation!</p>
+            </div>
+          )}
+        </div>
+        <div className="flex space-x-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type a message..."
+          />
+          <Button onClick={handleSendMessage} variant="default" size="icon">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function InventoryManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -205,7 +312,7 @@ export default function InventoryManagerDashboard() {
             </CardContent>
           </Card>
 
-          {/* Critical Items and Chat */}
+          {/* Critical Items, Farmer, and Chat */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -230,7 +337,10 @@ export default function InventoryManagerDashboard() {
                 </div>
               </CardContent>
             </Card>
-
+            {/* Farmer Card */}
+            <FarmerCard farmer={farmerData} />
+            {/* Farmer Chat Component */}
+            <FarmerChatCard />
             {/* Chat Component */}
             <ChatCard />
           </div>
