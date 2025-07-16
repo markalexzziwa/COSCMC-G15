@@ -129,7 +129,7 @@ export default function ManufacturerDashboard() {
 
     return (
         <AppLayout>
-            <div className="bg-yellow-100 h-full">
+            <div>
                 <Head title="Manufacturer Dashboard" />
 
                 {notification && (
@@ -288,7 +288,9 @@ const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: {
 
 const DashboardHome = ({ setActiveView }: { setActiveView: (view: string) => void }) => (
     <div>
-        <h1 className="text-3xl font-bold mb-6 text-purple-800">Manufacturer Dashboard</h1>
+        <div className="w-full bg-white py-6 px-4 shadow rounded mb-6">
+            <h1 className="text-3xl font-bold text-purple-800 m-0">Manufacturer Dashboard</h1>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link href="/" className="block">
                 <DashboardCard

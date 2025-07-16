@@ -159,6 +159,9 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply text-foreground;
+        background: url('/ckoildefault.jpg') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
     }
 }
