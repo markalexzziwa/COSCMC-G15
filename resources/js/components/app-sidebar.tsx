@@ -33,7 +33,7 @@ const dashboardNavItems: NavItem[] = [
     },
     {
         title: 'Vendor',
-        href: '/vendor-dashboard',
+        href: '/unofficial-vendor-dashboard',
         icon: LayoutGrid,
     },
     {

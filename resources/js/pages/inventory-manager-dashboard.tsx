@@ -51,7 +51,7 @@ const supplyTrendData = [
 ];
 
 const criticalItems = [
-  { id: 1, name: 'Sunflower Oil', current: 150, threshold: 200 },
+  { id: 1, name: 'Palm Oil', current: 150, threshold: 200 },
   { id: 2, name: 'Olive Oil', current: 180, threshold: 250 },
 ];
 
@@ -288,9 +288,9 @@ export default function InventoryManagerDashboard() {
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 mb-8">
           {/* Supply vs Demand */}
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Supply vs Demand</CardTitle>
               <CardDescription>Weekly comparison of supply and demand</CardDescription>
@@ -311,39 +311,36 @@ export default function InventoryManagerDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Critical Items, Farmer, and Chat */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Critical Inventory</CardTitle>
-                <CardDescription>Items below threshold levels</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {criticalItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-gray-600">
-                          Current: {item.current}L | Threshold: {item.threshold}L
-                        </p>
-                      </div>
-                      <Button variant="destructive" size="sm">
-                        Order
-                      </Button>
+        {/* 2x2 Grid for Critical, Farmer Info, Farmer Chat, Manufacturer Chat */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Critical Inventory</CardTitle>
+              <CardDescription>Items below threshold levels</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {criticalItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-600">
+                        Current: {item.current}L | Threshold: {item.threshold}L
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            {/* Farmer Card */}
-            <FarmerCard farmer={farmerData} />
-            {/* Farmer Chat Component */}
-            <FarmerChatCard />
-            {/* Chat Component */}
-            <ChatCard />
-          </div>
+                    <Button variant="destructive" size="sm">
+                      Order
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <FarmerCard farmer={farmerData} />
+          <FarmerChatCard />
+          <ChatCard />
         </div>
       </div>
     </AppLayout>

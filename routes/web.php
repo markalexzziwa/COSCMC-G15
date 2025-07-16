@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\UploadController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -29,7 +32,7 @@ Route::get('/dashboard', function () {
         case 'Customer':
             return Inertia::render('customer-dashboard');
         case 'Vendor':
-            return Inertia::render('vendor-dashboard');
+            return Inertia::render('unofficial-vendor-dashboard');
         default:
             return Inertia::render('welcome');
     }
@@ -47,15 +50,18 @@ Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'role:vendor'])->group(function () {
     Route::get('/vendor/dashboard', function () {
-        return Inertia::render('vendor-dashboard');
+        return Inertia::render('unofficial-vendor-dashboard');
     })->name('vendor.dashboard');
 });
 
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('admin-dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 });
+
+Route::post('/admin/vendors/{id}/approve', [Controller::class, 'approveVendor'])->middleware(['auth', 'verified', 'role:admin']);
+Route::post('/admin/vendors/{id}/reject', [Controller::class, 'rejectVendor'])->middleware(['auth', 'verified', 'role:admin']);
+
+Route::post('/api/upload-record', [UploadController::class, 'record']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/yield-tracking', function () {
