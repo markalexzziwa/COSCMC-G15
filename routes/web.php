@@ -35,6 +35,10 @@ Route::get('/dashboard', function () {
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/market', function () {
+    return Inertia::render('market');
+})->middleware(['auth', 'verified'])->name('market');
+
 Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
     Route::get('/user/dashboard', function () {
         return Inertia::render('dashboard');
