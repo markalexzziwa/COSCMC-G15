@@ -233,8 +233,8 @@ public class javaserver {
     <script>function closeTab(){window.close();}</script>
     </head><body><div class='center-box'>
         <div class='green-tick'>&#10004;</div>
-        <div class='success-text'>U qualify to be a vendor</div>
-        <div class='wait-text'>Waiting for admin approval <span class='dots'><span></span><span></span><span></span></span></div>
+        <div class='success-text'>You qualify to be a CK-Oils vendor</div>
+        <div class='wait-text'>Waiting for admin approval. Your username will be displayed in the feedback cards after approval.<span class='dots'><span></span><span></span><span></span></span></div>
     <button class='close-btn' onclick='closeTab()'>Return to Website</button>
         </div></body></html>
     """;
@@ -249,7 +249,7 @@ public class javaserver {
                                         "{\"filename\":\"%s\",\"uploader_email\":\"%s\",\"full_name\":\"%s\",\"account_balance\":\"%s\",\"age\":\"%s\",\"financial_stability\":\"%s\"}",
                                         fileName, email, fullName, accountBalance, age, financialStability
                                     );
-                                    java.net.URL url = new java.net.URL(apiUrl);
+                                    java.net.URL url = java.net.URI.create(apiUrl).toURL();
                                     java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
                                     conn.setRequestMethod("POST");
                                     conn.setRequestProperty("Content-Type", "application/json");

@@ -49,6 +49,12 @@ export default function UnofficialVendorDashboard() {
         <AppLayout>
             <Head title="Vendor Dashboard" />
 
+            {/* Vendor Application Portal Banner */}
+            <div className="w-full flex flex-col items-center justify-center py-8 bg-yellow-100 border-b border-yellow-300 mb-8 rounded-xl shadow">
+                <h1 className="text-4xl font-extrabold text-black mb-2">Vendor Application Portal</h1>
+                <p className="text-lg text-black">You can be a potential Vendor.<br />Apply day, Apply now</p>
+            </div>
+
             {/* Notification (top-right corner) */}
             {isVisible && (
                 <div className="fixed top-6 right-6 z-50">

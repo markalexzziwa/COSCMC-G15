@@ -330,12 +330,44 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                                 <li key={name}>{name}</li>
                                             ))}
                                         </ul>
-                        </div>
-                    )}
+                                    </div>
+                                )}
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
                                 <span className="w-32 h-32 bg-purple-500 rounded-full flex items-center justify-center text-6xl font-bold text-white">
                                     <ThumbsDown className="w-24 h-24 text-white opacity-40" />
+                                </span>
+                            </div>
+                        </Card>
+                        {/* Clear Lists Card */}
+                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white transition-transform transform hover:scale-105">
+                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
+                                <div className="flex items-center gap-3 w-full justify-center">
+                                    <span className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
+                                        <Check className="w-8 h-8 text-white" />
+                                    </span>
+                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Clear Accepted & Rejected Lists</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center pb-8">
+                                <div className="mb-6 text-lg text-white/90 text-center">Remove all accepted and rejected vendors from the lists.</div>
+                                <button
+                                    className="px-6 py-2 rounded-lg bg-white text-gray-700 font-semibold shadow hover:bg-gray-200 transition-colors"
+                                    onClick={() => {
+                                        setAcceptedVendors([]);
+                                        setRejectedVendors([]);
+                                        setAcceptedVendorDates({});
+                                        localStorage.removeItem('acceptedVendors');
+                                        localStorage.removeItem('rejectedVendors');
+                                        localStorage.removeItem('acceptedVendorDates');
+                                    }}
+                                >
+                                    Clear Lists
+                                </button>
+                            </CardContent>
+                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
+                                <span className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center text-6xl font-bold text-white">
+                                    <Check className="w-24 h-24 text-white opacity-40" />
                                 </span>
                             </div>
                         </Card>
