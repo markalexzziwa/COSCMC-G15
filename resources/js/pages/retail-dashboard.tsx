@@ -234,7 +234,7 @@ export default function RetailDashboard() {
       <div className="py-6">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           {isWelcomeVisible && (
-            <div className="p-4 mb-6 text-white bg-green-600 rounded-lg shadow-sm">
+            <div className="fixed top-6 right-6 z-50 p-4 mb-6 text-white bg-green-600 rounded-lg shadow-sm">
               Welcome back to your Palm Oil Products Retail Dashboard!
             </div>
           )}
@@ -274,25 +274,25 @@ export default function RetailDashboard() {
             </nav>
           </div>
 
-          <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+          <div className="overflow-hidden bg-gray-50 shadow-sm sm:rounded-lg">
             {activeTab === 'dashboard' && (
               <div className="p-6">
-                <h2 className="mb-6 text-xl font-semibold">Sales Dashboard</h2>
+                <h2 className="mb-6 text-xl font-semibold text-gray-900">Sales Dashboard</h2>
                 
                 {/* Sales Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="p-4 bg-white border rounded-lg shadow-sm">
-                    <h3 className="text-sm font-medium text-gray-500">Total Sales</h3>
+                  <div className="p-4 bg-blue-100 border rounded-lg shadow-sm text-blue-900">
+                    <h3 className="text-sm font-medium text-blue-700">Total Sales</h3>
                     <p className="mt-1 text-2xl font-semibold">${totalSales.toFixed(2)}</p>
-                    <p className="mt-1 text-sm text-green-600">+12% from last month</p>
+                    <p className="mt-1 text-sm text-blue-600">+12% from last month</p>
                   </div>
-                  <div className="p-4 bg-white border rounded-lg shadow-sm">
-                    <h3 className="text-sm font-medium text-gray-500">Completed Orders</h3>
+                  <div className="p-4 bg-green-100 border rounded-lg shadow-sm text-green-900">
+                    <h3 className="text-sm font-medium text-green-700">Completed Orders</h3>
                     <p className="mt-1 text-2xl font-semibold">{orders.filter(o => o.status === 'Completed').length}</p>
                     <p className="mt-1 text-sm text-green-600">+5 from last month</p>
                   </div>
-                  <div className="p-4 bg-white border rounded-lg shadow-sm">
-                    <h3 className="text-sm font-medium text-gray-500">Pending Orders</h3>
+                  <div className="p-4 bg-yellow-100 border rounded-lg shadow-sm text-yellow-900">
+                    <h3 className="text-sm font-medium text-yellow-700">Pending Orders</h3>
                     <p className="mt-1 text-2xl font-semibold">${pendingOrdersValue.toFixed(2)}</p>
                     <p className="mt-1 text-sm text-yellow-600">Waiting for processing</p>
                   </div>
@@ -305,7 +305,7 @@ export default function RetailDashboard() {
 
                 {/* Recent Orders */}
                 <div className="p-4 bg-white border rounded-lg shadow-sm">
-                  <h3 className="mb-4 text-lg font-medium">Recent Orders</h3>
+                  <h3 className="mb-4 text-lg font-medium text-gray-900">Recent Orders</h3>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">

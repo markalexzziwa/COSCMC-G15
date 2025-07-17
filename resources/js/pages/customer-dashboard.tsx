@@ -20,9 +20,15 @@ export default function CustomerDashboard() {
     }, [])
 
     return (
-        <div style={{ backgroundColor: 'black' }}>
+        <div>
             <AppLayout>
                 <Head title="Customer Dashboard" />
+
+                {/* Shop Now Banner */}
+                <div className="w-full flex flex-col items-center justify-center py-8 bg-yellow-100 border-b border-yellow-300 mb-8 rounded-xl shadow">
+                    <h1 className="text-4xl font-extrabold text-black mb-2">Shop Now!</h1>
+                    <p className="text-lg text-black">Order your favorite!</p>
+                </div>
 
                 {notification && (
                     <div className="fixed top-24 right-5 z-50 rounded-md bg-green-500 p-4 text-white shadow-lg animate-in fade-in-0 slide-in-from-top-5">
@@ -32,15 +38,11 @@ export default function CustomerDashboard() {
 
                 <div className="py-12">
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        <div
-                            className="overflow-hidden shadow-sm sm:rounded-lg"
-                            style={{ backgroundColor: '#FFF5F7' }}
-                        >
-                            <div className="p-6 text-gray-900">Order your favorite!</div>
-                        </div>
-
                         <div className="mt-6">
                             <OrderProductsCard />
+                        </div>
+                        <div className="mt-6">
+                            <OrderStatusCard />
                         </div>
                     </div>
                 </div>
@@ -51,6 +53,7 @@ export default function CustomerDashboard() {
 
 function OrderProductsCard() {
     const [quantities, setQuantities] = useState<Record<number, number>>({})
+    // Remove loading and orderMessage state
 
     const handleQuantityChange = (productId: number, quantity: string) => {
         const numQuantity = parseInt(quantity, 10)
@@ -67,6 +70,8 @@ function OrderProductsCard() {
 
     const hasDiscount = Object.values(quantities).some(q => q > 1)
     const discountedAmount = hasDiscount ? totalAmount * 0.85 : totalAmount
+
+    // Remove handlePlaceOrder and all related fetch/notification logic
 
     return (
         <Card style={{ backgroundColor: '#FFF5F7' }}>
@@ -119,7 +124,84 @@ function OrderProductsCard() {
                         <span>Ugx {discountedAmount.toLocaleString()}</span>
                     </div>
                 </div>
-                <Button className="mt-6 w-full bg-yellow-500 hover:bg-yellow-600 text-white">Place Order</Button>
+                {/* Remove orderMessage and disable logic */}
+                <Button className="mt-6 w-full bg-yellow-500 hover:bg-yellow-600 text-white">
+                    Place Order
+                </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
+function OrderStatusCard() {
+    type OrderItem = { id: number; quantity: number; product?: { name: string } };
+    type Order = {
+        id: number;
+        created_at: string;
+        total_price: number;
+        discount_price: number;
+        items: OrderItem[];
+    };
+    const [orders, setOrders] = useState<Order[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string|null>(null)
+
+    useEffect(() => {
+        fetch('/orders/status', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                setOrders(data.orders || [])
+                setLoading(false)
+            })
+            .catch(() => {
+                setError('Failed to load order status.')
+                setLoading(false)
+            })
+    }, [])
+
+    return (
+        <Card style={{ backgroundColor: '#F0F7FF' }}>
+            <CardHeader>
+                <CardTitle>Order Status</CardTitle>
+                <CardDescription>View your recent orders and their status.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading ? (
+                    <div>Loading...</div>
+                ) : error ? (
+                    <div className="text-red-600">{error}</div>
+                ) : orders.length === 0 ? (
+                    <div>No orders found.</div>
+                ) : (
+                    <div className="space-y-6">
+                        {orders.map((order: Order) => (
+                            <div key={order.id} className="border-b pb-4">
+                                <div className="flex justify-between font-semibold">
+                                    <span>Order Date:</span>
+                                    <span>{new Date(order.created_at).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Total:</span>
+                                    <span>Ugx {Number(order.total_price).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Discount:</span>
+                                    <span>Ugx {Number(order.discount_price).toLocaleString()}</span>
+                                </div>
+                                <div className="mt-2">
+                                    <div className="font-semibold">Products:</div>
+                                    <ul className="list-disc list-inside">
+                                        {order.items.map((item: OrderItem) => (
+                                            <li key={item.id}>
+                                                {item.product?.name || 'Product'} x {item.quantity}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </CardContent>
         </Card>
     )

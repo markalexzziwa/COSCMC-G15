@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -62,6 +63,7 @@ Route::post('/admin/vendors/{id}/approve', [Controller::class, 'approveVendor'])
 Route::post('/admin/vendors/{id}/reject', [Controller::class, 'rejectVendor'])->middleware(['auth', 'verified', 'role:admin']);
 
 Route::post('/api/upload-record', [UploadController::class, 'record']);
+Route::post('/orders', [OrderController::class, 'store']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/yield-tracking', function () {
@@ -81,6 +83,7 @@ Route::middleware('auth')->group(function () {
     })->name('financials');
 
     Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/orders/status', [OrderController::class, 'status']);
 });
 
 require __DIR__.'/settings.php';
