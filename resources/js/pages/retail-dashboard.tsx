@@ -33,6 +33,7 @@ interface Product {
   threshold: number;
   price: number;
   description?: string;
+  image:string;
 }
 
 interface Order {
@@ -58,20 +59,20 @@ export default function RetailDashboard() {
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [inventory, setInventory] = useState<Product[]>([
     // Palm Oil Products
-    { id: 1, name: 'Premium Palm Oil (20L)', category: 'palm-oil', stock: 150, threshold: 20, price: 12.99, description: 'High quality refined palm oil for cooking' },
-    { id: 2, name: 'Organic Palm Oil (500ml)', category: 'palm-oil', stock: 80, threshold: 15, price: 8.99, description: 'Organic certified palm oil' },
-    { id: 3, name: 'Bulk Palm Oil (5L)', category: 'palm-oil', stock: 45, threshold: 5, price: 45.99, description: 'Economy size for commercial kitchens' },
-    { id: 4, name: 'Palm Oil Blend (1L)', category: 'palm-oil', stock: 120, threshold: 25, price: 10.99, description: 'Blended with other vegetable oils' },
+    { id: 1, name: 'Premium Palm Oil (20L)', category: 'palm-oil', stock: 150, threshold: 20, price: 12.99, description: 'High quality refined palm oil for cooking', image:'/images/palm oil 2.jpg' },
+    { id: 2, name: 'Organic Palm Oil (500ml)', category: 'palm-oil', stock: 80, threshold: 15, price: 8.99, description: 'Organic certified palm oil', image:'/images/palm oil 1.jpg' },
+    { id: 3, name: 'Bulk Palm Oil (5L)', category: 'palm-oil', stock: 45, threshold: 5, price: 45.99, description: 'Economy size for commercial kitchens', image:'/images/palm oil 4.jpg' },
+    { id: 4, name: 'Palm Oil Blend (1L)', category: 'palm-oil', stock: 120, threshold: 25, price: 10.99, description: 'Blended with other vegetable oils', image:'/images/palm oil 3.jpg' },
     
     // Shampoo Products
-    { id: 5, name: 'Palm Oil Shampoo (300ml)', category: 'shampoo', stock: 90, threshold: 30, price: 7.99, description: 'Moisturizing shampoo with palm oil extracts' },
-    { id: 6, name: 'Anti-Dandruff Shampoo (250ml)', category: 'shampoo', stock: 75, threshold: 25, price: 9.99, description: 'With palm-derived surfactants' },
-    { id: 7, name: 'Volume Boost Shampoo (400ml)', category: 'shampoo', stock: 60, threshold: 20, price: 11.99, description: 'Palm oil based formula for fuller hair' },
+    { id: 5, name: 'Palm Oil Shampoo (300ml)', category: 'shampoo', stock: 90, threshold: 30, price: 7.99, description: 'Moisturizing shampoo with palm oil extracts', image:'/images/shampoo 1.jpg' },
+    { id: 6, name: 'Anti-Dandruff Shampoo (250ml)', category: 'shampoo', stock: 75, threshold: 25, price: 9.99, description: 'With palm-derived surfactants', image:'/images/shampoo 2.jpg' },
+    { id: 7, name: 'Volume Boost Shampoo (400ml)', category: 'shampoo', stock: 60, threshold: 20, price: 11.99, description: 'Palm oil based formula for fuller hair', image:'/images/shampoo 3.jpg' },
     
     // Margarine Products
-    { id: 8, name: 'Palm-Based Margarine (500g)', category: 'margarine', stock: 110, threshold: 40, price: 4.99, description: 'Perfect for baking and spreading' },
-    { id: 9, name: 'Low-Fat Margarine (250g)', category: 'margarine', stock: 85, threshold: 30, price: 3.99, description: 'Reduced fat palm oil margarine' },
-    { id: 10, name: 'Premium Baking Margarine (1kg)', category: 'margarine', stock: 50, threshold: 15, price: 8.99, description: 'Professional grade for pastry chefs' },
+    { id: 8, name: 'Palm-Based Margarine (500g)', category: 'margarine', stock: 110, threshold: 40, price: 4.99, description: 'Perfect for baking and spreading', image: '/images/margarine 1.jpg' },
+    { id: 9, name: 'Low-Fat Margarine (250g)', category: 'margarine', stock: 85, threshold: 30, price: 3.99, description: 'Reduced fat palm oil margarine', image: '/images/magarine 2.jpg' },
+    { id: 10, name: 'Premium Baking Margarine (1kg)', category: 'margarine', stock: 50, threshold: 15, price: 8.99, description: 'Professional grade for pastry chefs', image: '/images/margarine 3.jpg' },
   ]);
   
   const [orders, setOrders] = useState<Order[]>([
@@ -490,7 +491,19 @@ export default function RetailDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="border rounded-lg overflow-hidden shadow-sm">
-                      <div className={`h-48 flex items-center justify-center ${
+                      {/* Image Container - SIMPLEST WORKING VERSION */}
+                      <div className="h-48 bg-gray-100 overflow-hidden">
+                        <img
+                           src={`/images/${product.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.jpg`}
+                           alt={product.name}
+                           className="w-full h-full object-cover"
+                           onError={(e) => {
+                          // Show nothing if image fails (or add a default image)
+                          e.currentTarget.style.display = 'none';
+                       }}
+                      />
+                     </div>
+                   <div className={`h-48 flex items-center justify-center ${
                         product.category === 'palm-oil' ? 'bg-orange-50' :
                         product.category === 'shampoo' ? 'bg-blue-50' :
                         'bg-yellow-50'
