@@ -206,39 +206,14 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
             )}
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <Card className="mb-10 w-full bg-white shadow-lg border-t-4 border-pink-500">
                         <div className="text-center py-7">
-                            <h1 className="text-5xl font-extrabold text-pink-600 tracking-tight">Admin Dashboard</h1>
-                            <p className="mt-2 text-lg text-gray-600">approve vendors and track the system operations</p>
+                        <h1 className="text-5xl font-extrabold text-blue-900 tracking-tight">Admin Dashboard</h1>
+                        <p className="mt-2 text-lg text-gray-800">approve vendors and track the system operations</p>
                         </div>
-                    </Card>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Home Card - Modern Look with Drop Cap Icon */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white transition-transform transform hover:scale-105">
-                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
-                                <div className="flex items-center gap-3 w-full justify-center">
-                                    <HomeIcon className="w-12 h-12 text-white drop-shadow-lg shrink-0" />
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Welcome</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex flex-col items-center pb-8">
-                                <div className="flex items-center gap-3 mb-6 text-lg text-white/90 text-center justify-center">
-                                    <span>Go to the Welcome page and explore the system overview.</span>
-                                </div>
-                                <button
-                                    className="px-6 py-2 rounded-lg bg-white text-blue-700 font-semibold shadow hover:bg-blue-100 transition-colors"
-                                    onClick={() => router.visit('/')}
-                                >
-                                    Go to Welcome Page
-                                </button>
-                            </CardContent>
-                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <HomeIcon className="w-32 h-32 text-white" />
-                            </div>
-                        </Card>
                         {/* Vendor Applications Card */}
                         <Card
-                            className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 text-white transition-transform transform hover:scale-105 cursor-pointer"
+                            className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105 cursor-pointer"
                         >
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
@@ -260,161 +235,14 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 <FileText className="w-32 h-32 text-white" />
                             </div>
                         </Card>
-                        {/* Show Vendor Application PDFs table between first and second row */}
-                    {showApplications && (
-                            <div className="col-span-1 md:col-span-2 mt-0">
-                                <div className="bg-orange-100/60 backdrop-blur-md rounded-xl shadow-lg border border-orange-200 p-6 mb-8">
-                                    <h2 className="text-2xl font-bold text-blue-700 mb-4">Vendor Application PDFs</h2>
-                            {pdfFiles.length === 0 ? (
-                                <div className="text-gray-500">No applications available.</div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                            <table className="min-w-full text-left text-sm rounded-lg overflow-hidden">
-                                        <thead>
-                                                    <tr className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white">
-                                                        <th className="py-3 px-4 font-semibold">Username</th>
-                                                        <th className="py-3 px-4 font-semibold">Feedback</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                                    {pdfFiles.map((file, idx) => {
-                                                        const username = file.name.replace(/\.pdf$/i, '');
-                                                        const isViewed = acceptedVendors.includes(username) || rejectedVendors.includes(username);
-                                                        return (
-                                                            <tr key={file.name} className={
-                                                                `border-b border-gray-100 ${idx % 2 === 0 ? 'bg-gray-200' : 'bg-white'} hover:bg-blue-50 transition-colors`
-                                                            }>
-                                                                <td className="py-3 px-4">{username}</td>
-                                                                <td className="py-3 px-4">
-                                                                    {isViewed ? (
-                                                                        <button
-                                                                            className="px-3 py-1 rounded bg-green-600 text-white font-semibold flex items-center gap-1"
-                                                                            onClick={() => handleViewClick(file)}
-                                                                        >
-                                                                            <Check className="w-4 h-4" /> Viewed
-                                                                        </button>
-                                                                    ) : (
-                                                                        <button
-                                                                            className="px-3 py-1 rounded bg-red-500 text-white font-semibold hover:bg-red-700 transition-colors"
-                                                                            onClick={() => handleViewClick(file)}
-                                                                        >
-                                                                            View
-                                                                        </button>
-                                                                    )}
-                                                                </td>
-                                                </tr>
-                                                        );
-                                                    })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                                </div>
-                            </div>
-                        )}
-                        {/* Tyui Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-orange-700 via-orange-800 to-orange-900 text-white transition-transform transform hover:scale-105">
-                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
-                                <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <ThumbsUp className="w-8 h-8 text-white" />
-                                    </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Accepted Vendors</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">You are required to visit company on the allocated date</div>
-                                {acceptedVendors.length > 0 && (
-                                    <div className="w-full">
-                                        <div className="font-semibold text-white mb-2">Vendors' Usernames and Visit Dates:</div>
-                                        <ul className="list-disc list-inside text-white">
-                                            {acceptedVendors.map((name) => (
-                                                <li key={name}>
-                                                    {name}
-                                                    {acceptedVendorDates[name] && (
-                                                        <span className="ml-2 text-orange-200 text-sm">(Visit Date: {acceptedVendorDates[name]} 10:10am)</span>
-                                                    )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </CardContent>
-                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-orange-800 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <ThumbsUp className="w-24 h-24 text-white opacity-40" />
-                                </span>
-                            </div>
-                        </Card>
-                        {/* Fght Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 text-white transition-transform transform hover:scale-105">
-                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
-                                <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <ThumbsDown className="w-8 h-8 text-white" />
-                                    </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Rejected Applications</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">This may be as a result of incomplete information. Thank you for showing interest</div>
-                                {rejectedVendors.length > 0 && (
-                                    <div className="w-full">
-                                        <div className="font-semibold text-white mb-2">Unqualified Vendors:</div>
-                                        <ul className="list-disc list-inside text-white">
-                                            {rejectedVendors.map((name) => (
-                                                <li key={name}>{name}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </CardContent>
-                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-purple-500 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <ThumbsDown className="w-24 h-24 text-white opacity-40" />
-                                </span>
-                            </div>
-                        </Card>
-                        {/* Clear Lists Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white transition-transform transform hover:scale-105">
-                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
-                                <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <Check className="w-8 h-8 text-white" />
-                                    </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Clear Accepted & Rejected Lists</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">Remove all accepted and rejected vendors from the lists.</div>
-                                <button
-                                    className="px-6 py-2 rounded-lg bg-white text-gray-700 font-semibold shadow hover:bg-gray-200 transition-colors"
-                                    onClick={() => {
-                                        setAcceptedVendors([]);
-                                        setRejectedVendors([]);
-                                        setAcceptedVendorDates({});
-                                        localStorage.removeItem('acceptedVendors');
-                                        localStorage.removeItem('rejectedVendors');
-                                        localStorage.removeItem('acceptedVendorDates');
-                                    }}
-                                >
-                                    Clear Lists
-                                </button>
-                            </CardContent>
-                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <Check className="w-24 h-24 text-white opacity-40" />
-                                </span>
-                            </div>
-                        </Card>
-                        {/* Work Force Distribution Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-gradient-to-br from-cyan-500 via-blue-400 to-blue-700 text-white transition-transform transform hover:scale-105">
+                        {/* Workforce Card - move this up to be second */}
+                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
                                     <span className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <Users className="w-8 h-8 text-white" />
+                                        <Users className="w-8 h-8 text-white opacity-40" />
                                     </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Work Force Distribution</CardTitle>
+                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Workforce Task Assignments</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
@@ -455,7 +283,7 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                             </div>
                         </Card>
                         {/* Assign Task Table - shown below the card */}
-                        {showAssignTaskTable && (
+                        {showAssignTaskTable && !showApplications && (
                             <div className="col-span-1 md:col-span-2 mt-0">
                                 <div className="bg-white rounded-xl shadow-lg border border-blue-200 p-6 mb-8">
                                     <h2 className="text-2xl font-bold text-blue-700 mb-4">Assign Task to Personnel</h2>
@@ -520,6 +348,58 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 </div>
                             </div>
                         )}
+                        {showApplications && (
+                            <div className="col-span-1 md:col-span-2 mt-0">
+                                {/* Vendor Applications Table content here, full width */}
+                                <div className="bg-orange-100/60 backdrop-blur-md rounded-xl shadow-lg border border-orange-200 p-6 mb-8">
+                                    <h2 className="text-2xl font-bold text-blue-700 mb-4">Vendor Application PDFs</h2>
+                                    {pdfFiles.length === 0 ? (
+                                        <div className="text-gray-500">No applications available.</div>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full text-left text-sm rounded-lg overflow-hidden">
+                                                <thead>
+                                                    <tr className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white">
+                                                        <th className="py-3 px-4 font-semibold">Username</th>
+                                                        <th className="py-3 px-4 font-semibold">Feedback</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {pdfFiles.map((file, idx) => {
+                                                        const username = file.name.replace(/\.pdf$/i, '');
+                                                        const isViewed = acceptedVendors.includes(username) || rejectedVendors.includes(username);
+                                                        return (
+                                                            <tr key={file.name} className={
+                                                                `border-b border-gray-100 ${idx % 2 === 0 ? 'bg-gray-200' : 'bg-white'} hover:bg-blue-50 transition-colors`
+                                                            }>
+                                                                <td className="py-3 px-4">{username}</td>
+                                                                <td className="py-3 px-4">
+                                                                    {isViewed ? (
+                                                                        <button
+                                                                            className="px-3 py-1 rounded bg-green-600 text-white font-semibold flex items-center gap-1"
+                                                                            onClick={() => handleViewClick(file)}
+                                                                        >
+                                                                            <Check className="w-4 h-4" /> Viewed
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            className="px-3 py-1 rounded bg-red-500 text-white font-semibold hover:bg-red-700 transition-colors"
+                                                                            onClick={() => handleViewClick(file)}
+                                                                        >
+                                                                            View
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                         {showViewTasksTable && (
                             <div className="col-span-1 md:col-span-2 mt-0">
                                 <div className="bg-white rounded-xl shadow-lg border border-blue-200 p-6 mb-8">
@@ -553,6 +433,103 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 </div>
                             </div>
                         )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                        {/* Accepted Vendors Card */}
+                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
+                                <div className="flex items-center gap-3 w-full justify-center">
+                                    <span className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
+                                        <ThumbsUp className="w-8 h-8 text-white" />
+                                    </span>
+                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Accepted Vendors</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center pb-8">
+                                <div className="mb-6 text-lg text-white/90 text-center">You are required to visit company on the allocated date</div>
+                                {acceptedVendors.length > 0 && (
+                                    <div className="w-full">
+                                        <div className="font-semibold text-white mb-2">Vendors' Usernames and Visit Dates:</div>
+                                        <ul className="list-disc list-inside text-white">
+                                            {acceptedVendors.map((name) => (
+                                                <li key={name}>
+                                                    {name}
+                                                    {acceptedVendorDates[name] && (
+                                                        <span className="ml-2 text-orange-200 text-sm">(Visit Date: {acceptedVendorDates[name]} 10:10am)</span>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </CardContent>
+                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
+                                <span className="w-32 h-32 bg-orange-800 rounded-full flex items-center justify-center text-6xl font-bold text-white">
+                                    <ThumbsUp className="w-24 h-24 text-white opacity-40" />
+                                </span>
+                            </div>
+                        </Card>
+                        {/* Rejected Applications Card */}
+                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
+                                <div className="flex items-center gap-3 w-full justify-center">
+                                    <span className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
+                                        <ThumbsDown className="w-8 h-8 text-white" />
+                                    </span>
+                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Rejected Applications</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center pb-8">
+                                <div className="mb-6 text-lg text-white/90 text-center">This may be as a result of incomplete information. Thank you for showing interest</div>
+                                {rejectedVendors.length > 0 && (
+                                    <div className="w-full">
+                                        <div className="font-semibold text-white mb-2">Unqualified Vendors:</div>
+                                        <ul className="list-disc list-inside text-white">
+                                            {rejectedVendors.map((name) => (
+                                                <li key={name}>{name}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </CardContent>
+                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
+                                <span className="w-32 h-32 bg-purple-500 rounded-full flex items-center justify-center text-6xl font-bold text-white">
+                                    <ThumbsDown className="w-24 h-24 text-white opacity-40" />
+                                </span>
+                            </div>
+                        </Card>
+                        {/* Clear Lists Card */}
+                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                            <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
+                                <div className="flex items-center gap-3 w-full justify-center">
+                                    <span className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
+                                        <Check className="w-8 h-8 text-white" />
+                                    </span>
+                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Clear Accepted & Rejected Lists</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center pb-8">
+                                <div className="mb-6 text-lg text-white/90 text-center">Remove all accepted and rejected vendors from the lists.</div>
+                                <button
+                                    className="px-6 py-2 rounded-lg bg-white text-gray-700 font-semibold shadow hover:bg-gray-200 transition-colors"
+                                    onClick={() => {
+                                        setAcceptedVendors([]);
+                                        setRejectedVendors([]);
+                                        setAcceptedVendorDates({});
+                                        localStorage.removeItem('acceptedVendors');
+                                        localStorage.removeItem('rejectedVendors');
+                                        localStorage.removeItem('acceptedVendorDates');
+                                    }}
+                                >
+                                    Clear Lists
+                                </button>
+                            </CardContent>
+                            <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
+                                <span className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center text-6xl font-bold text-white">
+                                    <Check className="w-24 h-24 text-white opacity-40" />
+                                </span>
+                            </div>
+                        </Card>
                     </div>
                 </div>
             </div>

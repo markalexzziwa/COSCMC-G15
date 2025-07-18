@@ -147,25 +147,25 @@ function getDashboardAnalytics(dashboard: string) {
                     {/* Production Analytics Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <div className="bg-white rounded shadow p-4">
-                            <h3 className="text-xl font-semibold mb-2">Production Analytics</h3>
-                            <p className="mb-4 text-gray-600">Total production distribution.</p>
-                            <div className="h-[400px] w-full">
-                                <ResponsiveContainer>
-                                    <PieChart>
-                                        <Pie data={analyticsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
-                                            {analyticsData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                <h3 className="text-xl font-semibold mb-2">Production Analytics</h3>
+                                <p className="mb-4 text-gray-600">Total production distribution.</p>
+                                <div className="h-[400px] w-full">
+                                    <ResponsiveContainer>
+                                        <PieChart>
+                                            <Pie data={analyticsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
+                                                {analyticsData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
-                        <div className="bg-white rounded shadow p-4">
-                            <h3 className="text-xl font-semibold mb-2">Average Production</h3>
-                            <p className="mb-4 text-gray-600">Average production per product.</p>
+                            <div className="bg-white rounded shadow p-4">
+                                <h3 className="text-xl font-semibold mb-2">Average Production</h3>
+                                <p className="mb-4 text-gray-600">Average production per product.</p>
                             <div className="h-[400px] w-full flex items-center justify-center">
                                 <ul className="space-y-4 text-lg">
                                     {Object.entries(averageProduction).map(([name, avg]) => (
@@ -183,42 +183,42 @@ function getDashboardAnalytics(dashboard: string) {
                     {/* Production Charts Section */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                         <div className="md:col-span-2 grid grid-cols-1 gap-6">
-                            <div className="bg-white rounded shadow p-4">
-                                <h3 className="text-xl font-semibold mb-2">Production Bar Chart</h3>
-                                <p className="mb-4 text-gray-600">Daily production quantities of different products.</p>
-                                <div className="h-[400px] w-full">
-                                    <ResponsiveContainer>
-                                        <BarChart data={productionData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="date" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="Cooking Oil" fill="#3b82f6" />
-                                            <Bar dataKey="Shampoo" fill="#10b981" />
-                                            <Bar dataKey="Margarine" fill="#f59e0b" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
+                        <div className="bg-white rounded shadow p-4">
+                            <h3 className="text-xl font-semibold mb-2">Production Bar Chart</h3>
+                            <p className="mb-4 text-gray-600">Daily production quantities of different products.</p>
+                            <div className="h-[400px] w-full">
+                                <ResponsiveContainer>
+                                    <BarChart data={productionData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="date" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="Cooking Oil" fill="#3b82f6" />
+                                        <Bar dataKey="Shampoo" fill="#10b981" />
+                                        <Bar dataKey="Margarine" fill="#f59e0b" />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
-                            <div className="bg-white rounded shadow p-4">
-                                <h3 className="text-xl font-semibold mb-2">Production Line Chart</h3>
-                                <p className="mb-4 text-gray-600">Daily production trends of different products.</p>
-                                <div className="h-[400px] w-full">
-                                    <ResponsiveContainer>
-                                        <LineChart data={productionData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="date" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="Cooking Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
-                                            <Line type="monotone" dataKey="Shampoo" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
-                                            <Line type="monotone" dataKey="Margarine" stroke="#f59e0b" strokeWidth={2} activeDot={{ r: 8 }} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </div>
+                        </div>
+                        <div className="bg-white rounded shadow p-4">
+                            <h3 className="text-xl font-semibold mb-2">Production Line Chart</h3>
+                            <p className="mb-4 text-gray-600">Daily production trends of different products.</p>
+                            <div className="h-[400px] w-full">
+                                <ResponsiveContainer>
+                                    <LineChart data={productionData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="date" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="Cooking Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
+                                        <Line type="monotone" dataKey="Shampoo" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
+                                        <Line type="monotone" dataKey="Margarine" stroke="#f59e0b" strokeWidth={2} activeDot={{ r: 8 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </div>
+                        </div>
                         </div>
                         <div className="md:col-span-1 flex items-center">
                             <AddProductionDataCard onAddData={handleAddProductionData} />
@@ -264,10 +264,133 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'admin':
+            // Get data from localStorage
+            let acceptedVendors: string[] = [];
+            let rejectedVendors: string[] = [];
+            let pdfFiles: { name: string }[] = [];
+            let workforceTasks: { date?: string; department?: string }[] = [];
+            if (typeof window !== 'undefined') {
+                acceptedVendors = JSON.parse(localStorage.getItem('acceptedVendors') || '[]');
+                rejectedVendors = JSON.parse(localStorage.getItem('rejectedVendors') || '[]');
+                pdfFiles = JSON.parse(localStorage.getItem('pdfFiles') || '[]');
+                workforceTasks = JSON.parse(localStorage.getItem('workforceTasks') || '[]');
+            }
+            // Pie chart data for submitted vs processed applications
+            const processedCount = acceptedVendors.length + rejectedVendors.length;
+            const submittedCount = pdfFiles.length;
+            const unprocessedCount = submittedCount - processedCount;
+            const submissionPieData = [
+                { name: 'No Feedback', value: submittedCount },
+                { name: 'Given feedback', value: processedCount },
+            ];
+            // Pie chart data for viewed/unviewed
+            const viewedCount = pdfFiles.filter((f: { name: string }) => acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) || rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))).length;
+            const unviewedCount = pdfFiles.length - viewedCount;
+            const viewedPieData = [
+                { name: 'Viewed', value: viewedCount },
+                { name: 'Unviewed', value: unviewedCount },
+            ];
+            // Pie chart data for accepted/rejected
+            const acceptedPieData = [
+                { name: 'Accepted', value: acceptedVendors.length },
+                { name: 'Rejected', value: rejectedVendors.length },
+            ];
+            // Line graph data for workforce tasks over time
+            type WorkforceLine = { date: string; count: number };
+            const workforceLineData: WorkforceLine[] = [];
+            const dateCountMap: Record<string, number> = {};
+            workforceTasks.forEach((task: { date?: string }) => {
+                const date = task.date || 'Unknown';
+                dateCountMap[date] = (dateCountMap[date] || 0) + 1;
+            });
+            Object.entries(dateCountMap).forEach(([date, count]) => {
+                workforceLineData.push({ date, count });
+            });
+            workforceLineData.sort((a, b) => {
+                if (a.date === 'Unknown') return 1;
+                if (b.date === 'Unknown') return -1;
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
+            });
+            // Bar graph data for department vs number of workforce
+            type DepartmentBar = { department: string; count: number };
+            const departmentCountMap: Record<string, number> = {};
+            workforceTasks.forEach((task: { department?: string }) => {
+                const dept = task.department || 'Unknown';
+                departmentCountMap[dept] = (departmentCountMap[dept] || 0) + 1;
+            });
+            const departmentBarData: DepartmentBar[] = Object.entries(departmentCountMap).map(([department, count]) => ({ department, count }));
+            // Pie chart data for feedback provided/unprovided
+            // Assume feedback is provided if the application is in accepted or rejected
+            const feedbackCount = pdfFiles.filter((f: { name: string }) =>
+                acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) ||
+                rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))
+            ).length;
+            const noFeedbackCount = pdfFiles.length - feedbackCount;
+            const feedbackPieData = [
+                { name: 'Provided Feedback', value: feedbackCount },
+                { name: 'No Feedback', value: noFeedbackCount },
+            ];
+            // Approval rate percentage
+            const approvalRate = processedCount > 0 ? (acceptedVendors.length / processedCount) * 100 : 0;
+            // Percentages for accepted and rejected
+            const totalProcessed = acceptedVendors.length + rejectedVendors.length;
+            const acceptedPercent = totalProcessed > 0 ? (acceptedVendors.length / totalProcessed) * 100 : 0;
+            const rejectedPercent = totalProcessed > 0 ? (rejectedVendors.length / totalProcessed) * 100 : 0;
+            // Approval rate percentage (portion of 'Given feedback' in the pie chart)
+            const approvalRatePieTotal = processedCount + noFeedbackCount;
+            const approvalRatePiePercent = approvalRatePieTotal > 0 ? (processedCount / approvalRatePieTotal) * 100 : 0;
             return (
-                <div className="bg-pink-50 p-6 rounded shadow">
+                <div className="bg-blue-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Admin Analytics</h2>
-                    <p>System operations, vendor approvals, and user management analytics go here.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        {/* Pie chart for approval rate */}
+                        <div className="bg-white rounded shadow p-4">
+                            <h3 className="text-xl font-semibold mb-2">Approval rate</h3>
+                            <div className="text-3xl font-bold mb-2" style={{ color: '#10b981' }}>{approvalRatePieTotal > 0 ? `${approvalRatePiePercent.toFixed(1)}%` : 'N/A'}</div>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie data={submissionPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                        <Cell fill="#3b82f6" />
+                                        <Cell fill="#10b981" />
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        {/* Pie chart for accepted/rejected */}
+                        <div className="bg-white rounded shadow p-4">
+                            <h3 className="text-xl font-semibold mb-2">Accepted vs Rejected</h3>
+                            <div className="flex items-center justify-center gap-6 mb-2">
+                                <span className="text-2xl font-bold" style={{ color: '#3b82f6' }}>Accepted: {totalProcessed > 0 ? `${acceptedPercent.toFixed(1)}%` : 'N/A'}</span>
+                                <span className="text-2xl font-bold" style={{ color: '#ef4444' }}>Rejected: {totalProcessed > 0 ? `${rejectedPercent.toFixed(1)}%` : 'N/A'}</span>
+                            </div>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie data={acceptedPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                        <Cell fill="#3b82f6" />
+                                        <Cell fill="#ef4444" />
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        {/* Bar graph for department vs number of workforce */}
+                        <div className="bg-white rounded shadow p-4">
+                            <h3 className="text-xl font-semibold mb-2">Workforce by Department</h3>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={departmentBarData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="department" />
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="count" fill="#10b981" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
             );
         case 'customer':
@@ -325,9 +448,6 @@ export default function Analytics() {
             <div>
                 <Head title="Analytics" />
                 <div className="container mx-auto px-4 py-8">
-                    <div className="w-full bg-white py-6 px-4 shadow rounded mb-6">
-                        <h1 className="text-3xl font-bold text-purple-800 m-0">Analytics</h1>
-                    </div>
                     {getDashboardAnalytics(dashboard)}
                 </div>
             </div>

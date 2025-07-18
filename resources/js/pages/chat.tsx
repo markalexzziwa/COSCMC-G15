@@ -8,6 +8,176 @@ import { Send, Inbox, FileText, AlertOctagon, Trash2 } from 'lucide-react';
 import useChatStore, { MessageCategory } from '@/store/useChatStore';
 import useInventoryChatStore from '@/store/useInventoryChatStore';
 
+const userTypes = [
+    'Manufacturer',
+    'Factory Store',
+    'Inventory Manager',
+    'Retail',
+    'Distributor',
+    'Admin',
+    'Customer',
+    'Farmer',
+    'Unofficial Vendor',
+];
+
+// Simple in-memory store for admin chat (for demo; in real app, use global state or backend)
+const adminCategories = [
+    { key: 'inbox', label: 'inbox', icon: <Inbox size={16} /> },
+    { key: 'sent', label: 'sent', icon: <Send size={16} /> },
+    { key: 'draft', label: 'draft', icon: <FileText size={16} /> },
+    { key: 'spam', label: 'spam', icon: <AlertOctagon size={16} /> },
+    { key: 'trash', label: 'trash', icon: <Trash2 size={16} /> },
+] as const;
+type AdminCategory = typeof adminCategories[number]['key'];
+
+type AdminMessage = {
+    id: string;
+    sender: string;
+    recipient: string;
+    text: string;
+    timestamp: string;
+    category: AdminCategory;
+};
+
+const useAdminChatStore = () => {
+    const [messages, setMessages] = React.useState<AdminMessage[]>([]);
+    const addMessage = (msg: { sender: string, recipient: string, text: string }) => {
+        setMessages(prev => [
+            ...prev,
+            {
+                id: Math.random().toString(36).slice(2),
+                sender: msg.sender,
+                recipient: msg.recipient,
+                text: msg.text,
+                timestamp: new Date().toISOString(),
+                category: msg.sender === 'Admin' ? 'sent' : 'inbox',
+            },
+        ]);
+    };
+    const moveMessage = (id: string, category: AdminCategory) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, category } : m));
+    };
+    return { messages, addMessage, moveMessage };
+};
+
+const AdminChat = () => {
+    const { messages, addMessage, moveMessage } = useAdminChatStore();
+    const [newMessage, setNewMessage] = React.useState('');
+    const [recipient, setRecipient] = React.useState(userTypes[0]);
+    const [activeCategory, setActiveCategory] = React.useState<AdminCategory>('inbox');
+
+    const handleSendMessage = () => {
+        if (!newMessage.trim()) return;
+        addMessage({ sender: 'Admin', recipient, text: newMessage });
+        setNewMessage('');
+    };
+
+    // Filter messages by category
+    const filteredMessages = messages.filter((message) => message.category === activeCategory);
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">AD</span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">Admin Chat</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>greetings, chat now</p>
+                    </div>
+                </div>
+            </div>
+            <div className="flex">
+                {/* Vertical Category Navigation */}
+                <div className="w-48 bg-gray-50 border-r">
+                    <nav className="p-4 space-y-2">
+                        {adminCategories.map((cat) => (
+                            <Button
+                                key={cat.key}
+                                variant={activeCategory === cat.key ? 'default' : 'ghost'}
+                                size="sm"
+                                className={`w-full justify-start text-sm capitalize ${activeCategory === cat.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-200'}`}
+                                onClick={() => setActiveCategory(cat.key as AdminCategory)}
+                            >
+                                {cat.icon}
+                                <span className="ml-2 capitalize">{cat.label}</span>
+                            </Button>
+                        ))}
+                    </nav>
+                </div>
+                {/* Chat Content */}
+                <div className="flex-1 flex flex-col">
+                    <div className="h-96 bg-gray-100 p-4 overflow-y-auto">
+                        {filteredMessages.length > 0 ? (
+                            <div className="space-y-3">
+                                {filteredMessages.map((message) => (
+                                    <div key={message.id} className="group">
+                                        <div className={`flex ${message.sender === 'Admin' ? 'justify-end' : 'justify-start'}`}>
+                                            <div
+                                                className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
+                                                    message.sender === 'Admin'
+                                                        ? 'text-white rounded-br-none'
+                                                        : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                                                }`}
+                                                style={message.sender === 'Admin' ? { background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' } : {}}
+                                            >
+                                                <p className="text-xs font-semibold mb-1">{message.sender} ➔ {message.recipient}</p>
+                                                <p className="text-sm">{message.text}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'Admin' ? 'text-white/80' : 'text-gray-500'}`}>{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden group-hover:flex justify-end space-x-1 mt-1">
+                                            {activeCategory !== 'trash' && <Button variant="outline" size="sm" onClick={() => moveMessage(message.id, 'trash')}>Trash</Button>}
+                                            {activeCategory !== 'spam' && <Button variant="outline" size="sm" onClick={() => moveMessage(message.id, 'spam')}>Spam</Button>}
+                                            {activeCategory !== 'draft' && <Button variant="outline" size="sm" onClick={() => moveMessage(message.id, 'draft')}>Draft</Button>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-gray-500">
+                                    <p>No messages yet.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="bg-white p-4 border-t">
+                        <div className="flex space-x-2 items-center">
+                            <select
+                                value={recipient}
+                                onChange={e => setRecipient(e.target.value)}
+                                className="rounded-lg border-gray-300 h-12 px-3 text-base"
+                            >
+                                {userTypes.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                            <Input
+                                value={newMessage}
+                                onChange={e => setNewMessage(e.target.value)}
+                                placeholder="Type a message..."
+                                className="flex-1 rounded-full border-gray-300 h-12"
+                                onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                            />
+                            <Button
+                                onClick={handleSendMessage}
+                                className="rounded-full p-2 h-12"
+                                style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                                disabled={!newMessage.trim()}
+                            >
+                                <Send className="h-5 w-5 text-white" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function getDashboardChat(dashboard: string) {
     switch (dashboard) {
         case 'manufacturer':
@@ -27,12 +197,7 @@ function getDashboardChat(dashboard: string) {
                 </div>
             );
         case 'admin':
-            return (
-                <div className="bg-pink-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Admin Chat</h2>
-                    <p>Chat with all users, manage support, and oversee communications here.</p>
-                </div>
-            );
+            return <AdminChat />;
         case 'customer':
             return (
                 <div className="bg-blue-100 p-6 rounded shadow">
@@ -128,16 +293,16 @@ const ManufacturerChat = () => {
     return (
         <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* WhatsApp-style Header */}
-            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+            <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-sm">
                             {activeChat === 'factoryStore' ? 'FS' : 'IM'}
                         </span>
                     </div>
                     <div>
                         <h3 className="font-semibold">{chatTitle}</h3>
-                        <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Online</p>
+                        <p className="text-xs text-blue-100">greetings, chat now</p>
                     </div>
                 </div>
                 <div className="flex space-x-2">
