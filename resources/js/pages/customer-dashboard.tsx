@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { products } from '@/lib/products'
 import { Link } from '@inertiajs/react';
+import useChatStore from '@/store/useChatStore';
+import { Send } from 'lucide-react';
 
 export default function CustomerDashboard() {
     const [notification, setNotification] = useState<string | null>(null)
@@ -42,9 +44,7 @@ export default function CustomerDashboard() {
                         <div className="mt-6">
                             <OrderProductsCard />
                         </div>
-                        <div className="mt-6">
-                            <OrderStatusCard />
-                        </div>
+                        {/* CustomerChatCard removed */}
                     </div>
                 </div>
             </AppLayout>

@@ -64,87 +64,119 @@ export default function FactoryStoreDashboard() {
                     <UpdateByPackageCard currentStock={stock} onAddStock={handleStockAdd} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div className="md:col-span-1">
-                        <StockByBoxGraphCard data={graphData} />
-                    </div>
-                    <div className="md:col-span-1">
-                        <ChatCard />
-                    </div>
+                    {/* Chat card removed; chat is now only available via the chat page */}
                 </div>
             </div>
         </AppLayout>
     )
 }
 
-const ChatCard = () => {
-    const { messages, addMessage } = useChatStore();
+function CombinedFactoryStoreChatCard() {
+    const [activeChat, setActiveChat] = useState<'manufacturer' | 'distributor'>('manufacturer');
+    const [manufacturerMessages, setManufacturerMessages] = useState([
+        { sender: 'Manufacturer', text: 'Welcome to the chat! How can I help you?', timestamp: new Date().toISOString() }
+    ]);
+    const [distributorMessages, setDistributorMessages] = useState([
+        { sender: 'Distributor', text: 'Hello Factory Store! Ready for the next shipment?', timestamp: new Date().toISOString() }
+    ]);
     const [newMessage, setNewMessage] = useState('');
+    const [isReplying, setIsReplying] = useState(false);
 
     const handleSendMessage = () => {
         if (newMessage.trim() === '') return;
-
-        addMessage({
+        const msg = {
             sender: 'Factory Store',
             text: newMessage,
             timestamp: new Date().toISOString(),
-        });
-
+        };
+        if (activeChat === 'manufacturer') {
+            setManufacturerMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setManufacturerMessages(prev => [...prev, {
+                    sender: 'Manufacturer',
+                    text: 'Thank you for your message! We will assist you shortly.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setDistributorMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setDistributorMessages(prev => [...prev, {
+                    sender: 'Distributor',
+                    text: 'Thank you for your message! We will coordinate with you soon.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        }
         setNewMessage('');
     };
+
+    const messages = activeChat === 'manufacturer' ? manufacturerMessages : distributorMessages;
+    const chatTitle = activeChat === 'manufacturer' ? 'Manufacturer' : 'Distributor';
+    const chatDescription = activeChat === 'manufacturer'
+        ? 'Chat directly with the manufacturer for supply and support.'
+        : 'Chat directly with the distributor for logistics and coordination.';
 
     return (
         <Card className="bg-pink-50">
             <CardHeader>
-                <CardTitle>Manufacturer Chat</CardTitle>
-                <CardDescription>View and send messages to the manufacturer.</CardDescription>
+                <CardTitle>Contact {chatTitle}</CardTitle>
+                <CardDescription>{chatDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md">
-                    {messages.map((message, index) => (
-                        <div key={index} className={`flex ${message.sender === 'Factory Store' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-3 rounded-lg ${message.sender === 'Factory Store' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                <div className="flex mb-4 space-x-2">
+                    <Button
+                        onClick={() => setActiveChat('manufacturer')}
+                        className={activeChat === 'manufacturer' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}
+                    >
+                        Manufacturer
+                    </Button>
+                    <Button
+                        onClick={() => setActiveChat('distributor')}
+                        className={activeChat === 'distributor' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}
+                    >
+                        Distributor
+                    </Button>
+                </div>
+                <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md bg-white">
+                    {messages.map((message, idx) => (
+                        <div key={idx} className={`flex ${message.sender === 'Factory Store' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`p-3 rounded-lg max-w-xs md:max-w-md ${message.sender === 'Factory Store' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
                                 <p className="font-semibold">{message.sender}</p>
                                 <p>{message.text}</p>
-                                <p className="text-xs mt-1">{new Date(message.timestamp).toLocaleTimeString()}</p>
+                                <p className="text-xs mt-1 opacity-70">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                         </div>
                     ))}
+                    {isReplying && (
+                        <div className="flex justify-start mb-2">
+                            <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                                <p className="font-medium">{chatTitle}</p>
+                                <p className="mt-1 italic">Typing...</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex space-x-2">
                     <Input
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type a message..."
+                        onChange={e => setNewMessage(e.target.value)}
+                        placeholder={`Type your message to the ${chatTitle.toLowerCase()}...`}
+                        onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                        disabled={isReplying}
                     />
-                    <Button onClick={handleSendMessage} variant="info" size="icon">
+                    <Button onClick={handleSendMessage} variant="info" size="icon" disabled={!newMessage.trim() || isReplying}>
                         <Send className="h-4 w-4" />
                     </Button>
                 </div>
             </CardContent>
         </Card>
     );
-};
-
-const StockByBoxGraphCard = ({ data }: { data: { name: string, boxes: number }[] }) => (
-    <Card className="bg-pink-50">
-        <CardHeader>
-            <CardTitle>Stock by Box (Graph)</CardTitle>
-            <CardDescription>A visual representation of the number of boxes for each product.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="boxes" fill="#8884d8" />
-                </BarChart>
-            </ResponsiveContainer>
-        </CardContent>
-    </Card>
-);
+}
 
 const StockByBoxCard = ({ stock }: { stock: { name: string; quantity: number, image: string, unit: string, packageSize: number, packageUnit: string, boxSize: number }[] }) => (
     <Card className="bg-pink-50">

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useStockStore from '@/store/useStockStore';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
@@ -401,10 +402,20 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'factory-store':
+            // Example data for the graph
+            const stockByBoxData = [
+                { name: 'Cooking Oil', boxes: 120 },
+                { name: 'Shampoo', boxes: 80 },
+                { name: 'Margarine', boxes: 60 },
+            ];
             return (
                 <div className="bg-purple-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Factory Store Analytics</h2>
-                    <p>Stock, packaging, and supply analytics go here.</p>
+                    <p>Analytics for stock, sales, and performance in the factory store.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                        <StockByBoxGraphCard data={stockByBoxData} />
+                        <AvailableStockBarGraph />
+                    </div>
                 </div>
             );
         case 'farmer':
@@ -436,6 +447,50 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
     }
+}
+
+function StockByBoxGraphCard({ data }: { data: { name: string, boxes: number }[] }) {
+    return (
+        <div className="bg-white rounded shadow p-4 mt-6">
+            <h3 className="text-xl font-semibold mb-2">Stock by Box (Graph)</h3>
+            <p className="mb-4 text-gray-600">A visual representation of the number of boxes for each product.</p>
+            <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="boxes" fill="#8884d8" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
+
+function AvailableStockBarGraph() {
+    const stock = useStockStore((state) => state.stock);
+    const data = stock.map(item => ({ name: item.name, quantity: item.quantity, unit: item.unit }));
+    return (
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl mx-auto mt-8">
+            <h3 className="text-lg font-bold mb-2">Available Stock in Units</h3>
+            <p className="mb-4 text-gray-600">Current available stock for each product.</p>
+            <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value, name, props) => [`${value} ${props.payload.unit}`, 'Quantity']} />
+                        <Legend />
+                        <Bar dataKey="quantity" fill="#6366f1" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
 }
 
 export default function Analytics() {

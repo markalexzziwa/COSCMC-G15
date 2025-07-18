@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Send, Inbox, FileText, AlertOctagon, Trash2 } from 'lucide-react';
 import useChatStore, { MessageCategory } from '@/store/useChatStore';
 import useInventoryChatStore from '@/store/useInventoryChatStore';
+import useStockStore from '@/store/useStockStore';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
 
 const userTypes = [
     'Manufacturer',
@@ -178,6 +180,141 @@ const AdminChat = () => {
     );
 };
 
+function CombinedFactoryStoreChatCard() {
+    const [activeChat, setActiveChat] = useState<'manufacturer' | 'distributor'>('manufacturer');
+    const [manufacturerMessages, setManufacturerMessages] = useState([
+        { sender: 'Manufacturer', text: 'Welcome to the chat! How can I help you?', timestamp: new Date().toISOString() }
+    ]);
+    const [distributorMessages, setDistributorMessages] = useState([
+        { sender: 'Distributor', text: 'Hello Factory Store! Ready for the next shipment?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = useState('');
+    const [isReplying, setIsReplying] = useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Factory Store',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        if (activeChat === 'manufacturer') {
+            setManufacturerMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setManufacturerMessages(prev => [...prev, {
+                    sender: 'Manufacturer',
+                    text: 'Thank you for your message! We will assist you shortly.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setDistributorMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setDistributorMessages(prev => [...prev, {
+                    sender: 'Distributor',
+                    text: 'Thank you for your message! We will coordinate with you soon.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeChat === 'manufacturer' ? manufacturerMessages : distributorMessages;
+    const chatTitle = activeChat === 'manufacturer' ? 'Manufacturer' : 'Distributor';
+    const chatDescription = activeChat === 'manufacturer'
+        ? 'Chat directly with the manufacturer for supply and support.'
+        : 'Chat directly with the distributor for logistics and coordination.';
+
+    return (
+        <div className="w-full bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-[500px]">
+            {/* Header */}
+            <div className="text-white px-6 py-4 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">FS</span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">Factory Store Chat</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDescription}</p>
+                    </div>
+                </div>
+                {/* Chat selection toggle */}
+                <div className="flex gap-2">
+                    <Button
+                        onClick={() => setActiveChat('manufacturer')}
+                        variant={activeChat === 'manufacturer' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'manufacturer' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}
+                    >
+                        Manufacturer
+                    </Button>
+                    <Button
+                        onClick={() => setActiveChat('distributor')}
+                        variant={activeChat === 'distributor' ? 'default' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'distributor' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-700 border'}
+                    >
+                        Distributor
+                    </Button>
+                </div>
+            </div>
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col bg-gray-50">
+                <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                    {messages.map((message, idx) => (
+                        <div key={idx} className={`flex ${message.sender === 'Factory Store' ? 'justify-end' : 'justify-start'}`}>
+                            <div
+                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg text-sm shadow-sm ${
+                                    message.sender === 'Factory Store'
+                                        ? 'bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-br-none'
+                                        : 'bg-white text-gray-800 rounded-bl-none border'
+                                }`}
+                                style={message.sender === 'Factory Store' ? { background: 'linear-gradient(90deg, #ec4899 0%, #f472b6 100%)' } : {}}
+                            >
+                                <div className="font-semibold mb-1">{message.sender}</div>
+                                <div>{message.text}</div>
+                                <div className="text-xs mt-1 text-right text-gray-300">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        </div>
+                    ))}
+                    {isReplying && (
+                        <div className="flex justify-start">
+                            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-200 text-black opacity-70">
+                                <div className="font-semibold mb-1">{chatTitle}</div>
+                                <div className="italic">Typing...</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                {/* Input Area */}
+                <div className="bg-white p-4 border-t flex items-center gap-2 sticky bottom-0 z-20">
+                    <Input
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        placeholder={`Type your message to the ${chatTitle.toLowerCase()}...`}
+                        onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                        disabled={isReplying}
+                        className="flex-1 rounded-full border-gray-300 h-12"
+                    />
+                    <Button
+                        onClick={handleSendMessage}
+                        className="rounded-full p-2 h-12"
+                        style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                        disabled={!newMessage.trim() || isReplying}
+                    >
+                        <Send className="h-5 w-5 text-white" />
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function getDashboardChat(dashboard: string) {
     switch (dashboard) {
         case 'manufacturer':
@@ -199,19 +336,9 @@ function getDashboardChat(dashboard: string) {
         case 'admin':
             return <AdminChat />;
         case 'customer':
-            return (
-                <div className="bg-blue-100 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Customer Chat</h2>
-                    <p>Chat with retail, support, and get help here.</p>
-                </div>
-            );
+            return <CustomerRetailerChat />;
         case 'factory-store':
-            return (
-                <div className="bg-purple-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Factory Store Chat</h2>
-                    <p>Chat with manufacturer, inventory, and logistics here.</p>
-                </div>
-            );
+            return <CombinedFactoryStoreChatCard />;
         case 'farmer':
             return (
                 <div className="bg-orange-50 p-6 rounded shadow">
@@ -427,6 +554,86 @@ const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: {
         <span className="ml-2 capitalize">{category}</span>
     </Button>
 );
+
+function CustomerRetailerChat() {
+    const [messages, setMessages] = useState([
+        { sender: 'Retailer', text: 'Welcome! How can I help you today?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = useState('');
+    const [isReplying, setIsReplying] = useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Customer',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, msg]);
+        setNewMessage('');
+        setIsReplying(true);
+        // Simulate retailer reply
+        setTimeout(() => {
+            setMessages(prev => [...prev, {
+                sender: 'Retailer',
+                text: 'Thank you for your message! We will assist you shortly.',
+                timestamp: new Date().toISOString(),
+            }]);
+            setIsReplying(false);
+        }, 1200);
+    };
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">CU</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">Customer & Retailer Chat</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>Chat with the retailer for support and orders.</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Customer' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Customer' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">Retailer</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
 
 export default function Chat() {
     const { dashboard: dashboardProp } = usePage().props as { dashboard?: string };
