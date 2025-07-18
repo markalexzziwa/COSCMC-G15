@@ -10,16 +10,33 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'CK-OILS',
+        title: 'Home',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Report',
+        href: '/report',
+    },
+    {
+        title: 'Analytics',
+        href: '/analytics',
+    },
+    {
+        title: 'Chat',
+        href: '/chat',
+    },
+    {
+        title: 'Guest Mode',
+        href: '/welcome',
+        onClick: () => router.post(route('logout')),
     },
 ];
 
@@ -37,7 +54,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     return (
         <>
-            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-100/60" style={{ background: 'linear-gradient(90deg, rgba(255,255,200,0.7) 0%, rgba(255,255,220,0.6) 100%)' }}>
+            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-400/20" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
@@ -80,17 +97,38 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map((item, index) => (
                                     <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                navigationMenuTriggerStyle(),
-                                                page.url === item.href && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
-                                            )}
-                                        >
-                                            {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                            {item.title}
-                                        </Link>
+                                        {item.onClick ? (
+                                            <button
+                                                type="button"
+                                                onClick={item.onClick}
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === item.href && activeItemStyles,
+                                                    'h-13 cursor-pointer px-6 flex-1 justify-center',
+                                                )}
+                                            >
+                                                {item.title === 'Guest Mode' && <span role="img" aria-label="man" className="mr-2">🧑‍🦱</span>}
+                                                {item.title === 'Report' && <span role="img" aria-label="book" className="mr-2">📖</span>}
+                                                {item.title === 'Analytics' && <span role="img" aria-label="pie chart" className="mr-2">📊</span>}
+                                                {item.title === 'Chat' && <span role="img" aria-label="chat" className="mr-2">💬</span>}
+                                                {item.title}
+                                            </button>
+                                        ) : (
+                                            <Link
+                                                href={item.href}
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === item.href && activeItemStyles,
+                                                    'h-13 cursor-pointer px-6 flex-1 justify-center',
+                                                )}
+                                            >
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                {item.title === 'Report' && <span role="img" aria-label="book" className="mr-2">📖</span>}
+                                                {item.title === 'Analytics' && <span role="img" aria-label="pie chart" className="mr-2">📊</span>}
+                                                {item.title === 'Chat' && <span role="img" aria-label="chat" className="mr-2">💬</span>}
+                                                {item.title}
+                                            </Link>
+                                        )}
                                         {page.url === item.href && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
                                         )}

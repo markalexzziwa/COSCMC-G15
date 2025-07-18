@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthCardLayout from '@/layouts/auth/auth-card-layout';
+import Footer from '@/components/footer';
 
 type RegisterForm = {
     name: string;
@@ -35,13 +36,13 @@ export default function Register() {
     };
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/oil2.jpg')" }}>
+        <div className="relative min-h-screen flex flex-col items-center justify-center bg-blue-100">
             <AuthCardLayout
                 title="Create an account"
                 description="Enter your details below to create your account"
             >
                 <Head title="Register" />
-                <form className="flex flex-col gap-6 bg-blue-300/60 backdrop-blur-md shadow-xl border border-white/40 p-4 rounded-lg" onSubmit={submit}>
+                <form className="flex flex-col gap-6 bg-blue-200/30 backdrop-blur-md shadow-xl border border-white/40 p-4 rounded-lg" onSubmit={submit}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
@@ -137,7 +138,7 @@ export default function Register() {
 
                         <Button
                             type="submit"
-                            className="mt-2 w-full bg-red-300 hover:bg-red-400"
+                            className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition-all duration-200"
                             tabIndex={5}
                             disabled={processing}
                         >
@@ -154,6 +155,7 @@ export default function Register() {
                     </div>
                 </form>
             </AuthCardLayout>
+            <Footer />
         </div>
     );
 }

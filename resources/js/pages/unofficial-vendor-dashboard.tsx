@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 
 export default function UnofficialVendorDashboard() {

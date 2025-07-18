@@ -3,7 +3,7 @@ import { Facebook, Instagram, Youtube, Mail, Phone } from 'lucide-react';
 export default function Footer() {
     return (
         <footer className="w-full bg-black text-purple-200">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-center md:text-left">
+                <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-center md:text-left">
                     <div className="flex items-center space-x-4 text-center md:text-left">
                         <img src="/footerck.jpg" alt="CK-OILS" className="w-16 h-16 object-cover rounded-lg" />
                         <div>

@@ -16,17 +16,15 @@ export default function AuthCardLayout({
     className?: string;
 }>) {
     return (
-        <div className={cn('flex w-full max-w-md flex-col gap-6', className)}>
-            <Link href={route('home')} className="flex items-center gap-2 self-center font-medium">
-                <div className="flex h-17 w-17 items-center justify-center">
-                    <AppLogoIcon className="size-17 fill-current text-black dark:text-white" />
-                </div>
-            </Link>
-
+        <div className={cn('flex w-3/5 flex-col gap-6', className)}>
             <div className="flex flex-col gap-6">
                 <Card className="rounded-xl bg-white/30 backdrop-blur-md shadow-xl border border-white/40">
                     <CardHeader className="px-10 pt-8 pb-0 text-center">
-                        <CardTitle className="text-xl">{title}</CardTitle>
+                    <Link href={route('home')} className="flex items-center gap-2 self-center font-medium">
+                <div className="flex h-17 w-17 items-center justify-center">
+                    <AppLogoIcon className="size-17 fill-current text-black dark:text-white" />
+                </div>
+            </Link>              <CardTitle className="text-6xl font-bold">{title}</CardTitle>
                         <CardDescription>{description}</CardDescription>
                     </CardHeader>
                     <CardContent className="px-10 py-8">{children}</CardContent>

@@ -1,0 +1,280 @@
+import AppLayout from '@/layouts/app-layout';
+import { Head, usePage } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Send, Inbox, FileText, AlertOctagon, Trash2 } from 'lucide-react';
+import useChatStore, { MessageCategory } from '@/store/useChatStore';
+import useInventoryChatStore from '@/store/useInventoryChatStore';
+
+function getDashboardChat(dashboard: string) {
+    switch (dashboard) {
+        case 'manufacturer':
+            return <ManufacturerChat />;
+        case 'retail':
+            return (
+                <div className="bg-green-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Retail Chat</h2>
+                    <p>Chat with customers, distributors, and support here.</p>
+                </div>
+            );
+        case 'distributor':
+            return (
+                <div className="bg-yellow-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Distributor Chat</h2>
+                    <p>Chat with retail, inventory, and logistics here.</p>
+                </div>
+            );
+        case 'admin':
+            return (
+                <div className="bg-pink-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Admin Chat</h2>
+                    <p>Chat with all users, manage support, and oversee communications here.</p>
+                </div>
+            );
+        case 'customer':
+            return (
+                <div className="bg-blue-100 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Customer Chat</h2>
+                    <p>Chat with retail, support, and get help here.</p>
+                </div>
+            );
+        case 'factory-store':
+            return (
+                <div className="bg-purple-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Factory Store Chat</h2>
+                    <p>Chat with manufacturer, inventory, and logistics here.</p>
+                </div>
+            );
+        case 'farmer':
+            return (
+                <div className="bg-orange-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Farmer Chat</h2>
+                    <p>Chat with inventory manager, support, and other farmers here.</p>
+                </div>
+            );
+        case 'inventory-manager':
+            return (
+                <div className="bg-teal-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Inventory Manager Chat</h2>
+                    <p>Chat with factory store, manufacturer, and distributors here.</p>
+                </div>
+            );
+        case 'unofficial-vendor':
+            return (
+                <div className="bg-gray-100 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Unofficial Vendor Chat</h2>
+                    <p>Chat with admin, support, and track your application here.</p>
+                </div>
+            );
+        default:
+            return (
+                <div className="bg-gray-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">General Chat</h2>
+                    <p>General chat content. Log in as a specific user to see a tailored chat experience.</p>
+                </div>
+            );
+    }
+}
+
+const ManufacturerChat = () => {
+    const {
+        messages: factoryStoreMessages,
+        addMessage: addFactoryStoreMessage,
+        moveMessage: moveFactoryStoreMessage,
+    } = useChatStore();
+    const {
+        messages: inventoryManagerMessages,
+        addMessage: addInventoryManagerMessage,
+        moveMessage: moveInventoryManagerMessage,
+    } = useInventoryChatStore();
+
+    const [activeChat, setActiveChat] = useState<'factoryStore' | 'inventoryManager'>('factoryStore');
+    const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
+    const [newMessage, setNewMessage] = useState('');
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+
+        const messagePayload = {
+            sender: 'Manufacturer' as const,
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+
+        if (activeChat === 'factoryStore') {
+            addFactoryStoreMessage(messagePayload, 'sent');
+        } else {
+            addInventoryManagerMessage(messagePayload, 'sent');
+        }
+
+        setNewMessage('');
+    };
+
+    const currentMessages = activeChat === 'factoryStore' ? factoryStoreMessages : inventoryManagerMessages;
+    const chatTitle = activeChat === 'factoryStore' ? 'Factory Store' : 'Inventory Manager';
+    const moveMessage = activeChat === 'factoryStore' ? moveFactoryStoreMessage : moveInventoryManagerMessage;
+
+    const filteredMessages = currentMessages.filter(m => {
+        if (activeCategory === 'inbox') return m.category === 'inbox';
+        if (activeCategory === 'sent') return m.category === 'sent';
+        if (activeCategory === 'draft') return m.category === 'draft';
+        if (activeCategory === 'spam') return m.category === 'spam';
+        if (activeCategory === 'trash') return m.category === 'trash';
+        return false;
+    });
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* WhatsApp-style Header */}
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">
+                            {activeChat === 'factoryStore' ? 'FS' : 'IM'}
+                        </span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">{chatTitle}</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Online</p>
+                    </div>
+                </div>
+                <div className="flex space-x-2">
+                    <Button
+                        onClick={() => setActiveChat('factoryStore')}
+                        variant={activeChat === 'factoryStore' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'factoryStore' ? 'text-white' : 'text-white hover:bg-white/20'}
+                        style={activeChat === 'factoryStore' ? { background: 'rgba(75, 80, 232, 0.8)' } : {}}
+                    >
+                        Factory Store
+                    </Button>
+                    <Button
+                        onClick={() => setActiveChat('inventoryManager')}
+                        variant={activeChat === 'inventoryManager' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'inventoryManager' ? 'text-white' : 'text-white hover:bg-white/20'}
+                        style={activeChat === 'inventoryManager' ? { background: 'rgba(75, 80, 232, 0.8)' } : {}}
+                    >
+                        Inventory Manager
+                    </Button>
+                </div>
+            </div>
+
+            <div className="flex">
+                {/* Vertical Category Navigation */}
+                <div className="w-48 bg-gray-50 border-r">
+                    <nav className="p-4 space-y-2">
+                        <CategoryButton category="inbox" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Inbox size={16} />} />
+                        <CategoryButton category="sent" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Send size={16} />} />
+                        <CategoryButton category="draft" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<FileText size={16} />} />
+                        <CategoryButton category="spam" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<AlertOctagon size={16} />} />
+                        <CategoryButton category="trash" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Trash2 size={16} />} />
+                    </nav>
+                </div>
+
+                {/* Chat Content */}
+                <div className="flex-1 flex flex-col">
+                    {/* Messages Area */}
+                    <div className="h-96 bg-gray-100 p-4 overflow-y-auto">
+                        {filteredMessages.length > 0 ? (
+                            <div className="space-y-3">
+                                {filteredMessages.map((message) => (
+                                    <div key={message.id} className="group">
+                                        <div className={`flex ${message.sender === 'Manufacturer' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
+                                                message.sender === 'Manufacturer' 
+                                                    ? 'text-white rounded-br-none' 
+                                                    : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                                            }`}
+                                            style={message.sender === 'Manufacturer' ? { background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' } : {}}
+                                            >
+                                                <p className="text-sm">{message.text}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'Manufacturer' ? 'text-white/80' : 'text-gray-500'}`}>
+                                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden group-hover:flex justify-end space-x-1 mt-1">
+                                            {activeCategory !== 'trash' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'trash')} className="text-gray-500 hover:text-red-500">
+                                                    <Trash2 size={12} />
+                                                </Button>
+                                            )}
+                                            {activeCategory !== 'spam' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'spam')} className="text-gray-500 hover:text-orange-500">
+                                                    <AlertOctagon size={12} />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-gray-500">
+                                    <Inbox className="mx-auto h-12 w-12 mb-2" />
+                                    <p>No messages in {activeCategory}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    {(activeCategory === 'inbox' || activeCategory === 'draft' || activeCategory === 'sent') && (
+                        <div className="bg-white p-4 border-t">
+                            <div className="flex space-x-2">
+                                <Input
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    placeholder="Type a message..."
+                                    className="flex-1 rounded-full border-gray-300"
+                                    style={{ '--tw-ring-color': 'rgba(75, 80, 232, 0.5)', '--tw-border-opacity': '1' } as React.CSSProperties}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <Button 
+                                    onClick={handleSendMessage} 
+                                    className="rounded-full p-2"
+                                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                                    disabled={!newMessage.trim()}
+                                >
+                                    <Send className="h-4 w-4 text-white" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: { category: MessageCategory, activeCategory: MessageCategory, setActiveCategory: (c: MessageCategory) => void, icon: React.ReactNode }) => (
+    <Button
+        variant={activeCategory === category ? 'default' : 'ghost'}
+        size="sm"
+        className={`w-full justify-start text-sm ${activeCategory === category ? 'text-white' : 'text-gray-600 hover:bg-gray-200'}`}
+        style={activeCategory === category ? { background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' } : {}}
+        onClick={() => setActiveCategory(category)}
+    >
+        {icon}
+        <span className="ml-2 capitalize">{category}</span>
+    </Button>
+);
+
+export default function Chat() {
+    const { dashboard: dashboardProp } = usePage().props as { dashboard?: string };
+    const dashboard = dashboardProp || '';
+
+    return (
+        <AppLayout>
+            <div>
+                <Head title="Chat" />
+                <div className="container mx-auto px-4 py-8">
+                    {getDashboardChat(dashboard)}
+                </div>
+            </div>
+        </AppLayout>
+    );
+} 

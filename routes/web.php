@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\OrderController;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -42,6 +43,28 @@ Route::get('/dashboard', function () {
 Route::get('/market', function () {
     return Inertia::render('market');
 })->middleware(['auth', 'verified'])->name('market');
+
+Route::get('/report', function (Request $request) {
+    $user = Auth::user();
+    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    return Inertia::render('report', [
+        'dashboard' => $role,
+    ]);
+})->middleware(['auth', 'verified'])->name('report');
+Route::get('/analytics', function (Request $request) {
+    $user = Auth::user();
+    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    return Inertia::render('analytics', [
+        'dashboard' => $role,
+    ]);
+})->middleware(['auth', 'verified'])->name('analytics');
+Route::get('/chat', function (Request $request) {
+    $user = Auth::user();
+    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    return Inertia::render('chat', [
+        'dashboard' => $role,
+    ]);
+})->middleware(['auth', 'verified'])->name('chat');
 
 Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
     Route::get('/user/dashboard', function () {

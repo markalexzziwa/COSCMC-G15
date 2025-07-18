@@ -160,8 +160,7 @@
 
     body {
         @apply text-foreground;
-        background: url('/ckoildefault.jpg') no-repeat center center fixed;
-        background-size: cover;
+        background: #c1dff2;
         min-height: 100vh;
     }
 }

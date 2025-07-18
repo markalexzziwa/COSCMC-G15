@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthCardLayout from '@/layouts/auth/auth-card-layout';
+import Footer from '@/components/footer';
 
 type LoginForm = {
     email: string;
@@ -36,11 +37,11 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/mag1.jpg')" }}>
+        <div className="relative min-h-screen flex flex-col items-center justify-center bg-blue-100">
             <AuthCardLayout title="Welcome Back" description="Log in to your account to continue">
                 <Head title="Log in" />
 
-                <form className="flex flex-col gap-6 bg-orange-150/60 backdrop-blur-md p-8 rounded-2xl shadow-lg w-full max-w-md" onSubmit={submit}>
+                <form className="flex flex-col gap-6 bg-blue-200/30 backdrop-blur-md shadow-xl border border-white/40 p-4 rounded-lg" onSubmit={submit}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
@@ -96,7 +97,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                         <Button
                             type="submit"
-                            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all duration-200"
+                            className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-all duration-200"
                             tabIndex={4}
                             disabled={processing}
                         >
@@ -115,6 +116,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                 {status && <div className="mb-4 text-center text-sm font-medium text-green-600 bg-white/80 p-2 rounded-lg mt-4">{status}</div>}
             </AuthCardLayout>
+            <Footer />
         </div>
     );
 }

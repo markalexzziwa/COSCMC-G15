@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FiPackage, FiTruck, FiDollarSign, FiAlertCircle, FiTrendingUp, FiUsers } from 'react-icons/fi';
 import {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FarmStatsCard } from '@/components/farm-stats-card';
 import { HarvestSummaryCard } from '@/components/harvest-summary-card';
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   BarChart,
@@ -559,7 +559,7 @@ export default function FarmerDashboard() {
               
               <div>
                 <Card 
-                  onClick={() => window.location.href = '/market'} 
+                  onClick={() => window.location.href = '/analytics'} 
                   className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
                 >
                   <CardHeader>
