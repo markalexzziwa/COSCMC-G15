@@ -335,20 +335,179 @@ function getDashboardReport(dashboard: string) {
                     </div>
                 </div>
             );
-        case 'retail':
+        case 'retail': {
+            // Use localStorage for retail stock
+            let retailStock = [
+                { id: 1, name: 'Cooking Oil', stock: 200, unit: 'jerrycans', image: '/cooking oil.jpg', category: 'palm-oil' },
+                { id: 2, name: 'Shampoo', stock: 130, unit: 'bottles', image: '/shampoo.jpg', category: 'shampoo' },
+                { id: 3, name: 'Soft Margarine', stock: 87, unit: 'containers', image: '/soft magarine.jpg', category: 'margarine' },
+            ];
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('retailStock');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed)) retailStock = parsed;
+                    } catch {}
+                } else {
+                    localStorage.setItem('retailStock', JSON.stringify(retailStock));
+                }
+            }
+            // Get available customer orders count
+            let availableCustomerOrdersCount = 0;
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('customerOrders');
+                if (stored) {
+                    try {
+                        const orders = JSON.parse(stored);
+                        availableCustomerOrdersCount = Array.isArray(orders) ? orders.length : 0;
+                    } catch {}
+                }
+            }
             return (
-                <div className="bg-green-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Retail Report</h2>
-                    <p>Sales, customer trends, and inventory reports go here.</p>
+                <div ref={reportRef} className="bg-green-50 p-6 rounded shadow relative">
+                    <button
+                        onClick={() => window.print()}
+                        className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow"
+                    >
+                        <span role="img" aria-label="print">🖨️</span>
+                        <span>Print Preview</span>
+                    </button>
+                    <RetailDailyWeeklySalesCards />
+                    <div className="flex flex-wrap gap-6 justify-center mt-4 mb-8 w-full">
+                        {/* Orders Card */}
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-8 py-4 flex flex-col items-center shadow min-w-[180px] max-w-[220px] text-center">
+                            <span className="text-lg font-semibold text-gray-700 mb-1">Orders</span>
+                            <span className="text-3xl font-bold text-yellow-700">{availableCustomerOrdersCount}</span>
+                        </div>
+                        {/* Available Stock Cards */}
+                        {retailStock.map(product => (
+                            <div key={product.id} className="bg-green-50 border border-green-200 rounded-lg shadow px-8 py-4 flex flex-col items-center min-w-[180px] max-w-[220px]">
+                                <span className="text-2xl font-bold text-green-700 mt-1">{product.stock} {product.category === 'shampoo' ? 'bottles' : product.category === 'margarine' ? 'containers' : 'jerrycans'}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Product Stock Status Table */}
+                    <ProductStockStatusTable stock={retailStock} />
+                    {/* Retail Order History */}
+                    <RetailOrderHistory />
+                    {/* Available Customer Orders Card */}
+                    <AvailableCustomerOrdersCard />
+                    {/* Bar Graph for Available Retail Stock */}
+                    <AvailableRetailStockBarGraph />
+                    {/* Summary Cards */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-4">Retail Stock</h3>
+                        <div className="bg-white rounded shadow overflow-hidden border border-green-200">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead className="bg-green-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Product</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Stock</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Unit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-green-200">
+                                        {retailStock.map(product => (
+                                            <tr key={product.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.stock}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.unit}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Add retail orders card/table here if needed */}
                 </div>
             );
-        case 'distributor':
+        }
+        case 'distributor': {
+            // Use localStorage for distributor stock (simulate dashboard state)
+            let distributorStock = {
+                cookingOil: 450,
+                shampoo: 280,
+                margarine: 320,
+            };
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('distributorStock');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && typeof parsed === 'object') distributorStock = parsed;
+                    } catch {}
+                }
+            }
+            // Individual product cards data
+            const productCards = [
+                { name: 'Cooking Oil', value: distributorStock.cookingOil, unit: 'jerrycans', color: 'bg-yellow-50', text: 'text-yellow-700' },
+                { name: 'Shampoo', value: distributorStock.shampoo, unit: 'bottles', color: 'bg-blue-50', text: 'text-blue-700' },
+                { name: 'Soft Margarine', value: distributorStock.margarine, unit: 'containers', color: 'bg-green-50', text: 'text-green-700' },
+            ];
             return (
                 <div className="bg-yellow-50 p-6 rounded shadow">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
                     <h2 className="text-2xl font-bold mb-2">Distributor Report</h2>
                     <p>Distribution, logistics, and delivery reports go here.</p>
+                        </div>
+                        <button
+                            onClick={() => window.print()}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                        >
+                            <span role="img" aria-label="print">🖨️</span>
+                            <span>Print Report</span>
+                        </button>
+                    </div>
+                    {/* Summary Cards */}
+                    <DistributorSummaryCards stock={distributorStock} />
+                    {/* Individual Product Stock Cards */}
+                    <div className="flex flex-wrap gap-6 justify-center mt-4 mb-8 w-full">
+                        {productCards.map(product => (
+                            <div key={product.name} className={`${product.color} border rounded-lg shadow px-8 py-4 flex flex-col items-center min-w-[180px] max-w-[220px]`}>
+                                <span className={`text-2xl font-bold ${product.text} mt-1`}>{product.value} {product.unit}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {/* Available Orders (Retail Order History) */}
+                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">Available Orders</h3>
+                            <p className="mt-1 text-sm text-gray-500">All retail orders placed and available for processing</p>
+                        </div>
+                        <div className="px-4 py-5 sm:p-6">
+                            <RetailOrderHistory />
+                        </div>
+                    </div>
+                    {/* Current Stock Table */}
+                    <div className="bg-white rounded shadow overflow-hidden border border-green-200 mb-8">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-green-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Product</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Stock</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-green-200">
+                                    {productCards.map(product => (
+                                        <tr key={product.name}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.value}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.unit}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             );
+        }
         case 'customer':
             // Get order data from localStorage
             let customerOrders: any[] = [];
@@ -555,7 +714,6 @@ function getDashboardReport(dashboard: string) {
         case 'factory-store':
             // Get stock data from useStockStore
             const factoryStock = useStockStore((state) => state.stock);
-            
             return (
                 <div ref={reportRef} className="bg-purple-50 p-6 rounded shadow">
                     <div className="flex justify-between items-center mb-6">
@@ -571,7 +729,10 @@ function getDashboardReport(dashboard: string) {
                             <span>Print Report</span>
                         </button>
                     </div>
-                    
+                    {/* Sales Summary Cards */}
+                    <FactoryStoreSalesSummaryCards />
+                    {/* Products Order History Card */}
+                    <FactoryProductionOrderHistoryCardReport />
                     {/* Summary Section */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold mb-4">Stock Summary</h3>
@@ -981,6 +1142,486 @@ function getDashboardReport(dashboard: string) {
     }
 }
 
+// Add AvailableRetailStockBarGraph component for retail report
+function AvailableRetailStockBarGraph() {
+  const [stockData, setStockData] = React.useState([
+    { name: 'Cooking Oil', stock: 0 },
+    { name: 'Shampoo', stock: 0 },
+    { name: 'Soft Margarine', stock: 0 },
+  ]);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailStock');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setStockData(parsed.map((p: any) => ({ name: p.name, stock: p.stock })));
+          }
+        } catch {}
+      }
+    }
+  }, []);
+
+  return (
+    <div className="bg-white rounded shadow p-6 border border-green-200 mb-8 max-w-2xl mx-auto">
+      <h3 className="text-lg font-semibold mb-4 text-green-800">Available Retail Stock</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={stockData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="stock" fill="#10b981" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+// Add ProductStockStatusTable, RetailOrderHistory, and AvailableCustomerOrdersCard components for the retail report
+function ProductStockStatusTable({ stock }: { stock: any[] }) {
+  const getStatus = (stock: number, threshold: number) => {
+    if (stock === 0) return { label: 'Out of Stock', color: 'bg-red-600 text-white' };
+    if (stock <= threshold) return { label: 'Low Stock', color: 'bg-yellow-500 text-white' };
+    return { label: 'In Stock', color: 'bg-green-600 text-white' };
+  };
+  // Use default thresholds if not present
+  const thresholds: Record<string, number> = {
+    'Cooking Oil': 20,
+    'Shampoo': 30,
+    'Soft Margarine': 40,
+  };
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg px-8 py-6 shadow w-full max-w-3xl mb-8 mx-auto">
+      <span className="text-lg font-semibold text-gray-700 mb-4 block">Product Stock Status</span>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {stock.map(product => {
+              const status = getStatus(product.stock, product.threshold ?? thresholds[product.name] ?? 0);
+              return (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>{status.label}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function RetailDailyWeeklySalesCards() {
+  const [daily, setDaily] = React.useState(0);
+  const [weekly, setWeekly] = React.useState(0);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('customerOrders');
+      if (stored) {
+        try {
+          const orders = JSON.parse(stored);
+          if (Array.isArray(orders)) {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // Sunday=0, so treat as 7
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - (dayOfWeek - 1));
+            monday.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(now);
+            // Daily sales: sum discountedAmount for today
+            const dailySales = orders
+              .filter((order: any) => order.date && order.date.startsWith(today))
+              .reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+            // Weekly sales: sum discountedAmount from Monday to today
+            const weeklySales = orders
+              .filter((order: any) => {
+                if (!order.date) return false;
+                const orderDate = new Date(order.date);
+                return orderDate >= monday && orderDate <= weekEnd;
+              })
+              .reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+            setDaily(dailySales);
+            setWeekly(weeklySales);
+          }
+        } catch {}
+      }
+    }
+  }, []);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-8">
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Daily Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {daily.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Weekly Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {weekly.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RetailOrderHistory() {
+  const [orders, setOrders] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setOrders(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setOrders([]);
+        }
+      }
+    }
+  }, []);
+  return (
+    <div className="px-8 py-6 flex flex-col items-center w-full mb-8 relative">
+      <span className="text-lg font-semibold text-gray-700 mb-4">Retail Order History</span>
+      {orders.length === 0 ? (
+        <div className="text-gray-500">No retail orders found.</div>
+      ) : (
+        <div className="w-full space-y-6">
+          {orders.map(order => (
+            <div key={order.id} className="border-b pb-4">
+              <div className="flex justify-between font-semibold">
+                <span>Order Date:</span>
+                <span>{new Date(order.date).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Original Total:</span>
+                <span>Ugx {Number(order.originalTotal).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Discounted Total:</span>
+                <span>Ugx {Number(order.discountedTotal).toLocaleString()}</span>
+              </div>
+              {order.discountedTotal < order.originalTotal && (
+                <div className="flex justify-end text-green-600 font-medium">25% discount applied for products with quantity &gt; 1</div>
+              )}
+              <div className="mt-2">
+                <div className="font-semibold">Products:</div>
+                <ul className="list-disc list-inside">
+                  {order.items && order.items.map((item: any) => (
+                    <li key={item.id}>
+                      {item.name} x {item.quantity} @ Ugx {item.price.toLocaleString()}
+                      {item.discountApplied && (
+                        <span className="ml-2 text-green-600">(25% discount)</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-4 flex flex-row gap-2 justify-end items-center">
+                {['placed', 'received', 'completed'].map(statusKey => (
+                  <span
+                    key={statusKey}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors
+                      ${order.status === statusKey
+                        ? statusKey === 'placed' ? 'bg-blue-600 text-white border-blue-600' :
+                          statusKey === 'received' ? 'bg-yellow-500 text-white border-yellow-500' :
+                          'bg-green-600 text-white border-green-600'
+                        : statusKey === 'placed' ? 'text-blue-600 border-blue-600' :
+                          statusKey === 'received' ? 'text-yellow-600 border-yellow-500' :
+                          'text-green-600 border-green-600'
+                    }`}
+                  >
+                    {statusKey === 'placed' ? 'Placed' : statusKey === 'received' ? 'Received' : 'Order Completed'}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AvailableCustomerOrdersCard() {
+  const [orders, setOrders] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('customerOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setOrders(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setOrders([]);
+        }
+      }
+    }
+  }, []);
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-sm mt-6 w-full max-w-5xl mx-auto mb-8">
+      <h3 className="mb-4 text-lg font-medium text-gray-900">Available Customer Orders</h3>
+      <div className="text-3xl font-bold text-yellow-700 text-center mb-4">{orders.length}</div>
+      {orders.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-yellow-200">
+            <thead className="bg-yellow-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-yellow-900 uppercase tracking-wider">Order Date</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-yellow-900 uppercase tracking-wider">Products</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-yellow-900 uppercase tracking-wider">Total</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-yellow-100">
+              {orders.map((order: any) => (
+                <tr key={order.id}>
+                  <td className="px-4 py-2 text-sm text-gray-900">{new Date(order.date).toLocaleDateString()}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">
+                    <ul className="list-disc list-inside">
+                      {order.items && order.items.map((item: any, idx: number) => (
+                        <li key={idx}>{item.name} x {item.quantity}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="px-4 py-2 text-sm text-gray-900">Ugx {order.total ? Number(order.total).toLocaleString() : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 py-4">No customer orders found</div>
+      )}
+    </div>
+  );
+}
+
+function DistributorSummaryCards({ stock }: { stock: { cookingOil: number, shampoo: number, margarine: number } }) {
+  // Calculate daily, weekly, monthly sales from retailOrders
+  const [daily, setDaily] = React.useState(0);
+  const [weekly, setWeekly] = React.useState(0);
+  const [critical, setCritical] = React.useState(0);
+  const [total, setTotal] = React.useState(0);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailOrders');
+      if (stored) {
+        try {
+          const orders = JSON.parse(stored);
+          if (Array.isArray(orders)) {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - (dayOfWeek - 1));
+            monday.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(now);
+            const dailySales = orders
+              .filter((order: any) => order.date && order.date.startsWith(today))
+              .reduce((sum: number, order: any) => sum + (order.discountedTotal || 0), 0);
+            const weeklySales = orders
+              .filter((order: any) => {
+                if (!order.date) return false;
+                const orderDate = new Date(order.date);
+                return orderDate >= monday && orderDate <= weekEnd;
+              })
+              .reduce((sum: number, order: any) => sum + (order.discountedTotal || 0), 0);
+            setDaily(dailySales);
+            setWeekly(weeklySales);
+          }
+        } catch {}
+      }
+    }
+    // Calculate critical stock and total packs
+    const values = [stock.cookingOil, stock.shampoo, stock.margarine];
+    setCritical(values.filter(v => v > 0 && v <= 400).length);
+    setTotal(values.reduce((a, b) => a + b, 0));
+  }, [stock]);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 mb-8">
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Daily Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {daily.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Weekly Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {weekly.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-purple-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h8M12 8v8" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Critical Stock</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">{critical}</div>
+                <span className="ml-2 text-sm text-gray-500">products running low</span>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-green-50 border border-green-200 rounded-lg px-8 py-4 flex flex-col items-center shadow">
+        <span className="text-lg font-semibold text-gray-700 mb-1">Total</span>
+        <span className="text-3xl font-bold text-green-700 mb-1">{total}</span>
+        <span className="text-lg font-semibold text-gray-700">packs</span>
+      </div>
+    </div>
+  );
+}
+
+function FactoryStoreSalesSummaryCards() {
+  const [daily, setDaily] = React.useState(0);
+  const [weekly, setWeekly] = React.useState(0);
+  const [totalOrders, setTotalOrders] = React.useState(0);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('distributorOrders');
+      if (stored) {
+        try {
+          const orders = JSON.parse(stored);
+          if (Array.isArray(orders)) {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - (dayOfWeek - 1));
+            monday.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(now);
+            // Daily sales: sum discountedTotal for today
+            const dailySales = orders
+              .filter((order: any) => order.date && order.date.startsWith(today))
+              .reduce((sum: number, order: any) => sum + (order.discountedTotal || 0), 0);
+            // Weekly sales: sum discountedTotal from Monday to today
+            const weeklySales = orders
+              .filter((order: any) => {
+                if (!order.date) return false;
+                const orderDate = new Date(order.date);
+                return orderDate >= monday && orderDate <= weekEnd;
+              })
+              .reduce((sum: number, order: any) => sum + (order.discountedTotal || 0), 0);
+            setDaily(dailySales);
+            setWeekly(weeklySales);
+            setTotalOrders(orders.length);
+          }
+        } catch {}
+      }
+    }
+  }, []);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Daily Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {daily.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Weekly Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {weekly.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h8M12 8v8" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">{totalOrders}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Report() {
     const { dashboard: dashboardProp } = usePage().props as { dashboard?: string };
     const dashboard = dashboardProp || '';
@@ -1028,5 +1669,61 @@ export default function Report() {
                 </div>
             </div>
         </AppLayout>
+    );
+} 
+
+// Add this component at the bottom of the file:
+function FactoryProductionOrderHistoryCardReport() {
+  const [orders, setOrders] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('factoryProductionOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setOrders(Array.isArray(parsed) ? parsed.reverse() : []);
+        } catch {
+          setOrders([]);
+        }
+      }
+    }
+  }, []);
+
+  if (orders.length === 0) {
+    return <div className="bg-white shadow rounded-lg p-8 text-gray-500">No production orders found.</div>;
+  }
+  return (
+    <div className="bg-white shadow rounded-lg p-8 mb-8">
+      <h2 className="text-xl font-bold mb-4">Products Order History</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {orders.map((order: any) => (
+              <tr key={order.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(order.date).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  <ul className="list-disc list-inside">
+                    {order.items && order.items.map((item: any, idx: number) => (
+                      <li key={idx}>{item.name} x {item.quantity}</li>
+                    ))}
+                  </ul>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
     );
 } 

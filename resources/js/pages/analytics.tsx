@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useStockStore from '@/store/useStockStore';
-
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
 // Initial production data
@@ -555,13 +554,87 @@ function getDashboardAnalytics(dashboard: string) {
                 <div className="bg-green-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Retail Analytics</h2>
                     <p>Sales, customer trends, and inventory analytics go here.</p>
+                    <div className="mt-8 space-y-8">
+                        <CustomerOrderBarGraph />
+                        <GeneralOrdersCard />
+                        <AvailableRetailStockBarGraph />
+                    </div>
                 </div>
             );
         case 'distributor':
+            // Get distributor stock from localStorage
+            let distributorStock = {
+                cookingOil: 450,
+                shampoo: 280,
+                margarine: 320,
+            };
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('distributorStock');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && typeof parsed === 'object') distributorStock = parsed;
+                    } catch {}
+                }
+            }
+            const productCards = [
+                { name: 'Cooking Oil', value: distributorStock.cookingOil },
+                { name: 'Shampoo', value: distributorStock.shampoo },
+                { name: 'Soft Margarine', value: distributorStock.margarine },
+            ];
+            // Stock by status: Sufficient (>400), Low (1-400), Out (0)
+            const statusData = [
+                { status: 'Sufficient', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 400).length },
+                { status: 'Low', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 0 && v <= 400).length },
+                { status: 'Out of Stock', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v === 0).length },
+            ];
             return (
                 <div className="bg-yellow-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Distributor Analytics</h2>
                     <p>Distribution, logistics, and delivery analytics go here.</p>
+                    {/* Current Stock Distribution Pie Chart */}
+                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8 mt-8">
+                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">Current Stock Distribution</h3>
+                            <p className="mt-1 text-sm text-gray-500">Breakdown of current stock for each product</p>
+                        </div>
+                        <div className="px-4 py-5 sm:p-6">
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie data={productCards} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                                            {productCards.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Stocks by Status Bar Chart */}
+                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">Stocks by Status</h3>
+                            <p className="mt-1 text-sm text-gray-500">Number of products in each stock status</p>
+                        </div>
+                        <div className="px-4 py-5 sm:p-6">
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={statusData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="status" />
+                                        <YAxis allowDecimals={false} />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="count" fill="#f59e0b" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             );
         case 'admin':
@@ -1075,6 +1148,45 @@ function GeneralOrdersCard() {
             )}
         </div>
     );
+}
+
+// Add AvailableRetailStockBarGraph component
+function AvailableRetailStockBarGraph() {
+  const [stockData, setStockData] = React.useState([
+    { name: 'Cooking Oil', stock: 0 },
+    { name: 'Shampoo', stock: 0 },
+    { name: 'Soft Margarine', stock: 0 },
+  ]);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailStock');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setStockData(parsed.map((p: any) => ({ name: p.name, stock: p.stock })));
+          }
+        } catch {}
+      }
+    }
+  }, []);
+
+  return (
+    <div className="bg-white rounded shadow p-6 border border-green-200 mb-8 max-w-2xl mx-auto">
+      <h3 className="text-lg font-semibold mb-4 text-green-800">Available Retail Stock</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={stockData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="stock" fill="#10b981" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
 export default function Analytics() {

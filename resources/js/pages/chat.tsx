@@ -478,19 +478,9 @@ function getDashboardChat(dashboard: string) {
         case 'manufacturer':
             return <ManufacturerChat />;
         case 'retail':
-            return (
-                <div className="bg-green-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Retail Chat</h2>
-                    <p>Chat with customers, distributors, and support here.</p>
-                </div>
-            );
+            return <RetailerChat />;
         case 'distributor':
-            return (
-                <div className="bg-yellow-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Distributor Chat</h2>
-                    <p>Chat with retail, inventory, and logistics here.</p>
-                </div>
-            );
+            return <DistributorChat />;
         case 'admin':
             return <AdminChat />;
         case 'customer':
@@ -761,6 +751,219 @@ function CustomerRetailerChat() {
                     <div className="flex justify-start mb-2">
                         <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
                             <p className="font-medium">Retailer</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function RetailerChat() {
+    const [activeTab, setActiveTab] = React.useState<'customer' | 'distributor'>('customer');
+    const [customerMessages, setCustomerMessages] = React.useState([
+        { sender: 'Retailer', text: 'Hello Customer! How can I help you?', timestamp: new Date().toISOString() }
+    ]);
+    const [distributorMessages, setDistributorMessages] = React.useState([
+        { sender: 'Retailer', text: 'Hello Distributor! Ready to coordinate orders?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Retailer',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        if (activeTab === 'customer') {
+            setCustomerMessages(prev => [...prev, { sender: 'Customer', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setCustomerMessages(prev => [...prev, { sender: 'Retailer', text: 'Thank you for your message, Customer!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setDistributorMessages(prev => [...prev, { sender: 'Distributor', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setDistributorMessages(prev => [...prev, { sender: 'Retailer', text: 'Thank you for your message, Distributor!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeTab === 'customer' ? customerMessages : distributorMessages;
+    const chatTitle = activeTab === 'customer' ? 'Customer & Retailer Chat' : 'Distributor & Retailer Chat';
+    const chatDesc = activeTab === 'customer'
+        ? 'Chat with customers for support and orders.'
+        : 'Chat with distributors for coordination and logistics.';
+    const avatar = activeTab === 'customer' ? 'CU' : 'DI';
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="flex border-b">
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'customer' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('customer')}
+                >
+                    Customer Chat
+                </button>
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'distributor' ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('distributor')}
+                >
+                    Distributor Chat
+                </button>
+            </div>
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">{avatar}</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">{chatTitle}</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDesc}</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Retailer' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Retailer' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">{activeTab === 'customer' ? 'Retailer' : 'Retailer'}</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function DistributorChat() {
+    const [activeTab, setActiveTab] = React.useState<'factoryStore' | 'retailer'>('factoryStore');
+    const [factoryStoreMessages, setFactoryStoreMessages] = React.useState([
+        { sender: 'Distributor', text: 'Hello Factory Store Manager! Ready to coordinate stock?', timestamp: new Date().toISOString() }
+    ]);
+    const [retailerMessages, setRetailerMessages] = React.useState([
+        { sender: 'Distributor', text: 'Hello Retailer! Let us know your needs.', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        if (activeTab === 'factoryStore') {
+            setFactoryStoreMessages(prev => [...prev, { sender: 'Factory Store Manager', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setFactoryStoreMessages(prev => [...prev, { sender: 'Distributor', text: 'Thank you for your message, Factory Store Manager!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setRetailerMessages(prev => [...prev, { sender: 'Retailer', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setRetailerMessages(prev => [...prev, { sender: 'Distributor', text: 'Thank you for your message, Retailer!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeTab === 'factoryStore' ? factoryStoreMessages : retailerMessages;
+    const chatTitle = activeTab === 'factoryStore' ? 'Factory Store Manager & Distributor Chat' : 'Retailer & Distributor Chat';
+    const chatDesc = activeTab === 'factoryStore'
+        ? 'Chat with the factory store manager for stock and logistics.'
+        : 'Chat with retailers for order coordination.';
+    const avatar = activeTab === 'factoryStore' ? 'FS' : 'RE';
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="flex border-b">
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'factoryStore' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('factoryStore')}
+                >
+                    Factory Store Chat
+                </button>
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'retailer' ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('retailer')}
+                >
+                    Retailer Chat
+                </button>
+            </div>
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">{avatar}</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">{chatTitle}</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDesc}</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Distributor' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Distributor' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">{activeTab === 'factoryStore' ? 'Distributor' : 'Distributor'}</p>
                             <p className="mt-1 italic">Typing...</p>
                         </div>
                     </div>

@@ -2,17 +2,18 @@ import AppLayout from '@/layouts/app-layout'
 import { Head, Link } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
-} from 'chart.js'
+} from 'chart.js';
+import { Button } from '@/components/ui/button';
 
 // Register ChartJS components
 ChartJS.register(
@@ -20,6 +21,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -54,25 +56,506 @@ interface Message {
   isCustomer?: boolean;
 }
 
+function AvailableOrdersCard() {
+    type OrderItem = { id: number; name: string; quantity: number; price: number };
+    type Order = {
+        id: number;
+        date: string;
+        total: number;
+        discountedAmount: number;
+        items: OrderItem[];
+        status?: string;
+    };
+    const [orders, setOrders] = useState<Order[]>([])
+    
+    useEffect(() => {
+        const stored = localStorage.getItem('customerOrders');
+        if (stored) {
+            setOrders(JSON.parse(stored));
+        }
+    }, []);
+
+    const updateOrderStatus = (orderId: number, status: string) => {
+        const updatedOrders = orders.map(order => 
+            order.id === orderId ? { ...order, status } : order
+        );
+        setOrders(updatedOrders);
+        localStorage.setItem('customerOrders', JSON.stringify(updatedOrders));
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'placed':
+                return 'bg-blue-500 hover:bg-blue-600';
+            case 'received':
+                return 'bg-yellow-500 hover:bg-yellow-600';
+            case 'completed':
+                return 'bg-green-500 hover:bg-green-600';
+            default:
+                return 'bg-gray-500 hover:bg-gray-600';
+        }
+    };
+
+    return (
+        <div style={{ backgroundColor: '#F0F7FF' }}>
+            {orders.length === 0 ? (
+                <div>No orders found.</div>
+            ) : (
+                <div className="space-y-6">
+                    {orders.map((order: Order) => (
+                        <div key={order.id} className="border-b pb-4">
+                            <div className="flex justify-between font-semibold">
+                                <span>Order Date:</span>
+                                <span>{new Date(order.date).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Total:</span>
+                                <span>Ugx {Number(order.total).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Amount Paid:</span>
+                                <span>Ugx {Number(order.discountedAmount).toLocaleString()}</span>
+                            </div>
+                            {order.discountedAmount < order.total && (
+                                <div className="flex justify-between text-green-700 font-semibold">
+                                    <span>Discounted Amount:</span>
+                                    <span>Ugx {Number(order.discountedAmount).toLocaleString()}</span>
+                                </div>
+                            )}
+                            <div className="mt-2">
+                                <div className="font-semibold">Products:</div>
+                                <ul className="list-disc list-inside">
+                                    {order.items.map((item: OrderItem) => (
+                                        <li key={item.id}>
+                                            {item.name} x {item.quantity} @ Ugx {item.price.toLocaleString()}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            
+                            <div className="mt-4 flex justify-between items-center">
+                                <div className="flex justify-between w-full">
+                                    <Button
+                                        onClick={() => updateOrderStatus(order.id, 'placed')}
+                                        className="px-4 py-2 text-white rounded-md transition-colors bg-green-600 hover:bg-green-700 flex items-center justify-center w-1/3 mx-1"
+                                    >
+                                        <span className="mr-2">✔</span>Placed
+                                    </Button>
+                                    <Button
+                                        onClick={() => updateOrderStatus(order.id, 'received')}
+                                        className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
+                                    >
+                                        <span className="mr-2">✗</span>Receive
+                                    </Button>
+                                    <Button
+                                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                                        className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
+                                    >
+                                        <span className="mr-2">✗</span>Order Complete
+                                    </Button>
+                                </div>
+                                {order.status && (
+                                    <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColor(order.status)}`}>
+                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+// Place Retail Order Card
+function PlaceRetailOrderCard({ inventory, onPlaceOrder }: { inventory: Product[], onPlaceOrder: (order: any) => void }) {
+  const [inputs, setInputs] = useState<{ [id: number]: string }>({});
+  const [messages, setMessages] = useState<string[]>([]);
+
+  const handleInputChange = (id: number, value: string) => {
+    setInputs(prev => ({ ...prev, [id]: value }));
+  };
+
+  // Calculate totals
+  let originalTotal = 0;
+  let discountedTotal = 0;
+  inventory.forEach(product => {
+    const qty = parseInt(inputs[product.id] || '');
+    if (!isNaN(qty) && qty > 0) {
+      originalTotal += qty * product.price;
+      if (qty > 1) {
+        discountedTotal += qty * product.price * 0.75;
+      } else {
+        discountedTotal += qty * product.price;
+      }
+    }
+  });
+
+  const handlePlaceOrder = () => {
+    const items = inventory
+      .filter(product => {
+        const quantity = parseInt(inputs[product.id] || '');
+        return !isNaN(quantity) && quantity > 0;
+      })
+      .map(product => {
+        const quantity = parseInt(inputs[product.id]);
+        const discountApplied = quantity > 1;
+        const price = product.price;
+        const discountedPrice = discountApplied ? price * 0.75 : price;
+        return {
+          id: product.id,
+          name: product.name,
+          quantity,
+          price,
+          discountedPrice,
+          discountApplied
+        };
+      });
+    if (items.length === 0) {
+      setMessages(['Enter a valid quantity for at least one product.']);
+      return;
+    }
+    const order = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      items,
+      status: 'placed',
+      originalTotal,
+      discountedTotal
+    };
+    onPlaceOrder(order);
+    setMessages(['Order placed successfully.']);
+    setInputs({});
+  };
+
+  return (
+    <div className="bg-white border border-blue-200 rounded-lg px-8 py-6 flex flex-col items-center shadow w-full max-w-2xl mb-8">
+      <span className="text-lg font-semibold text-gray-700 mb-4">Place Retail Order</span>
+      <div className="flex flex-col gap-6 w-full">
+        {inventory.map(product => (
+          <div key={product.id} className="flex flex-row items-center gap-4 w-full justify-between">
+            <img src={product.image} alt={product.name} className="h-10 w-10 rounded-md object-cover" />
+            <span className="text-md font-semibold text-gray-700 w-32 text-center">{product.name}</span>
+            <input
+              type="number"
+              min="1"
+              value={inputs[product.id] || ''}
+              onChange={e => handleInputChange(product.id, e.target.value)}
+              placeholder="Quantity"
+              className="border rounded-md px-3 py-2 text-gray-700 w-32"
+            />
+          </div>
+        ))}
+      </div>
+      {/* Total Price Display */}
+      <div className="w-full flex flex-col items-end mt-6">
+        <span className="text-md text-gray-700">Original Total: <span className="font-semibold">Ugx {originalTotal.toLocaleString()}</span></span>
+        <span className="text-lg font-bold text-blue-700">Discounted Total: Ugx {discountedTotal.toLocaleString()}</span>
+        {discountedTotal < originalTotal && (
+          <span className="text-green-600 font-medium">25% discount applied for products with quantity &gt; 1</span>
+        )}
+      </div>
+      <Button onClick={handlePlaceOrder} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md mt-4">Place Order</Button>
+      {messages.length > 0 && (
+        <div className="mt-4 space-y-1">
+          {messages.map((msg, idx) => (
+            <div key={idx} className="text-blue-700 font-medium">{msg}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Update RetailerOrderHistoryCard to show both totals and discount info
+function RetailerOrderHistoryCard({ orders, setOrders }: { orders: any[], setOrders: React.Dispatch<React.SetStateAction<any[]>> }) {
+  const updateOrderStatus = (orderId: number, status: string) => {
+    const updatedOrders = orders.map(order =>
+      order.id === orderId ? { ...order, status } : order
+    );
+    setOrders(updatedOrders);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('retailOrders', JSON.stringify(updatedOrders));
+    }
+  };
+
+  const clearHistory = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('retailOrders');
+    }
+    setOrders([]);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'placed':
+        return 'bg-blue-500 hover:bg-blue-600';
+      case 'received':
+        return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'completed':
+        return 'bg-green-500 hover:bg-green-600';
+      default:
+        return 'bg-gray-500 hover:bg-gray-600';
+    }
+  };
+
+  return (
+    <div className="px-8 py-6 flex flex-col items-center w-full mb-8 relative">
+      <span className="text-lg font-semibold text-gray-700 mb-4">Retail Order History</span>
+      <button
+        onClick={clearHistory}
+        className="absolute top-4 right-4 bg-red-500 hover:bg-red-700 text-white text-xs px-3 py-1 rounded focus:outline-none"
+      >
+        Clear History
+      </button>
+      {orders.length === 0 ? (
+        <div className="text-gray-500">No retail orders found.</div>
+      ) : (
+        <div className="w-full space-y-6">
+          {orders.map(order => (
+            <div key={order.id} className="border-b pb-4">
+              <div className="flex justify-between font-semibold">
+                <span>Order Date:</span>
+                <span>{new Date(order.date).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Original Total:</span>
+                <span>Ugx {Number(order.originalTotal).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Discounted Total:</span>
+                <span>Ugx {Number(order.discountedTotal).toLocaleString()}</span>
+              </div>
+              {order.discountedTotal < order.originalTotal && (
+                <div className="flex justify-end text-green-600 font-medium">25% discount applied for products with quantity &gt; 1</div>
+              )}
+              <div className="mt-2">
+                <div className="font-semibold">Products:</div>
+                <ul className="list-disc list-inside">
+                  {order.items && order.items.map((item: any) => (
+                    <li key={item.id}>
+                      {item.name} x {item.quantity} @ Ugx {item.price.toLocaleString()}
+                      {item.discountApplied && (
+                        <span className="ml-2 text-green-600">(25% discount)</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-4 flex flex-row gap-2 justify-end items-center">
+                {['placed', 'received', 'completed'].map(statusKey => (
+                  <span
+                    key={statusKey}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors
+                      ${order.status === statusKey
+                        ? statusKey === 'placed' ? 'bg-blue-600 text-white border-blue-600' :
+                          statusKey === 'received' ? 'bg-yellow-500 text-white border-yellow-500' :
+                          'bg-green-600 text-white border-green-600'
+                        : statusKey === 'placed' ? 'text-blue-600 border-blue-600' :
+                          statusKey === 'received' ? 'text-yellow-600 border-yellow-500' :
+                          'text-green-600 border-green-600'
+                      }`}
+                  >
+                    {statusKey === 'placed' ? 'Placed' : statusKey === 'received' ? 'Received' : 'Order Completed'}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Retailer Edit Stock Card
+function RetailerEditStockCard({ inventory, setInventory }: { inventory: Product[], setInventory: React.Dispatch<React.SetStateAction<Product[]>> }) {
+  const [inputs, setInputs] = useState<{ [id: number]: string }>({});
+  const [messages, setMessages] = useState<string[]>([]);
+
+  const handleInputChange = (id: number, value: string) => {
+    setInputs(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSetStock = () => {
+    const newMessages: string[] = [];
+    let anySet = false;
+    setInventory(prev => prev.map(product => {
+      const stockValue = parseInt(inputs[product.id] || '');
+      if (!isNaN(stockValue) && stockValue >= 0) {
+        newMessages.push(`Stock updated for ${product.name}.`);
+        anySet = true;
+        return { ...product, stock: stockValue };
+      }
+      return product;
+    }));
+    setMessages(anySet ? newMessages : ['Enter a valid stock value for at least one product.']);
+    // Clear only the inputs for which stock was set
+    setInputs(prev => {
+      const updated = { ...prev };
+      inventory.forEach(product => {
+        const stockValue = parseInt(prev[product.id] || '');
+        if (!isNaN(stockValue) && stockValue >= 0) {
+          updated[product.id] = '';
+        }
+      });
+      return updated;
+    });
+  };
+
+  return (
+    <div className="bg-white border border-green-200 rounded-lg px-8 py-6 flex flex-col items-center shadow w-full max-w-2xl mb-8">
+      <span className="text-lg font-semibold text-gray-700 mb-4">Edit Product Stock</span>
+      <div className="flex flex-col gap-6 w-full">
+        {inventory.map(product => (
+          <div key={product.id} className="flex flex-row items-center gap-4 w-full justify-between">
+            <img src={product.image} alt={product.name} className="h-10 w-10 rounded-md object-cover" />
+            <span className="text-md font-semibold text-gray-700 w-32 text-center">{product.name}</span>
+            <input
+              type="number"
+              min="0"
+              value={inputs[product.id] || ''}
+              onChange={e => handleInputChange(product.id, e.target.value)}
+              placeholder="New stock value"
+              className="border rounded-md px-3 py-2 text-gray-700 w-32"
+            />
+          </div>
+        ))}
+      </div>
+      <Button onClick={handleSetStock} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md mt-6">Set Stock</Button>
+      {messages.length > 0 && (
+        <div className="mt-4 space-y-1">
+          {messages.map((msg, idx) => (
+            <div key={idx} className="text-green-700 font-medium">{msg}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Add Stock Status Table Card component
+function StockStatusTableCard({ inventory }: { inventory: Product[] }) {
+  const getStatus = (stock: number, threshold: number) => {
+    if (stock === 0) return { label: 'Out of Stock', color: 'bg-red-600 text-white' };
+    if (stock <= threshold) return { label: 'Low Stock', color: 'bg-yellow-500 text-white' };
+    return { label: 'In Stock', color: 'bg-green-600 text-white' };
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg px-8 py-6 shadow w-full max-w-3xl mb-8 mx-auto">
+      <span className="text-lg font-semibold text-gray-700 mb-4 block">Product Stock Status</span>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {inventory.map(product => {
+              const status = getStatus(product.stock, product.threshold);
+              return (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>{status.label}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function DailyWeeklySalesCards() {
+  const [daily, setDaily] = useState(0);
+  const [weekly, setWeekly] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('customerOrders');
+      if (stored) {
+        try {
+          const orders = JSON.parse(stored);
+          if (Array.isArray(orders)) {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // Sunday=0, so treat as 7
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - (dayOfWeek - 1));
+            monday.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(now);
+            // Daily sales: sum discountedAmount for today
+            const dailySales = orders
+              .filter((order: any) => order.date && order.date.startsWith(today))
+              .reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+            // Weekly sales: sum discountedAmount from Monday to today
+            const weeklySales = orders
+              .filter((order: any) => {
+                if (!order.date) return false;
+                const orderDate = new Date(order.date);
+                return orderDate >= monday && orderDate <= weekEnd;
+              })
+              .reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+            setDaily(dailySales);
+            setWeekly(weeklySales);
+          }
+        } catch {}
+      }
+    }
+  }, []);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-8">
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Daily Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {daily.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6 flex items-center">
+          <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2m8-10h2M2 12H4m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414" /></svg>
+          </div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">Weekly Sales</dt>
+              <dd className="flex items-baseline">
+                <div className="text-2xl font-semibold text-gray-900">Ugx {weekly.toLocaleString()}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RetailDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
   const [inventory, setInventory] = useState<Product[]>([
-    // Palm Oil Products
-    { id: 1, name: 'Premium Palm Oil (20L)', category: 'palm-oil', stock: 150, threshold: 20, price: 12.99, description: 'High quality refined palm oil for cooking', image:'/images/palm oil 2.jpg' },
-    { id: 2, name: 'Organic Palm Oil (500ml)', category: 'palm-oil', stock: 80, threshold: 15, price: 8.99, description: 'Organic certified palm oil', image:'/images/palm oil 1.jpg' },
-    { id: 3, name: 'Bulk Palm Oil (5L)', category: 'palm-oil', stock: 45, threshold: 5, price: 45.99, description: 'Economy size for commercial kitchens', image:'/images/palm oil 4.jpg' },
-    { id: 4, name: 'Palm Oil Blend (1L)', category: 'palm-oil', stock: 120, threshold: 25, price: 10.99, description: 'Blended with other vegetable oils', image:'/images/palm oil 3.jpg' },
-    
-    // Shampoo Products
-    { id: 5, name: 'Palm Oil Shampoo (300ml)', category: 'shampoo', stock: 90, threshold: 30, price: 7.99, description: 'Moisturizing shampoo with palm oil extracts', image:'/images/shampoo 1.jpg' },
-    { id: 6, name: 'Anti-Dandruff Shampoo (250ml)', category: 'shampoo', stock: 75, threshold: 25, price: 9.99, description: 'With palm-derived surfactants', image:'/images/shampoo 2.jpg' },
-    { id: 7, name: 'Volume Boost Shampoo (400ml)', category: 'shampoo', stock: 60, threshold: 20, price: 11.99, description: 'Palm oil based formula for fuller hair', image:'/images/shampoo 3.jpg' },
-    
-    // Margarine Products
-    { id: 8, name: 'Palm-Based Margarine (500g)', category: 'margarine', stock: 110, threshold: 40, price: 4.99, description: 'Perfect for baking and spreading', image: '/images/margarine 1.jpg' },
-    { id: 9, name: 'Low-Fat Margarine (250g)', category: 'margarine', stock: 85, threshold: 30, price: 3.99, description: 'Reduced fat palm oil margarine', image: '/images/magarine 2.jpg' },
-    { id: 10, name: 'Premium Baking Margarine (1kg)', category: 'margarine', stock: 50, threshold: 15, price: 8.99, description: 'Professional grade for pastry chefs', image: '/images/margarine 3.jpg' },
+    { id: 1, name: 'Cooking Oil', category: 'palm-oil', stock: 150, threshold: 20, price: 32400, description: 'High-quality cooking oil, perfect for all your culinary needs.', image: '/cooking oil.jpg' },
+    { id: 2, name: 'Shampoo', category: 'shampoo', stock: 90, threshold: 30, price: 4700, description: 'Invigorating shampoo that leaves your hair fresh and clean.', image: '/shampoo.jpg' },
+    { id: 3, name: 'Soft Margarine', category: 'margarine', stock: 110, threshold: 40, price: 6000, description: 'Smooth and creamy margarine, a perfect spread.', image: '/soft magarine.jpg' },
   ]);
   
   const [orders, setOrders] = useState<Order[]>([
@@ -103,6 +586,21 @@ export default function RetailDashboard() {
   const [activeChat, setActiveChat] = useState<'distributor' | 'customer'>('distributor');
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
+  const [retailOrders, setRetailOrders] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsWelcomeVisible(false);
@@ -110,6 +608,24 @@ export default function RetailDashboard() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('retailStock');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) setInventory(parsed);
+        } catch {}
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('retailStock', JSON.stringify(inventory));
+    }
+  }, [inventory]);
 
   const handleUpdateStock = (id: number, newStock: number) => {
     setInventory(inventory.map(item => 
@@ -176,44 +692,6 @@ export default function RetailDashboard() {
     }
   };
 
-  // Prepare sales data for the chart
-  const salesData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Palm Oil Sales',
-        data: [1200, 1900, 1500, 2100, 1800, 2400],
-        borderColor: 'rgb(234, 88, 12)',
-        backgroundColor: 'rgba(234, 88, 12, 0.5)',
-      },
-      {
-        label: 'Shampoo Sales',
-        data: [800, 1200, 1000, 1500, 1300, 1800],
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-      },
-      {
-        label: 'Margarine Sales',
-        data: [600, 900, 750, 1100, 950, 1300],
-        borderColor: 'rgb(234, 179, 8)',
-        backgroundColor: 'rgba(234, 179, 8, 0.5)',
-      },
-    ],
-  };
-
-  const salesOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'Monthly Sales Performance',
-      },
-    },
-  };
-
   // Calculate total sales
   const totalSales = orders
     .filter(order => order.status === 'Completed')
@@ -227,6 +705,20 @@ export default function RetailDashboard() {
   // Get unique customers for chat selection
   const uniqueCustomers = [...new Set(orders.map(order => order.customer))];
 
+  // Card at the top showing number of available customer orders
+  const availableCustomerOrdersCount = (() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('customerOrders') : null;
+    if (stored) {
+      try {
+        const orders = JSON.parse(stored);
+        return Array.isArray(orders) ? orders.length : 0;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
+  })();
+
   return (
     <AppLayout>
       <Head title="Retail Dashboard - Palm Oil Products Management" />
@@ -239,433 +731,70 @@ export default function RetailDashboard() {
             </div>
           )}
 
-          <div className="mb-6">
-            <nav className="flex space-x-4">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-2 rounded-t-lg ${activeTab === 'dashboard' ? 'bg-white text-green-700 font-medium' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => setActiveTab('inventory')}
-                className={`px-4 py-2 rounded-t-lg ${activeTab === 'inventory' ? 'bg-white text-green-700 font-medium' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Inventory
-              </button>
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`px-4 py-2 rounded-t-lg ${activeTab === 'orders' ? 'bg-white text-green-700 font-medium' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Orders
-              </button>
-              <button
-                onClick={() => setActiveTab('products')}
-                className={`px-4 py-2 rounded-t-lg ${activeTab === 'products' ? 'bg-white text-green-700 font-medium' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Products
-              </button>
-              <button
-                onClick={() => setActiveTab('chat')}
-                className={`px-4 py-2 rounded-t-lg ${activeTab === 'chat' ? 'bg-white text-green-700 font-medium' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Communications
-              </button>
-            </nav>
+          {/* Daily and Weekly Sales Cards */}
+          <DailyWeeklySalesCards />
+
+          {/* Add a full-width card at the top for available stock in retailer's store for each product */}
+          {/* At the very top, show available customer orders and each product's available stock as individual cards in a flex row */}
+          {/* Orders card and available stock cards in a single row at the top */}
+          <div className="w-full flex flex-wrap gap-6 justify-center mt-4 mb-8">
+            {/* Orders Card */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-8 py-4 flex flex-col items-center shadow min-w-[180px] max-w-[220px] text-center">
+              <span className="text-lg font-semibold text-gray-700 mb-1">Orders</span>
+              <span className="text-3xl font-bold text-yellow-700">{availableCustomerOrdersCount}</span>
           </div>
-
-          <div className="overflow-hidden bg-gray-50 shadow-sm sm:rounded-lg">
-            {activeTab === 'dashboard' && (
-              <div className="p-6">
-                <h2 className="mb-6 text-xl font-semibold text-gray-900">Sales Dashboard</h2>
-                
-                {/* Sales Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="p-4 bg-blue-100 border rounded-lg shadow-sm text-blue-900">
-                    <h3 className="text-sm font-medium text-blue-700">Total Sales</h3>
-                    <p className="mt-1 text-2xl font-semibold">${totalSales.toFixed(2)}</p>
-                    <p className="mt-1 text-sm text-blue-600">+12% from last month</p>
-                  </div>
-                  <div className="p-4 bg-green-100 border rounded-lg shadow-sm text-green-900">
-                    <h3 className="text-sm font-medium text-green-700">Completed Orders</h3>
-                    <p className="mt-1 text-2xl font-semibold">{orders.filter(o => o.status === 'Completed').length}</p>
-                    <p className="mt-1 text-sm text-green-600">+5 from last month</p>
-                  </div>
-                  <div className="p-4 bg-yellow-100 border rounded-lg shadow-sm text-yellow-900">
-                    <h3 className="text-sm font-medium text-yellow-700">Pending Orders</h3>
-                    <p className="mt-1 text-2xl font-semibold">${pendingOrdersValue.toFixed(2)}</p>
-                    <p className="mt-1 text-sm text-yellow-600">Waiting for processing</p>
-                  </div>
+            {/* Available Stock Cards */}
+            {inventory.map(product => (
+              <div key={product.id} className="bg-green-50 border border-green-200 rounded-lg shadow px-8 py-4 flex flex-col items-center min-w-[180px] max-w-[220px]">
+                <img src={product.image} alt={product.name} className="h-12 w-12 rounded-md object-cover mb-2" />
+                <span className="text-2xl font-bold text-green-700 mt-1">{product.stock} {product.category === 'shampoo' ? 'bottles' : product.category === 'margarine' ? 'containers' : 'jerrycans'}</span>
+              </div>
+            ))}
                 </div>
-
-                {/* Sales Chart */}
-                <div className="p-4 mb-6 bg-white border rounded-lg shadow-sm">
-                  <Line options={salesOptions} data={salesData} />
-                </div>
-
-                {/* Recent Orders */}
-                <div className="p-4 bg-white border rounded-lg shadow-sm">
-                  <h3 className="mb-4 text-lg font-medium text-gray-900">Recent Orders</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {orders.slice(0, 5).map((order) => (
-                          <tr key={order.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">#{order.id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{order.product}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">${order.amount.toFixed(2)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {order.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+          {/* Add Stock Status Table Card */}
+          <StockStatusTableCard inventory={inventory} />
+          {/* Edit Product Stock and Place Retail Order side by side */}
+          <div className="w-full flex flex-col md:flex-row gap-8 justify-center mb-8">
+            <div className="flex-1 flex justify-center">
+              <RetailerEditStockCard inventory={inventory} setInventory={setInventory} />
+              </div>
+            <div className="flex-1 flex justify-center">
+              <PlaceRetailOrderCard inventory={inventory} onPlaceOrder={order => {
+                setRetailOrders(prev => {
+                  const updated = [...prev, order];
+                  localStorage.setItem('retailOrders', JSON.stringify(updated));
+                  return updated;
+                });
+              }} />
                 </div>
               </div>
-            )}
-
-            {activeTab === 'inventory' && (
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Inventory Management</h2>
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value as 'all' | Product['category'])}
-                    className="border-gray-300 rounded-md shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="palm-oil">Palm Oil</option>
-                    <option value="shampoo">Shampoo</option>
-                    <option value="margarine">Margarine</option>
-                  </select>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Threshold</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredInventory.map((item) => (
-                        <tr key={item.id} className={item.stock <= item.threshold ? 'bg-red-50' : ''}>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColor(item.category)}`}>
-                              {item.category.replace('-', ' ')}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.stock} units</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{item.threshold} units</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {item.stock <= item.threshold ? (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Low Stock
-                              </span>
-                            ) : (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                In Stock
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <button 
-                              onClick={() => {
-                                const newStock = prompt(`Enter new stock quantity for ${item.name}`, String(item.stock));
-                                if (newStock !== null && !isNaN(Number(newStock))) {
-                                  handleUpdateStock(item.id, parseInt(newStock));
-                                }
-                              }}
-                              className="text-green-600 hover:text-green-900 mr-2"
-                            >
-                              Update
-                            </button>
-                            <button className="text-blue-600 hover:text-blue-900">
-                              Reorder
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {/* Retailer Order History Card (full-width, its own row) */}
+          <div className="w-full flex justify-center mb-8">
+            <div className="bg-white border border-blue-200 rounded-lg px-8 py-6 shadow w-full max-w-5xl">
+              <RetailerOrderHistoryCard orders={retailOrders} setOrders={setRetailOrders} />
                 </div>
               </div>
-            )}
 
-            {activeTab === 'orders' && (
-              <div className="p-6">
-                <h2 className="mb-4 text-xl font-semibold">Customer Orders</h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {orders.map((order) => (
-                        <tr key={order.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">#{order.id}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{order.product}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{order.quantity}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">${order.amount.toFixed(2)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                              order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value as Order['status'])}
-                              className="border-gray-300 rounded-md shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-                            >
-                              <option value="Pending">Pending</option>
-                              <option value="Processing">Processing</option>
-                              <option value="Completed">Completed</option>
-                              <option value="Cancelled">Cancelled</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4">
-                  <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    + Create New Order
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'products' && (
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Product Catalog</h2>
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value as 'all' | Product['category'])}
-                    className="border-gray-300 rounded-md shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="palm-oil">Palm Oil</option>
-                    <option value="shampoo">Shampoo</option>
-                    <option value="margarine">Margarine</option>
-                  </select>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <div key={product.id} className="border rounded-lg overflow-hidden shadow-sm">
-                      {/* Image Container - SIMPLEST WORKING VERSION */}
-                      <div className="h-48 bg-gray-100 overflow-hidden">
-                        <img
-                           src={`/images/${product.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.jpg`}
-                           alt={product.name}
-                           className="w-full h-full object-cover"
-                           onError={(e) => {
-                          // Show nothing if image fails (or add a default image)
-                          e.currentTarget.style.display = 'none';
-                       }}
-                      />
-                     </div>
-                   <div className={`h-48 flex items-center justify-center ${
-                        product.category === 'palm-oil' ? 'bg-orange-50' :
-                        product.category === 'shampoo' ? 'bg-blue-50' :
-                        'bg-yellow-50'
-                      }`}>
-                        {product.category === 'palm-oil' && (
-                          <span className="text-orange-400">Palm Oil Bottle</span>
-                        )}
-                        {product.category === 'shampoo' && (
-                          <span className="text-blue-400">Shampoo Bottle</span>
-                        )}
-                        {product.category === 'margarine' && (
-                          <span className="text-yellow-600">Margarine Tub</span>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-medium text-lg">{product.name}</h3>
-                          <span className={`px-2 text-xs leading-5 font-semibold rounded-full ${getCategoryColor(product.category)}`}>
-                            {product.category.replace('-', ' ')}
-                          </span>
-                        </div>
-                        <p className="text-gray-600 mt-1">Current Stock: {product.stock} units</p>
-                        <div className="mt-3 flex justify-between items-center">
-                          <span className="text-green-600 font-medium">${product.price.toFixed(2)}</span>
-                          <button
-                            onClick={() => handleViewDetails(product)}
-                            className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
-                          >
-                            View Details
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'chat' && (
-              <div className="p-6">
-                <h2 className="mb-4 text-xl font-semibold">Communications</h2>
-                
-                <div className="flex mb-4 space-x-2">
-                  <button
-                    onClick={() => setActiveChat('distributor')}
-                    className={`px-4 py-2 rounded-md ${activeChat === 'distributor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  >
-                    Distributor Chat
-                  </button>
-                  <button
-                    onClick={() => setActiveChat('customer')}
-                    className={`px-4 py-2 rounded-md ${activeChat === 'customer' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  >
-                    Customer Support
-                  </button>
-                </div>
-
-                {activeChat === 'distributor' ? (
-                  <div className="border rounded-lg h-96 flex flex-col">
-                    <div className="p-4 border-b bg-gray-50">
-                      <h3 className="font-medium">Chat with Distributor X</h3>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                      {distributorMessages.map((msg) => (
-                        <div key={msg.id} className={`flex ${msg.sender === 'You' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${msg.sender === 'You' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                            <p className="font-medium">{msg.sender}</p>
-                            <p className="mt-1">{msg.message}</p>
-                            <p className="text-xs text-gray-500 mt-1">{msg.time}</p>
+          {/* Always show all sections: inventory, orders, productions (sales), and communication (messages) */}
+          {/* Removed grid container to allow full-width Available Customer Orders card */}
+          {/* Available Orders Section */}
+          <div className="w-full flex justify-center mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm mt-6 w-full max-w-5xl">
+              <h3 className="mb-4 text-lg font-medium text-gray-900">Available Customer Orders</h3>
+              <AvailableOrdersCard />
                           </div>
                         </div>
-                      ))}
-                    </div>
-                    <div className="p-4 border-t">
-                      <div className="flex space-x-2">
-                        <input
-                          type="text"
-                          value={newDistributorMessage}
-                          onChange={(e) => setNewDistributorMessage(e.target.value)}
-                          placeholder="Type your message..."
-                          className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
-                          onKeyPress={(e) => e.key === 'Enter' && handleSendDistributorMessage()}
-                        />
-                        <button
-                          onClick={handleSendDistributorMessage}
-                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                        >
-                          Send
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex space-x-4">
-                    <div className="w-1/3 border rounded-lg h-96 flex flex-col">
-                      <div className="p-4 border-b bg-gray-50">
-                        <h3 className="font-medium">Customers</h3>
-                      </div>
-                      <div className="flex-1 overflow-y-auto">
-                        {uniqueCustomers.map((customer) => (
-                          <div 
-                            key={customer} 
-                            className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedCustomer === customer ? 'bg-green-50' : ''}`}
-                            onClick={() => setSelectedCustomer(customer)}
-                          >
-                            <p className="font-medium">{customer}</p>
-                            <p className="text-sm text-gray-500">
-                              {customerMessages.filter(m => m.sender === customer).length} messages
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex-1 border rounded-lg h-96 flex flex-col">
-                      {selectedCustomer ? (
-                        <>
-                          <div className="p-4 border-b bg-gray-50">
-                            <h3 className="font-medium">Chat with {selectedCustomer}</h3>
-                          </div>
-                          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {customerMessages
-                              .filter(msg => msg.sender === selectedCustomer || (msg.sender === 'You' && msg.message.includes(selectedCustomer)))
-                              .map((msg) => (
-                                <div key={msg.id} className={`flex ${msg.sender === 'You' ? 'justify-end' : 'justify-start'}`}>
-                                  <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${msg.sender === 'You' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                    <p className="font-medium">{msg.sender}</p>
-                                    <p className="mt-1">{msg.message}</p>
-                                    <p className="text-xs text-gray-500 mt-1">{msg.time}</p>
-                                  </div>
-                                </div>
-                              ))}
-                          </div>
-                          <div className="p-4 border-t">
-                            <div className="flex space-x-2">
-                              <input
-                                type="text"
-                                value={newCustomerMessage}
-                                onChange={(e) => setNewCustomerMessage(e.target.value)}
-                                placeholder={`Message to ${selectedCustomer}`}
-                                className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-green-500"
-                                onKeyPress={(e) => e.key === 'Enter' && handleSendCustomerMessage()}
-                              />
-                              <button
-                                onClick={handleSendCustomerMessage}
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                              >
-                                Send
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex-1 flex items-center justify-center text-gray-500">
-                          Select a customer to start chatting
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+
+          {/* Sales Dashboard Section */}
+          <div className="lg:col-span-2">
+            {/* Remove the grid with the three summary cards (Total Sales, Completed Orders, Pending Orders) from the retailer dashboard. */}
+
+            {/* Sales Chart */}
+            {/* Remove the 'Recent Orders' section and its table from the dashboard. */}
               </div>
-            )}
-          </div>
+
+          {/* Communications Section */}
+          {/* Remove the Communications section (the card/column with messages and chat UI) */}
         </div>
       </div>
 
@@ -739,5 +868,5 @@ export default function RetailDashboard() {
         </DialogContent>
       </Dialog>
     </AppLayout>
-  )
+  );
 }
