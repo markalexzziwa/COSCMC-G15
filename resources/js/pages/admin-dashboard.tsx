@@ -213,16 +213,18 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Vendor Applications Card */}
                         <Card
-                            className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105 cursor-pointer"
+                            className="relative overflow-hidden group shadow-lg border-2 border-purple-600 bg-blue-50 text-black-900 transition-transform transform hover:scale-105 cursor-pointer"
                         >
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
-                                    <FileText className="w-12 h-12 text-white drop-shadow-lg shrink-0" />
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Vendor Applications</CardTitle>
+                                    <span className="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center text-2xl font-bold text-black-900 drop-shadow-lg shrink-0">
+                                        <FileText className="w-8 h-8 text-black-900" />
+                                    </span>
+                                    <CardTitle className="text-2xl font-bold text-black-900 drop-shadow flex items-center">Vendor Applications</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">View and download vendor application PDFs.</div>
+                                <div className="mb-6 text-lg text-black-900/90 text-center">View and download vendor application PDFs.</div>
                                 <button
                                     className="px-6 py-2 rounded-lg bg-white text-green-700 font-semibold shadow hover:bg-green-100 transition-colors flex items-center gap-2"
                                     onClick={() => setShowApplications(v => !v)}
@@ -232,21 +234,23 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 </button>
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <FileText className="w-32 h-32 text-white" />
+                                <span className="w-32 h-32 bg-yellow-200 rounded-full flex items-center justify-center text-6xl font-bold text-black-900">
+                                    <FileText className="w-24 h-24 text-black-900 opacity-40" />
+                                </span>
                             </div>
                         </Card>
                         {/* Workforce Card - move this up to be second */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                        <Card className="relative overflow-hidden group shadow-lg border-2 border-purple-600 bg-blue-50 text-black-900 transition-transform transform hover:scale-105">
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <Users className="w-8 h-8 text-white opacity-40" />
+                                    <span className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-2xl font-bold text-black-900 drop-shadow-lg shrink-0">
+                                        <Users className="w-8 h-8 text-black-900 opacity-40" />
                                     </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Workforce Task Assignments</CardTitle>
+                                    <CardTitle className="text-2xl font-bold text-black-900 drop-shadow flex items-center">Workforce Task Assignments</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">Assign work to company personels</div>
+                                <div className="mb-6 text-lg text-black-900/90 text-center">Assign work to company personels</div>
                                 <div className="flex gap-4">
                                     <button
                                         className="flex items-center gap-2 px-5 py-2 rounded-lg bg-white text-blue-700 font-semibold shadow hover:bg-blue-100 transition-colors"
@@ -277,8 +281,8 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 </div>
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <Users className="w-24 h-24 text-white opacity-40" />
+                                <span className="w-32 h-32 bg-yellow-200 rounded-full flex items-center justify-center text-6xl font-bold text-black-900">
+                                    <Users className="w-24 h-24 text-black-900 opacity-40" />
                                 </span>
                             </div>
                         </Card>
@@ -436,26 +440,26 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
                         {/* Accepted Vendors Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                        <Card className="relative overflow-hidden group shadow-lg border-2 border-purple-600 bg-blue-50 text-black-900 transition-transform transform hover:scale-105">
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <ThumbsUp className="w-8 h-8 text-white" />
+                                    <span className="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center text-2xl font-bold text-black-900 drop-shadow-lg shrink-0">
+                                        <ThumbsUp className="w-8 h-8 text-black-900" />
                                     </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Accepted Vendors</CardTitle>
+                                    <CardTitle className="text-2xl font-bold text-black-900 drop-shadow flex items-center">Accepted Vendors</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">You are required to visit company on the allocated date</div>
+                                <div className="mb-6 text-lg text-black-900/90 text-center">The following individuals are required to visit company on the allocated date</div>
                                 {acceptedVendors.length > 0 && (
                                     <div className="w-full">
-                                        <div className="font-semibold text-white mb-2">Vendors' Usernames and Visit Dates:</div>
-                                        <ul className="list-disc list-inside text-white">
+                                        <div className="font-semibold text-black-900 mb-2">Vendors' Usernames and Visit Dates:</div>
+                                        <ul className="list-disc list-inside text-black-900">
                                             {acceptedVendors.map((name) => (
                                                 <li key={name}>
                                                     {name}
                                                     {acceptedVendorDates[name] && (
-                                                        <span className="ml-2 text-orange-200 text-sm">(Visit Date: {acceptedVendorDates[name]} 10:10am)</span>
+                                                        <span className="ml-2 text-pink-900 text-sm font-bold">(Visit Date: {acceptedVendorDates[name]} 10:30am)</span>
                                                     )}
                                                 </li>
                                             ))}
@@ -464,27 +468,27 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 )}
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-orange-800 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <ThumbsUp className="w-24 h-24 text-white opacity-40" />
+                                <span className="w-32 h-32 bg-yellow-200 rounded-full flex items-center justify-center text-6xl font-bold text-black-900">
+                                    <ThumbsUp className="w-24 h-24 text-black-900 opacity-40" />
                                 </span>
                             </div>
                         </Card>
                         {/* Rejected Applications Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                        <Card className="relative overflow-hidden group shadow-lg border-2 border-purple-600 bg-blue-50 text-black-900 transition-transform transform hover:scale-105">
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <ThumbsDown className="w-8 h-8 text-white" />
+                                    <span className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-2xl font-bold text-black-900 drop-shadow-lg shrink-0">
+                                        <ThumbsDown className="w-8 h-8 text-black-900" />
                                     </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Rejected Applications</CardTitle>
+                                    <CardTitle className="text-2xl font-bold text-black-900 drop-shadow flex items-center">Rejected Applications</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">This may be as a result of incomplete information. Thank you for showing interest</div>
+                                <div className="mb-6 text-lg text-black-900/90 text-center">This may be as a result of incomplete information. Thank you for showing interest</div>
                                 {rejectedVendors.length > 0 && (
                                     <div className="w-full">
-                                        <div className="font-semibold text-white mb-2">Unqualified Vendors:</div>
-                                        <ul className="list-disc list-inside text-white">
+                                        <div className="font-semibold text-black-900 mb-2">Unqualified Vendors:</div>
+                                        <ul className="list-disc list-inside text-black-900">
                                             {rejectedVendors.map((name) => (
                                                 <li key={name}>{name}</li>
                                             ))}
@@ -493,23 +497,23 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 )}
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-purple-500 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <ThumbsDown className="w-24 h-24 text-white opacity-40" />
+                                <span className="w-32 h-32 bg-yellow-200 rounded-full flex items-center justify-center text-6xl font-bold text-black-900">
+                                    <ThumbsDown className="w-24 h-24 text-black-900 opacity-40" />
                                 </span>
                             </div>
                         </Card>
                         {/* Clear Lists Card */}
-                        <Card className="relative overflow-hidden group shadow-lg border-0 bg-blue-900 text-white transition-transform transform hover:scale-105">
+                        <Card className="relative overflow-hidden group shadow-lg border-2 border-purple-600 bg-blue-50 text-black-900 transition-transform transform hover:scale-105">
                             <CardHeader className="flex flex-col items-center justify-center gap-4 pt-8 pb-4">
                                 <div className="flex items-center gap-3 w-full justify-center">
-                                    <span className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
-                                        <Check className="w-8 h-8 text-white" />
+                                    <span className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-2xl font-bold text-black-900 drop-shadow-lg shrink-0">
+                                        <Check className="w-8 h-8 text-black-900" />
                                     </span>
-                                    <CardTitle className="text-2xl font-bold text-white drop-shadow flex items-center">Clear Accepted & Rejected Lists</CardTitle>
+                                    <CardTitle className="text-2xl font-bold text-black-900 drop-shadow flex items-center">Clear Accepted & Rejected Lists</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pb-8">
-                                <div className="mb-6 text-lg text-white/90 text-center">Remove all accepted and rejected vendors from the lists.</div>
+                                <div className="mb-6 text-lg text-black-900/90 text-center">Remove all accepted and rejected vendors from the lists.</div>
                                 <button
                                     className="px-6 py-2 rounded-lg bg-white text-gray-700 font-semibold shadow hover:bg-gray-200 transition-colors"
                                     onClick={() => {
@@ -525,8 +529,8 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 </button>
                             </CardContent>
                             <div className="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none">
-                                <span className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center text-6xl font-bold text-white">
-                                    <Check className="w-24 h-24 text-white opacity-40" />
+                                <span className="w-32 h-32 bg-yellow-200 rounded-full flex items-center justify-center text-6xl font-bold text-black-900">
+                                    <Check className="w-24 h-24 text-black-900 opacity-40" />
                                 </span>
                             </div>
                         </Card>

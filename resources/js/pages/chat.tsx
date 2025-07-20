@@ -315,6 +315,164 @@ function CombinedFactoryStoreChatCard() {
     );
 }
 
+const VendorFactoryStoreChat = () => {
+    const [messages, setMessages] = useState([
+        { 
+            id: '1', 
+            sender: 'Factory Store', 
+            text: 'Hello Vendor! Welcome to our chat system. How can we assist you today?', 
+            timestamp: new Date().toISOString(),
+            category: 'inbox' as MessageCategory
+        }
+    ]);
+    const [newMessage, setNewMessage] = useState('');
+    const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        
+        const message = {
+            id: Math.random().toString(36).slice(2),
+            sender: 'Vendor' as const,
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+            category: 'sent' as MessageCategory
+        };
+        
+        setMessages(prev => [...prev, message]);
+        setNewMessage('');
+        
+        // Simulate factory store response
+        setTimeout(() => {
+            const responses = [
+                'Thank you for your message. We will review your application and get back to you soon.',
+                'We have received your inquiry. Our team will process this information.',
+                'Your application is being reviewed. Please check back for updates.',
+                'We appreciate your interest. We will contact you with further details.',
+                'Thank you for reaching out. We are currently processing applications.'
+            ];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            const reply = {
+                id: Math.random().toString(36).slice(2),
+                sender: 'Factory Store' as const,
+                text: randomResponse,
+                timestamp: new Date().toISOString(),
+                category: 'inbox' as MessageCategory
+            };
+            
+            setMessages(prev => [...prev, reply]);
+        }, 2000);
+    };
+
+    const moveMessage = (id: string, category: MessageCategory) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, category } : m));
+    };
+
+    const filteredMessages = messages.filter(m => m.category === activeCategory);
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">FS</span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">Factory Store Chat</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>Chat with factory store about your application</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex">
+                {/* Vertical Category Navigation */}
+                <div className="w-48 bg-gray-50 border-r">
+                    <nav className="p-4 space-y-2">
+                        <CategoryButton category="inbox" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Inbox size={16} />} />
+                        <CategoryButton category="sent" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Send size={16} />} />
+                        <CategoryButton category="draft" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<FileText size={16} />} />
+                        <CategoryButton category="spam" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<AlertOctagon size={16} />} />
+                        <CategoryButton category="trash" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Trash2 size={16} />} />
+                    </nav>
+                </div>
+
+                {/* Chat Content */}
+                <div className="flex-1 flex flex-col">
+                    {/* Messages Area */}
+                    <div className="h-96 bg-gray-100 p-4 overflow-y-auto">
+                        {filteredMessages.length > 0 ? (
+                            <div className="space-y-3">
+                                {filteredMessages.map((message) => (
+                                    <div key={message.id} className="group">
+                                        <div className={`flex ${message.sender === 'Vendor' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
+                                                message.sender === 'Vendor' 
+                                                    ? 'text-white rounded-br-none' 
+                                                    : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                                            }`}
+                                            style={message.sender === 'Vendor' ? { background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' } : {}}
+                                            >
+                                                <p className="text-sm">{message.text}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'Vendor' ? 'text-white/80' : 'text-gray-500'}`}>
+                                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden group-hover:flex justify-end space-x-1 mt-1">
+                                            {activeCategory !== 'trash' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'trash')} className="text-gray-500 hover:text-red-500">
+                                                    <Trash2 size={12} />
+                                                </Button>
+                                            )}
+                                            {activeCategory !== 'spam' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'spam')} className="text-gray-500 hover:text-orange-500">
+                                                    <AlertOctagon size={12} />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-gray-500">
+                                    <Inbox className="mx-auto h-12 w-12 mb-2" />
+                                    <p>No messages in {activeCategory}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    {(activeCategory === 'inbox' || activeCategory === 'draft' || activeCategory === 'sent') && (
+                        <div className="bg-white p-4 border-t">
+                            <div className="flex space-x-2 items-center">
+                                <Input
+                                    value={newMessage}
+                                    onChange={e => setNewMessage(e.target.value)}
+                                    placeholder="Type a message to Factory Store..."
+                                    className="flex-1 rounded-full border-gray-300 h-12"
+                                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <Button
+                                    onClick={handleSendMessage}
+                                    className="rounded-full p-2 h-12"
+                                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                                    disabled={!newMessage.trim()}
+                                >
+                                    <Send className="h-5 w-5 text-white" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function getDashboardChat(dashboard: string) {
     switch (dashboard) {
         case 'manufacturer':
@@ -354,12 +512,7 @@ function getDashboardChat(dashboard: string) {
                 </div>
             );
         case 'unofficial-vendor':
-            return (
-                <div className="bg-gray-100 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Unofficial Vendor Chat</h2>
-                    <p>Chat with admin, support, and track your application here.</p>
-                </div>
-            );
+            return <VendorFactoryStoreChat />;
         default:
             return (
                 <div className="bg-gray-50 p-6 rounded shadow">
@@ -420,16 +573,16 @@ const ManufacturerChat = () => {
     return (
         <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* WhatsApp-style Header */}
-            <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
                         <span className="text-white font-semibold text-sm">
                             {activeChat === 'factoryStore' ? 'FS' : 'IM'}
                         </span>
                     </div>
                     <div>
                         <h3 className="font-semibold">{chatTitle}</h3>
-                        <p className="text-xs text-blue-100">greetings, chat now</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>greetings, chat now</p>
                     </div>
                 </div>
                 <div className="flex space-x-2">

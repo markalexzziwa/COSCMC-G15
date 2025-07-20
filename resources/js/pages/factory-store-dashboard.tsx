@@ -230,7 +230,7 @@ const UpdateByPackageCard = ({
     currentStock,
     onAddStock,
 }: {
-    currentStock: { name: string; quantity: number, image: string, unit: string, packageSize: number, packageUnit: string }[]
+    currentStock: { name: string; quantity: number, image: string, unit: string, packageSize: number, packageUnit: string, boxSize: number }[]
     onAddStock: (productName: string, quantity: number) => void
 }) => {
     const [packageUpdates, setPackageUpdates] = useState<Record<string, number | string>>({});
@@ -269,8 +269,8 @@ const UpdateByPackageCard = ({
                                         type="number"
                                         value={packageUpdates[item.name] || ''}
                                         onChange={(e) => setPackageUpdates(prev => ({ ...prev, [item.name]: e.target.value ? parseInt(e.target.value, 10) : '' }))}
-                                        className="w-24"
-                                        placeholder="# of packages"
+                                        className="w-48"
+                                        placeholder={`${item.boxSize} ${item.packageUnit}s@ box`}
                                     />
                                     <Button onClick={() => handleAddPackages(item.name, item.packageSize)} variant="info">Add</Button>
                                 </div>
@@ -336,7 +336,7 @@ const UpdateStockCard = ({
                                     type="number"
                                     value={updates[item.name] || ''}
                                     onChange={(e) => setUpdates(prev => ({ ...prev, [item.name]: e.target.value ? parseInt(e.target.value, 10) : '' }))}
-                                    className="w-24"
+                                    className="w-48"
                                     placeholder="Set Qty"
                                 />
                                 <Button onClick={() => handleManualUpdate(item.name)} variant="info">Update</Button>

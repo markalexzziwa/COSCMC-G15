@@ -50,9 +50,9 @@ export default function UnofficialVendorDashboard() {
             <Head title="Vendor Dashboard" />
 
             {/* Vendor Application Portal Banner */}
-            <div className="w-full flex flex-col items-center justify-center py-8 bg-yellow-100 border-b border-yellow-300 mb-8 rounded-xl shadow">
-                <h1 className="text-4xl font-extrabold text-black mb-2">Vendor Application Portal</h1>
-                <p className="text-lg text-black">You can be a potential Vendor.<br />Apply day, Apply now</p>
+            <div className="w-full flex flex-col items-center justify-center py-8 bg-blue-50 border-2 border-purple-600 mb-8 rounded-xl shadow">
+                <h1 className="text-4xl font-extrabold text-black-900 mb-2">Vendor Application Portal</h1>
+                <p className="text-lg text-black-900">You can be a potential Vendor.<br />Apply day, Apply now</p>
             </div>
 
             {/* Notification (top-right corner) */}
@@ -71,11 +71,11 @@ export default function UnofficialVendorDashboard() {
                         <div className="flex flex-col gap-8">
                             {/* Application Download Card */}
                             <div className="max-w-md w-full">
-                                <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white rounded-xl shadow-lg p-6 flex flex-col items-center h-full">
-                                    <div className="text-2xl font-bold text-white mb-2">Application Download</div>
-                                    <div className="text-white/90 text-center mb-2">Click the button below to download the application template (apptemplate.docx)</div>
+                                <div className="bg-blue-50 border-2 border-purple-600 text-black-900 rounded-xl shadow-lg p-6 flex flex-col items-center h-full">
+                                    <div className="text-2xl font-bold text-black-900 mb-2">Application Download</div>
+                                    <div className="text-black-900/90 text-center mb-2">Click the button below to download the application template (apptemplate.docx)</div>
                                     <form method="GET" action="http://localhost:8080/download/apptemplate">
-                                        <button type="submit" className="mt-2 px-6 py-2 bg-white text-blue-700 font-semibold rounded-lg shadow hover:bg-blue-100 transition-colors">
+                                        <button type="submit" className="mt-2 px-6 py-2 bg-purple-500 text-white font-semibold rounded-lg shadow hover:bg-purple-600 transition-colors">
                                             Download Template
                                         </button>
                                     </form>
@@ -83,23 +83,23 @@ export default function UnofficialVendorDashboard() {
                             </div>
                             {/* Tyui Card */}
                             <div className="max-w-md w-full">
-                                <div className="bg-gradient-to-br from-orange-700 via-orange-800 to-orange-900 text-white rounded-xl shadow-md p-6 flex flex-col items-center h-full">
+                                <div className="bg-blue-50 border-2 border-purple-600 text-black-900 rounded-xl shadow-md p-6 flex flex-col items-center h-full">
                                     <div className="flex items-center gap-3 w-full justify-center">
-                                        <span className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
+                                        <span className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
                                             <ThumbsUp className="w-8 h-8 text-white" />
                                         </span>
-                                        <div className="text-2xl font-bold text-white mb-2">Verified Vendors</div>
+                                        <div className="text-2xl font-bold text-black-900 mb-2">Verified Vendors</div>
                                     </div>
-                                    <div className="text-white text-center mb-2">You are required to visit company on the allocated date</div>
+                                    <div className="text-black-900 text-center mb-2">You are required to visit company on the allocated date</div>
                                     {acceptedVendors.length > 0 && (
                                         <div className="w-full">
-                                            <div className="font-semibold text-white mb-2">Accepted Vendors:</div>
-                                            <ul className="list-disc list-inside text-white">
+                                            <div className="font-semibold text-black-900 mb-2">Accepted Vendors:</div>
+                                            <ul className="list-disc list-inside text-black-900">
                                                 {acceptedVendors.map((name) => (
                                                     <li key={name}>
                                                         {name}
                                                         {acceptedVendorDates[name] && (
-                                                            <span className="ml-2 text-orange-200 text-sm">(Visit Date: {acceptedVendorDates[name]} 10:10am)</span>
+                                                            <span className="ml-2 text-purple-900 text-sm font-bold">(Visit Date: {acceptedVendorDates[name]} 10:10am)</span>
                                                         )}
                                                     </li>
                                                 ))}
@@ -110,18 +110,18 @@ export default function UnofficialVendorDashboard() {
                             </div>
                             {/* Fght Card */}
                             <div className="max-w-md w-full">
-                                <div className="bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 text-white rounded-xl shadow-md p-6 flex flex-col items-center h-full">
+                                <div className="bg-blue-50 border-2 border-purple-600 text-black-900 rounded-xl shadow-md p-6 flex flex-col items-center h-full">
                                     <div className="flex items-center gap-3 w-full justify-center">
                                         <span className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold text-white drop-shadow-lg shrink-0">
                                             <ThumbsDown className="w-8 h-8 text-white" />
                                         </span>
-                                        <div className="text-2xl font-bold text-white mb-2">Rejected Applications</div>
+                                        <div className="text-2xl font-bold text-black-900 mb-2">Rejected Applications</div>
                                     </div>
-                                    <div className="text-white text-center mb-2">This may be as a result of incomplete information. Thank you for showing interest</div>
+                                    <div className="text-black-900 text-center mb-2">This may be as a result of incomplete information. Thank you for showing interest</div>
                                     {rejectedVendors.length > 0 && (
                                         <div className="w-full">
-                                            <div className="font-semibold text-white mb-2">Unqualified Vendors:</div>
-                                            <ul className="list-disc list-inside text-white">
+                                            <div className="font-semibold text-black-900 mb-2">Unqualified Vendors:</div>
+                                            <ul className="list-disc list-inside text-black-900">
                                                 {rejectedVendors.map((name) => (
                                                     <li key={name}>{name}</li>
                                                 ))}
@@ -135,9 +135,9 @@ export default function UnofficialVendorDashboard() {
                         <div className="flex flex-col justify-center h-full">
                             {/* Application Submission Card */}
                             <div className="max-w-md w-full">
-                                <div className="bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 text-white rounded-xl shadow-lg p-6 flex flex-col items-center h-full">
-                                    <div className="text-2xl font-bold text-white mb-2">Application Submission</div>
-                                    <div className="text-white/90 text-center mb-2">Save your application as "username.pdf" before proceeding. Fill in your details and upload your application as a PDF file.</div>
+                                <div className="bg-blue-50 border-2 border-purple-600 text-black-900 rounded-xl shadow-lg p-6 flex flex-col items-center h-full">
+                                    <div className="text-2xl font-bold text-black-900 mb-2">Application Submission</div>
+                                    <div className="text-black-900/90 text-center mb-2">Save your application as "username.pdf" before proceeding. Fill in your details and upload your application as a PDF file.</div>
                                     <form
                                         method="POST"
                                         action="http://localhost:8080/upload"
@@ -145,19 +145,19 @@ export default function UnofficialVendorDashboard() {
                                         target="_blank"
                                         className="flex flex-col gap-4 w-full bg-white/10 rounded-xl shadow p-6 mt-4"
                                     >
-                                        <label className="font-medium text-white">PDF File
+                                        <label className="font-medium text-black-900">PDF File
                                             <input type="file" name="file" accept="application/pdf" required className="block mt-2 w-full border border-gray-300 rounded-lg p-2 bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 file:bg-red-500 file:hover:bg-red-700 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded file:border-0 file:transition-colors" />
                                         </label>
-                                        <label className="font-medium text-white">Full Name
+                                        <label className="font-medium text-black-900">Full Name
                                             <input type="text" name="full_name" required placeholder="Enter your full name" className="block mt-2 w-full border border-gray-300 rounded-lg p-2 bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400" />
                                         </label>
-                                        <label className="font-medium text-white">Account Balance
+                                        <label className="font-medium text-black-900">Account Balance
                                             <input type="number" name="account_balance" required placeholder="e.g. 500000" className="block mt-2 w-full border border-gray-300 rounded-lg p-2 bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400" />
                                         </label>
-                                        <label className="font-medium text-white">Age
+                                        <label className="font-medium text-black-900">Age
                                             <input type="number" name="age" required placeholder="e.g. 30" className="block mt-2 w-full border border-gray-300 rounded-lg p-2 bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400" />
                                         </label>
-                                        <label className="font-medium text-white">Financial Stability
+                                        <label className="font-medium text-black-900">Financial Stability
                                             <select name="financial_stability" required className="block mt-2 w-full border border-gray-300 rounded-lg p-2 bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400">
                                                 <option value="">Select...</option>
                                                 <option value="good">Good</option>
@@ -165,7 +165,7 @@ export default function UnofficialVendorDashboard() {
                                                 <option value="bad">Bad</option>
                                             </select>
                                         </label>
-                                        <button type="submit" className="mt-4 px-6 py-3 bg-white text-green-700 rounded-lg shadow hover:bg-green-100 transition font-semibold text-lg w-full">Upload PDF</button>
+                                        <button type="submit" className="mt-4 px-6 py-3 bg-purple-500 text-white rounded-lg shadow hover:bg-purple-600 transition font-semibold text-lg w-full">Upload PDF</button>
                                     </form>
                                 </div>
                             </div>

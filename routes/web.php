@@ -46,21 +46,72 @@ Route::get('/market', function () {
 
 Route::get('/report', function (Request $request) {
     $user = Auth::user();
-    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    $role = '';
+    if ($user && $user->role) {
+        $roleName = $user->role->name;
+        // Convert role names to match the case statements in report.tsx
+        switch ($roleName) {
+            case 'Vendor':
+                $role = 'unofficial-vendor';
+                break;
+            case 'Inventory Manager':
+                $role = 'inventory-manager';
+                break;
+            case 'Factory Store':
+                $role = 'factory-store';
+                break;
+            default:
+                $role = strtolower(str_replace(' ', '-', $roleName));
+        }
+    }
     return Inertia::render('report', [
         'dashboard' => $role,
     ]);
 })->middleware(['auth', 'verified'])->name('report');
 Route::get('/analytics', function (Request $request) {
     $user = Auth::user();
-    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    $role = '';
+    if ($user && $user->role) {
+        $roleName = $user->role->name;
+        // Convert role names to match the case statements in analytics.tsx
+        switch ($roleName) {
+            case 'Vendor':
+                $role = 'unofficial-vendor';
+                break;
+            case 'Inventory Manager':
+                $role = 'inventory-manager';
+                break;
+            case 'Factory Store':
+                $role = 'factory-store';
+                break;
+            default:
+                $role = strtolower(str_replace(' ', '-', $roleName));
+        }
+    }
     return Inertia::render('analytics', [
         'dashboard' => $role,
     ]);
 })->middleware(['auth', 'verified'])->name('analytics');
 Route::get('/chat', function (Request $request) {
     $user = Auth::user();
-    $role = $user && $user->role ? strtolower(str_replace(' ', '-', $user->role->name)) : '';
+    $role = '';
+    if ($user && $user->role) {
+        $roleName = $user->role->name;
+        // Convert role names to match the case statements in chat.tsx
+        switch ($roleName) {
+            case 'Vendor':
+                $role = 'unofficial-vendor';
+                break;
+            case 'Inventory Manager':
+                $role = 'inventory-manager';
+                break;
+            case 'Factory Store':
+                $role = 'factory-store';
+                break;
+            default:
+                $role = strtolower(str_replace(' ', '-', $roleName));
+        }
+    }
     return Inertia::render('chat', [
         'dashboard' => $role,
     ]);
