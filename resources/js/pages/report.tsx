@@ -191,9 +191,8 @@ function getDashboardReport(dashboard: string) {
             return (
                 <div ref={reportRef} className="bg-blue-50 p-6 rounded shadow">
                     <div className="flex justify-between items-center mb-6">
-                        <div>
-                    <h2 className="text-2xl font-bold mb-2">Manufacturer Report</h2>
-                            <p className="text-gray-600">Production, supply chain, and factory performance reports</p>
+                        <div className="flex justify-center">
+                        <img src="/apple-touch-icon.png" alt="CK-OILS Logo" className="h-20 w-20" />
                         </div>
                         <button
                             onClick={handlePrint}
@@ -203,7 +202,81 @@ function getDashboardReport(dashboard: string) {
                             <span>Print Report</span>
                         </button>
                     </div>
-
+                    <h2 className="text-2xl font-bold mb-2">Manufacturer Report</h2>
+                    <p className="mb-6">System operations, vendor approvals, and user management reports.</p>
+                    {/* Products Order History Card (synced with factory store) */}
+                    <FactoryProductionOrderHistoryCardReport />
+                    
+                    {/* Last 24 Hours Production Request */}
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-4">Last 24 Hours Production Request</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-white overflow-hidden shadow rounded-lg border border-blue-200">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">
+                                        Cooking Oil: {(() => {
+                                            const orders = JSON.parse(localStorage.getItem('factoryProductionOrders') || '[]');
+                                            return orders.reduce((total: number, order: any) => {
+                                                if (order.items) {
+                                                    const productItem = order.items.find((item: any) => 
+                                                        item.name.toLowerCase().includes('cooking oil')
+                                                    );
+                                                    if (productItem) {
+                                                        return total + (parseInt(productItem.quantity) || 0);
+                                                    }
+                                                }
+                                                return total;
+                                            }, 0);
+                                        })()} Jellycan
+                                    </span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                            <div className="bg-white overflow-hidden shadow rounded-lg border border-blue-200">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">
+                                        Shampoo: {(() => {
+                                            const orders = JSON.parse(localStorage.getItem('factoryProductionOrders') || '[]');
+                                            return orders.reduce((total: number, order: any) => {
+                                                if (order.items) {
+                                                    const productItem = order.items.find((item: any) => 
+                                                        item.name.toLowerCase().includes('shampoo')
+                                                    );
+                                                    if (productItem) {
+                                                        return total + (parseInt(productItem.quantity) || 0);
+                                                    }
+                                                }
+                                                return total;
+                                            }, 0);
+                                        })()} Bottles
+                                    </span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                            <div className="bg-white overflow-hidden shadow rounded-lg border border-blue-200">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">
+                                        Soft Margarine: {(() => {
+                                            const orders = JSON.parse(localStorage.getItem('factoryProductionOrders') || '[]');
+                                            return orders.reduce((total: number, order: any) => {
+                                                if (order.items) {
+                                                    const productItem = order.items.find((item: any) => 
+                                                        item.name.toLowerCase().includes('soft margarine') || item.name.toLowerCase().includes('margarine')
+                                                    );
+                                                    if (productItem) {
+                                                        return total + (parseInt(productItem.quantity) || 0);
+                                                    }
+                                                }
+                                                return total;
+                                            }, 0);
+                                        })()} Tubes
+                                    </span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     {/* Summary Cards */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold mb-4">Production Summary</h3>

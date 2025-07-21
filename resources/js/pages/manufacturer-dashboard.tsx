@@ -34,6 +34,16 @@ export default function ManufacturerDashboard() {
     const [productionRecords, setProductionRecords] = useState<ProductionRecord[]>([]);
     const [newProduction, setNewProduction] = useState<Record<string, number>>({});
     const [notification, setNotification] = useState<string | null>(null);
+    const [orders, setOrders] = useState<any[]>([]);
+    const [dailyMachineNeeds, setDailyMachineNeeds] = useState<Record<string, number>>({
+        'Machine 1 - Cooking Oil Processor': 0,
+        'Machine 2 - Shampoo Mixer': 0
+    });
+    const [machineNeedsHistory, setMachineNeedsHistory] = useState<any[]>([]);
+    const [rawMaterialOrder, setRawMaterialOrder] = useState({
+        palmOil: 0,
+        coconutOil: 0
+    });
     const { addStock } = useStockStore();
 
     // Get today's date in YYYY-MM-DD format
@@ -46,6 +56,120 @@ export default function ManufacturerDashboard() {
             setProductionRecords(JSON.parse(savedRecords));
         }
     }, []);
+
+    // Load orders from localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('factoryProductionOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+
+    // Load machine needs history from localStorage
+    useEffect(() => {
+        const savedHistory = localStorage.getItem('machineNeedsHistory');
+        if (savedHistory) {
+            setMachineNeedsHistory(JSON.parse(savedHistory));
+        }
+    }, []);
+
+    // Save machine needs history to localStorage
+    useEffect(() => {
+        localStorage.setItem('machineNeedsHistory', JSON.stringify(machineNeedsHistory));
+    }, [machineNeedsHistory]);
+
+    // Calculate total quantities needed for each product from orders
+    const calculateTotalNeeded = (productName: string) => {
+        return orders.reduce((total, order) => {
+            if (order.items) {
+                const productItem = order.items.find((item: any) => 
+                    item.name.toLowerCase().includes(productName.toLowerCase())
+                );
+                if (productItem) {
+                    return total + (parseInt(productItem.quantity) || 0);
+                }
+            }
+            return total;
+        }, 0);
+    };
+
+    // Handle updating daily machine needs
+    const handleMachineNeedUpdate = (machineName: string, value: string) => {
+        const numValue = value === '' ? 0 : parseInt(value, 10);
+        setDailyMachineNeeds(prev => ({ ...prev, [machineName]: numValue }));
+    };
+
+    // Handle raw material order input changes
+    const handleRawMaterialOrderChange = (material: string, value: string) => {
+        const numValue = value === '' ? 0 : parseInt(value, 10);
+        setRawMaterialOrder(prev => ({ ...prev, [material]: numValue }));
+    };
+
+    // Handle placing raw materials order
+    const handlePlaceRawMaterialsOrder = () => {
+        if (rawMaterialOrder.palmOil <= 0 && rawMaterialOrder.coconutOil <= 0) {
+            setNotification('Please enter quantities greater than 0');
+            setTimeout(() => setNotification(null), 3000);
+            return;
+        }
+
+        const order = {
+            id: Date.now().toString(),
+            date: today,
+            timestamp: new Date().toISOString(),
+            type: 'raw_materials',
+            items: [
+                ...(rawMaterialOrder.palmOil > 0 ? [{ name: 'Palm Oil', quantity: rawMaterialOrder.palmOil, unit: 'L' }] : []),
+                ...(rawMaterialOrder.coconutOil > 0 ? [{ name: 'Coconut Oil', quantity: rawMaterialOrder.coconutOil, unit: 'L' }] : [])
+            ],
+            totalPalmOil: rawMaterialOrder.palmOil,
+            totalCoconutOil: rawMaterialOrder.coconutOil
+        };
+
+        // Save to localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('rawMaterialOrders') || '[]');
+        existingOrders.push(order);
+        localStorage.setItem('rawMaterialOrders', JSON.stringify(existingOrders));
+
+        // Reset form
+        setRawMaterialOrder({ palmOil: 0, coconutOil: 0 });
+        
+        setNotification(`Raw materials order placed: ${rawMaterialOrder.palmOil}L Palm Oil, ${rawMaterialOrder.coconutOil}L Coconut Oil`);
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    // Save daily totals
+    const handleSaveDailyTotals = () => {
+        const dailyTotal = {
+            date: today,
+            timestamp: new Date().toISOString(),
+            machineNeeds: { ...dailyMachineNeeds },
+            totalPalmOil: dailyMachineNeeds['Machine 1 - Cooking Oil Processor'],
+            totalCoconutOil: dailyMachineNeeds['Machine 2 - Shampoo Mixer']
+        };
+
+        setMachineNeedsHistory(prev => [...prev, dailyTotal]);
+        setDailyMachineNeeds({
+            'Machine 1 - Cooking Oil Processor': 0,
+            'Machine 2 - Shampoo Mixer': 0
+        });
+        setNotification('Daily totals saved successfully!');
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    // Get today's saved totals
+    const getTodaySavedTotals = () => {
+        return machineNeedsHistory.find(record => record.date === today);
+    };
+
+    const todaySavedTotals = getTodaySavedTotals();
 
     // Save production records to localStorage whenever they change
     useEffect(() => {
@@ -145,11 +269,7 @@ export default function ManufacturerDashboard() {
                 )}
 
                 <div className="container mx-auto px-4 py-8">
-                    <div className="w-full bg-white py-6 px-4 shadow rounded mb-6">
-                        <h1 className="text-3xl font-bold text-blue-800 m-0">Manufacturer Dashboard</h1>
-                    </div>
-
-                    {/* Today's Production Summary Card */}
+                    <h1 className="text-3xl font-bold mb-6">Manufacturer Dashboard</h1>
                     <div className="mb-8">
                         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
                             <CardHeader>
@@ -220,6 +340,33 @@ export default function ManufacturerDashboard() {
                             </CardContent>
                         </Card>
                     </div>
+                    {/* Three summary cards: gh, hf, fd */}
+                    <div className="mb-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">Last 24 Hours Production Request</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">Cooking Oil: {calculateTotalNeeded('Cooking Oil')} Jellycan</span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                            <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">Shampoo: {calculateTotalNeeded('Shampoo')} Bottles</span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                            <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div className="px-4 py-5 sm:p-6 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-blue-700 mb-2">Soft Margarine: {calculateTotalNeeded('Soft Margarine')} Tubes</span>
+                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Products Order History Card (synced with factory store) */}
+                    <FactoryProductionOrderHistoryCardDashboard />
 
                     {/* Individual Product Production Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -357,11 +504,204 @@ export default function ManufacturerDashboard() {
                                 </CardContent>
                             </Card>
                         </div>
-                                         )}
+                    )}
+
+                    {/* XYZ Card */}
+                    <div className="mt-8">
+                        <Card className="bg-white border-2 border-blue-200">
+                            <CardHeader>
+                                <CardTitle className="text-blue-800">Raw Materials Order</CardTitle>
+                                <CardDescription>
+                                    Order raw materials needed for production
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Palm Oil (Liters)</label>
+                                            <Input
+                                                type="number"
+                                                value={rawMaterialOrder.palmOil || ''}
+                                                onChange={(e) => handleRawMaterialOrderChange('palmOil', e.target.value)}
+                                                placeholder="Enter quantity"
+                                                className="w-full"
+                                                min="0"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Coconut Oil (Liters)</label>
+                                            <Input
+                                                type="number"
+                                                value={rawMaterialOrder.coconutOil || ''}
+                                                onChange={(e) => handleRawMaterialOrderChange('coconutOil', e.target.value)}
+                                                placeholder="Enter quantity"
+                                                className="w-full"
+                                                min="0"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end pt-4">
+                                        <Button 
+                                            onClick={handlePlaceRawMaterialsOrder}
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            disabled={rawMaterialOrder.palmOil <= 0 && rawMaterialOrder.coconutOil <= 0}
+                                        >
+                                            Place Raw Materials Order
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Raw Material Needed at Processing Machine */}
+                    <div className="mt-8">
+                        <Card className="bg-white border-2 border-blue-200">
+                            <CardHeader>
+                                <CardTitle className="text-blue-800">Raw Material Order History</CardTitle>
+                                <CardDescription>
+                                    History of raw material orders placed
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {(() => {
+                                        const rawMaterialOrders = JSON.parse(localStorage.getItem('rawMaterialOrders') || '[]');
+                                        if (rawMaterialOrders.length === 0) {
+                                            return (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    No raw material orders found.
+                                                </div>
+                                            );
+                                        }
+
+                                        // Group orders by timestamp (same time = same order)
+                                        const groupedOrders = rawMaterialOrders.reduce((groups: any, order: any) => {
+                                            const timestamp = order.timestamp;
+                                            if (!groups[timestamp]) {
+                                                groups[timestamp] = {
+                                                    timestamp: timestamp,
+                                                    date: order.date,
+                                                    orders: [],
+                                                    totalPalmOil: 0,
+                                                    totalCoconutOil: 0
+                                                };
+                                            }
+                                            groups[timestamp].orders.push(order);
+                                            groups[timestamp].totalPalmOil += order.totalPalmOil;
+                                            groups[timestamp].totalCoconutOil += order.totalCoconutOil;
+                                            return groups;
+                                        }, {});
+
+                                        // Convert to array and sort by timestamp (newest first)
+                                        const sortedGroups = Object.values(groupedOrders)
+                                            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+                                        return (
+                                            <div className="space-y-3 max-h-64 overflow-y-auto">
+                                                {sortedGroups.map((group: any, index: number) => (
+                                                    <div key={group.timestamp} className="p-4 bg-gray-50 rounded-lg border">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-800">
+                                                                    Order #{index + 1}
+                                                                </h4>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {new Date(group.timestamp).toLocaleDateString()} at {new Date(group.timestamp).toLocaleTimeString()}
+                                                                </p>
+                                                                {group.orders.length > 1 && (
+                                                                    <p className="text-xs text-blue-600 mt-1">
+                                                                        {group.orders.length} items ordered
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                                                Placed
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Palm Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {group.totalPalmOil}L
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {group.totalCoconutOil}L
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                  </div>
 
 
              </div>
          </AppLayout>
      )
+} 
+
+function FactoryProductionOrderHistoryCardDashboard() {
+  const [orders, setOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('factoryProductionOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setOrders(Array.isArray(parsed) ? parsed.reverse() : []);
+        } catch {
+          setOrders([]);
+        }
+      }
+    }
+  }, []);
+
+  if (orders.length === 0) {
+    return <div className="bg-white shadow rounded-lg p-8 text-gray-500">No production orders found.</div>;
+  }
+  return (
+    <div className="bg-white shadow rounded-lg p-8 mb-8">
+      <h2 className="text-xl font-bold mb-4">Products Order History</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {orders.map((order: any) => (
+              <tr key={order.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(order.date).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  <ul className="list-disc list-inside">
+                    {order.items && order.items.map((item: any, idx: number) => (
+                      <li key={idx}>{item.name} x {item.quantity}</li>
+                    ))}
+                  </ul>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 } 
