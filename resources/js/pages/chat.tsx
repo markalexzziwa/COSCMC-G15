@@ -315,24 +315,172 @@ function CombinedFactoryStoreChatCard() {
     );
 }
 
+const VendorFactoryStoreChat = () => {
+    const [messages, setMessages] = useState([
+        { 
+            id: '1', 
+            sender: 'Factory Store', 
+            text: 'Hello Vendor! Welcome to our chat system. How can we assist you today?', 
+            timestamp: new Date().toISOString(),
+            category: 'inbox' as MessageCategory
+        }
+    ]);
+    const [newMessage, setNewMessage] = useState('');
+    const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        
+        const message = {
+            id: Math.random().toString(36).slice(2),
+            sender: 'Vendor' as const,
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+            category: 'sent' as MessageCategory
+        };
+        
+        setMessages(prev => [...prev, message]);
+        setNewMessage('');
+        
+        // Simulate factory store response
+        setTimeout(() => {
+            const responses = [
+                'Thank you for your message. We will review your application and get back to you soon.',
+                'We have received your inquiry. Our team will process this information.',
+                'Your application is being reviewed. Please check back for updates.',
+                'We appreciate your interest. We will contact you with further details.',
+                'Thank you for reaching out. We are currently processing applications.'
+            ];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            const reply = {
+                id: Math.random().toString(36).slice(2),
+                sender: 'Factory Store' as const,
+                text: randomResponse,
+                timestamp: new Date().toISOString(),
+                category: 'inbox' as MessageCategory
+            };
+            
+            setMessages(prev => [...prev, reply]);
+        }, 2000);
+    };
+
+    const moveMessage = (id: string, category: MessageCategory) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, category } : m));
+    };
+
+    const filteredMessages = messages.filter(m => m.category === activeCategory);
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">FS</span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">Factory Store Chat</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>Chat with factory store about your application</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex">
+                {/* Vertical Category Navigation */}
+                <div className="w-48 bg-gray-50 border-r">
+                    <nav className="p-4 space-y-2">
+                        <CategoryButton category="inbox" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Inbox size={16} />} />
+                        <CategoryButton category="sent" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Send size={16} />} />
+                        <CategoryButton category="draft" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<FileText size={16} />} />
+                        <CategoryButton category="spam" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<AlertOctagon size={16} />} />
+                        <CategoryButton category="trash" activeCategory={activeCategory} setActiveCategory={setActiveCategory} icon={<Trash2 size={16} />} />
+                    </nav>
+                </div>
+
+                {/* Chat Content */}
+                <div className="flex-1 flex flex-col">
+                    {/* Messages Area */}
+                    <div className="h-96 bg-gray-100 p-4 overflow-y-auto">
+                        {filteredMessages.length > 0 ? (
+                            <div className="space-y-3">
+                                {filteredMessages.map((message) => (
+                                    <div key={message.id} className="group">
+                                        <div className={`flex ${message.sender === 'Vendor' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
+                                                message.sender === 'Vendor' 
+                                                    ? 'text-white rounded-br-none' 
+                                                    : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                                            }`}
+                                            style={message.sender === 'Vendor' ? { background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' } : {}}
+                                            >
+                                                <p className="text-sm">{message.text}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'Vendor' ? 'text-white/80' : 'text-gray-500'}`}>
+                                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden group-hover:flex justify-end space-x-1 mt-1">
+                                            {activeCategory !== 'trash' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'trash')} className="text-gray-500 hover:text-red-500">
+                                                    <Trash2 size={12} />
+                                                </Button>
+                                            )}
+                                            {activeCategory !== 'spam' && (
+                                                <Button variant="ghost" size="sm" onClick={() => moveMessage(message.id, 'spam')} className="text-gray-500 hover:text-orange-500">
+                                                    <AlertOctagon size={12} />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-gray-500">
+                                    <Inbox className="mx-auto h-12 w-12 mb-2" />
+                                    <p>No messages in {activeCategory}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    {(activeCategory === 'inbox' || activeCategory === 'draft' || activeCategory === 'sent') && (
+                        <div className="bg-white p-4 border-t">
+                            <div className="flex space-x-2 items-center">
+                                <Input
+                                    value={newMessage}
+                                    onChange={e => setNewMessage(e.target.value)}
+                                    placeholder="Type a message to Factory Store..."
+                                    className="flex-1 rounded-full border-gray-300 h-12"
+                                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <Button
+                                    onClick={handleSendMessage}
+                                    className="rounded-full p-2 h-12"
+                                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                                    disabled={!newMessage.trim()}
+                                >
+                                    <Send className="h-5 w-5 text-white" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function getDashboardChat(dashboard: string) {
     switch (dashboard) {
         case 'manufacturer':
             return <ManufacturerChat />;
         case 'retail':
-            return (
-                <div className="bg-green-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Retail Chat</h2>
-                    <p>Chat with customers, distributors, and support here.</p>
-                </div>
-            );
+            return <RetailerChat />;
         case 'distributor':
-            return (
-                <div className="bg-yellow-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Distributor Chat</h2>
-                    <p>Chat with retail, inventory, and logistics here.</p>
-                </div>
-            );
+            return <DistributorChat />;
         case 'admin':
             return <AdminChat />;
         case 'customer':
@@ -354,12 +502,7 @@ function getDashboardChat(dashboard: string) {
                 </div>
             );
         case 'unofficial-vendor':
-            return (
-                <div className="bg-gray-100 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Unofficial Vendor Chat</h2>
-                    <p>Chat with admin, support, and track your application here.</p>
-                </div>
-            );
+            return <VendorFactoryStoreChat />;
         default:
             return (
                 <div className="bg-gray-50 p-6 rounded shadow">
@@ -420,16 +563,16 @@ const ManufacturerChat = () => {
     return (
         <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
             {/* WhatsApp-style Header */}
-            <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
                         <span className="text-white font-semibold text-sm">
                             {activeChat === 'factoryStore' ? 'FS' : 'IM'}
                         </span>
                     </div>
                     <div>
                         <h3 className="font-semibold">{chatTitle}</h3>
-                        <p className="text-xs text-blue-100">greetings, chat now</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>greetings, chat now</p>
                     </div>
                 </div>
                 <div className="flex space-x-2">
@@ -608,6 +751,219 @@ function CustomerRetailerChat() {
                     <div className="flex justify-start mb-2">
                         <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
                             <p className="font-medium">Retailer</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function RetailerChat() {
+    const [activeTab, setActiveTab] = React.useState<'customer' | 'distributor'>('customer');
+    const [customerMessages, setCustomerMessages] = React.useState([
+        { sender: 'Retailer', text: 'Hello Customer! How can I help you?', timestamp: new Date().toISOString() }
+    ]);
+    const [distributorMessages, setDistributorMessages] = React.useState([
+        { sender: 'Retailer', text: 'Hello Distributor! Ready to coordinate orders?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Retailer',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        if (activeTab === 'customer') {
+            setCustomerMessages(prev => [...prev, { sender: 'Customer', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setCustomerMessages(prev => [...prev, { sender: 'Retailer', text: 'Thank you for your message, Customer!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setDistributorMessages(prev => [...prev, { sender: 'Distributor', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setDistributorMessages(prev => [...prev, { sender: 'Retailer', text: 'Thank you for your message, Distributor!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeTab === 'customer' ? customerMessages : distributorMessages;
+    const chatTitle = activeTab === 'customer' ? 'Customer & Retailer Chat' : 'Distributor & Retailer Chat';
+    const chatDesc = activeTab === 'customer'
+        ? 'Chat with customers for support and orders.'
+        : 'Chat with distributors for coordination and logistics.';
+    const avatar = activeTab === 'customer' ? 'CU' : 'DI';
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="flex border-b">
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'customer' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('customer')}
+                >
+                    Customer Chat
+                </button>
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'distributor' ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('distributor')}
+                >
+                    Distributor Chat
+                </button>
+            </div>
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">{avatar}</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">{chatTitle}</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDesc}</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Retailer' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Retailer' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">{activeTab === 'customer' ? 'Retailer' : 'Retailer'}</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function DistributorChat() {
+    const [activeTab, setActiveTab] = React.useState<'factoryStore' | 'retailer'>('factoryStore');
+    const [factoryStoreMessages, setFactoryStoreMessages] = React.useState([
+        { sender: 'Distributor', text: 'Hello Factory Store Manager! Ready to coordinate stock?', timestamp: new Date().toISOString() }
+    ]);
+    const [retailerMessages, setRetailerMessages] = React.useState([
+        { sender: 'Distributor', text: 'Hello Retailer! Let us know your needs.', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        if (activeTab === 'factoryStore') {
+            setFactoryStoreMessages(prev => [...prev, { sender: 'Factory Store Manager', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setFactoryStoreMessages(prev => [...prev, { sender: 'Distributor', text: 'Thank you for your message, Factory Store Manager!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setRetailerMessages(prev => [...prev, { sender: 'Retailer', text: newMessage, timestamp: new Date().toISOString() }]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setRetailerMessages(prev => [...prev, { sender: 'Distributor', text: 'Thank you for your message, Retailer!', timestamp: new Date().toISOString() }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeTab === 'factoryStore' ? factoryStoreMessages : retailerMessages;
+    const chatTitle = activeTab === 'factoryStore' ? 'Factory Store Manager & Distributor Chat' : 'Retailer & Distributor Chat';
+    const chatDesc = activeTab === 'factoryStore'
+        ? 'Chat with the factory store manager for stock and logistics.'
+        : 'Chat with retailers for order coordination.';
+    const avatar = activeTab === 'factoryStore' ? 'FS' : 'RE';
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="flex border-b">
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'factoryStore' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('factoryStore')}
+                >
+                    Factory Store Chat
+                </button>
+                <button
+                    className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'retailer' ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-700'} transition`}
+                    onClick={() => setActiveTab('retailer')}
+                >
+                    Retailer Chat
+                </button>
+            </div>
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">{avatar}</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">{chatTitle}</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDesc}</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Distributor' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Distributor' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">{activeTab === 'factoryStore' ? 'Distributor' : 'Distributor'}</p>
                             <p className="mt-1 italic">Typing...</p>
                         </div>
                     </div>

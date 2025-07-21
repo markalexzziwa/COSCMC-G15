@@ -125,6 +125,7 @@ export default function Welcome() {
                                 </div>
                             ))}
                         </div>
+                        
                         <div className="mt-8 text-center">
                             <button
                                 onClick={handleDiscountClick}

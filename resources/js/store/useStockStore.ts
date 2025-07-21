@@ -18,7 +18,7 @@ interface StockState {
 
 const useStockStore = create<StockState>((set) => ({
     stock: [
-        { name: 'Cooking Oil', quantity: 6000, image: '/cooking oil.jpg', unit: 'litres', packageSize: 5, packageUnit: 'jerrycan', boxSize: 4 },
+        { name: 'Cooking Oil', quantity: 700000, image: '/cooking oil.jpg', unit: 'ml', packageSize: 500, packageUnit: 'jerrycan', boxSize: 4 },
         { name: 'Shampoo', quantity: 600000, image: '/shampoo.jpg', unit: 'ml', packageSize: 200, packageUnit: 'tube', boxSize: 12 },
         { name: 'Margarine', quantity: 640000, image: '/soft magarine.jpg', unit: 'g', packageSize: 400, packageUnit: 'container', boxSize: 8 },
     ],
