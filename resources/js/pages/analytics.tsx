@@ -739,10 +739,35 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                 </div>
             );
         case 'farmer':
+            // Farmer: show Monthly Production (litres) bar chart from localStorage
+            const [editableHarvestData, setEditableHarvestData] = React.useState<any[]>([]);
+            React.useEffect(() => {
+                if (typeof window !== 'undefined') {
+                    const saved = localStorage.getItem('editableHarvestData');
+                    if (saved) setEditableHarvestData(JSON.parse(saved));
+                }
+            }, []);
             return (
-                <div className="bg-orange-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Farmer Analytics</h2>
-                    <p>Yield, harvest, and farm performance analytics go here.</p>
+                <div className="bg-yellow-50 p-6 rounded shadow">
+                    <h2 className="text-4xl font-extrabold mb-2 text-center">Farmer Analytics</h2>
+                    <p className="text-lg text-gray-700 text-center mb-6">Production trends and harvest analytics for your farm.</p>
+                    <div className="bg-white rounded shadow p-4">
+                        <h3 className="text-xl font-semibold mb-2">Monthly Production (litres)</h3>
+                        <p className="mb-4 text-gray-600">Coconut Oil and Crude Palm Oil production for the last 6 months.</p>
+                        <div className="h-[400px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={editableHarvestData.slice(-6)}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" />
+                                    <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
+                                    <Bar dataKey="crudePalmOil" fill="#2196F3" name="Crude Palm Oil" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
             );
         case 'inventory-manager':
@@ -815,7 +840,7 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                                             <Line type="monotone" dataKey="Coconut Oil" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
                                         </LineChart>
                                     </ResponsiveContainer>
-                                </div>
+                </div>
                             </div>
                         </div>
                         {/* Oil Type Distribution */}
@@ -1265,8 +1290,8 @@ function AvailableRetailStockBarGraph() {
           <Bar dataKey="stock" fill="#10b981" />
         </BarChart>
       </ResponsiveContainer>
-    </div>
-  );
+        </div>
+    );
 }
 
 export default function Analytics() {

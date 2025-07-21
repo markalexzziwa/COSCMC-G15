@@ -54,7 +54,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     return (
         <>
-            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-400/20" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-400/20 print:hidden" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">

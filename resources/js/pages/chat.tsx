@@ -813,6 +813,86 @@ function InventoryChat() {
     );
 }
 
+function FarmerInventoryManagerChat() {
+    const [messages, setMessages] = React.useState([
+        { sender: 'Inventory Manager', text: 'Hello Farmer! How can I assist you with your raw material needs today?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Farmer',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, msg]);
+        setNewMessage('');
+        setIsReplying(true);
+        // Simulate inventory manager reply
+        setTimeout(() => {
+            setMessages(prev => [...prev, {
+                sender: 'Inventory Manager',
+                text: 'Thank you for your message! We will coordinate with you soon.',
+                timestamp: new Date().toISOString(),
+            }]);
+            setIsReplying(false);
+        }, 1200);
+    };
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="text-white px-4 py-3 flex items-center" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                    <span className="text-white font-semibold text-sm">FM</span>
+                </div>
+                <div>
+                    <h3 className="font-semibold">Farmer & Inventory Manager Chat</h3>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>Chat with the inventory manager for supply and delivery coordination.</p>
+                </div>
+            </div>
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Farmer' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Farmer' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">Inventory Manager</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
 const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: { category: MessageCategory, activeCategory: MessageCategory, setActiveCategory: (c: MessageCategory) => void, icon: React.ReactNode }) => (
     <Button
         variant={activeCategory === category ? 'default' : 'ghost'}
@@ -1131,6 +1211,19 @@ export default function Chat() {
                     <Head title="Inventory Chat" />
                     <div className="container mx-auto px-4 py-8">
                         <InventoryChat />
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
+    // Show FarmerInventoryManagerChat if dashboard is farmer
+    if (dashboard === 'farmer') {
+        return (
+            <AppLayout>
+                <div>
+                    <Head title="Farmer Chat" />
+                    <div className="container mx-auto px-4 py-8">
+                        <FarmerInventoryManagerChat />
                     </div>
                 </div>
             </AppLayout>

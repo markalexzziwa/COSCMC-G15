@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FarmStatsCard } from '@/components/farm-stats-card';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import {
   BarChart,
   Bar,
@@ -40,153 +40,7 @@ const oilYieldData = [
   { month: 'Jun', extractionRate: 92 },
 ];
 
-// Replace HarvestDetailsCard with an editable table-like form for harvest details
-function HarvestDetailsTable() {
-  const initialSections = [
-    {
-      heading: 'Basic Farm Information',
-      fields: [
-        { label: 'Farm name/location', value: '' },
-        { label: 'Harvest date(s)', value: '' },
-        { label: 'Field/block identification', value: '' },
-        { label: 'Weather conditions during harvest', value: '' },
-      ],
-    },
-    {
-      heading: 'Harvesting Data',
-      fields: [
-        { label: 'Total harvested area', value: '' },
-        { label: 'Number of bunches harvested', value: '' },
-        { label: 'Average bunch weight (kg)', value: '' },
-        { label: 'Total FFB yield', value: '' },
-        { label: 'Harvesting method', value: '' },
-        { label: 'Harvesting team details', value: '' },
-      ],
-    },
-    {
-      heading: 'Fruit Quality & Ripeness Assessment',
-      fields: [
-        { label: 'Ripeness level', value: '' },
-        { label: 'Fruit quality grading', value: '' },
-        { label: 'Oil content estimation', value: '' },
-        { label: 'Presence of pests/diseases', value: '' },
-      ],
-    },
-    {
-      heading: 'Post-Harvest Handling',
-      fields: [
-        { label: 'Transportation method', value: '' },
-        { label: 'Time from harvest to processing', value: '' },
-        { label: 'Storage conditions', value: '' },
-        { label: 'Losses recorded', value: '' },
-      ],
-    },
-    {
-      heading: 'Labor & Cost Details',
-      fields: [
-        { label: 'Labor hours spent', value: '' },
-        { label: 'Harvesting cost per ton', value: '' },
-        { label: 'Equipment used & maintenance notes', value: '' },
-      ],
-    },
-    {
-      heading: 'Observations & Challenges',
-      fields: [
-        { label: 'Issues faced', value: '' },
-        { label: 'Unusual findings', value: '' },
-        { label: 'Suggestions for improvement', value: '' },
-      ],
-    },
-    {
-      heading: 'Yield Comparison & Trends',
-      fields: [
-        { label: 'Comparison with previous harvests', value: '' },
-        { label: 'Long-term trends', value: '' },
-      ],
-    },
-    {
-      heading: 'Additional Notes',
-      fields: [
-        { label: 'Special treatments applied', value: '' },
-        { label: 'Compliance with sustainability/certification standards', value: '' },
-      ],
-    },
-  ];
-  const [editMode, setEditMode] = useState(false);
-  const [sections, setSections] = useState(initialSections);
-  const [tempSections, setTempSections] = useState(initialSections);
-
-  const handleEdit = () => {
-    setTempSections(sections);
-    setEditMode(true);
-  };
-  const handleSave = () => {
-    setSections(tempSections);
-    setEditMode(false);
-  };
-  const handleCancel = () => {
-    setTempSections(sections);
-    setEditMode(false);
-  };
-
-  const handleFieldChange = (sectionIdx: number, fieldIdx: number, value: string) => {
-    setTempSections(prev => prev.map((section, sIdx) =>
-      sIdx === sectionIdx
-        ? { ...section, fields: section.fields.map((f, fIdx) => fIdx === fieldIdx ? { ...f, value } : f) }
-        : section
-    ));
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-black">Harvest Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-end mb-4">
-          {!editMode ? (
-            <button onClick={handleEdit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Edit</button>
-          ) : (
-            <>
-              <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">Save</button>
-              <button onClick={handleCancel} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">Cancel</button>
-            </>
-          )}
-        </div>
-        <div className="space-y-8">
-          {sections.map((section, sectionIdx) => (
-            <table key={section.heading} className="min-w-full border text-sm bg-white">
-              <thead>
-                <tr>
-                  <th colSpan={2} className="bg-gray-100 text-left py-2 px-4 text-base font-semibold border-b">{section.heading}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(editMode ? tempSections : sections)[sectionIdx].fields.map((field, fieldIdx) => (
-                  <tr key={field.label} className="border-b">
-                    <td className="py-2 px-4 w-1/3 font-medium">{field.label}</td>
-                    <td className="py-2 px-4">
-                      {editMode ? (
-                        <input
-                          type="text"
-                          value={tempSections[sectionIdx].fields[fieldIdx].value}
-                          onChange={e => handleFieldChange(sectionIdx, fieldIdx, e.target.value)}
-                          className="border rounded p-1 w-full"
-                        />
-                      ) : (
-                        <span>{field.value || <span className="text-gray-400">(not set)</span>}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Remove all code related to HarvestDetailsTable, Farm Specifications, and Farm Calendar cards/components, including their state, handlers, and conditional rendering.
 
 function EquipmentTable() {
   const initialEquipment = [
@@ -355,287 +209,152 @@ function TreeAreaPieChart() {
   );
 }
 
-function MarketPricesSummary() {
-  // Example price trend data for the graph
-  const priceTrendData = [
-    { year: '2023', FFB: 700, CPO: 1.5 },
-    { year: '2024', FFB: 831, CPO: 1.2 },
-    { year: '2025', FFB: 1023, CPO: 1.0 },
-  ];
-  return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="text-2xl font-extrabold text-green-900 tracking-wide mb-2">Palm Oil Market Prices (Uganda)</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-          <div className="flex-1 flex flex-col justify-center">
-            <table className="w-full border text-base mb-6 bg-white rounded shadow">
-              <thead>
-                <tr>
-                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Product</th>
-                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Price (UGX/kg)</th>
-                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Price (USD/kg)</th>
-                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Location/Source</th>
-                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Date/Period</th>
-                </tr>
-              </thead>
-              <tbody className="text-lg">
-                <tr className="bg-green-50 font-semibold">
-                  <td>FFB (farmgate)</td><td className="text-green-800 font-bold">1023</td><td>~0.27</td><td>Kalangala (NOPP)</td><td>Mar 2025</td>
-                </tr>
-                <tr><td>FFB (farmgate, prev.)</td><td>700–831</td><td></td><td>Uganda</td><td>Dec prev. year</td></tr>
-                <tr><td>Palm nuts/kernels</td><td>7,293–11,412</td><td></td><td>Kampala/Jinja (retail)</td><td>Recent</td></tr>
-                <tr><td>Crude Palm Oil (import)</td><td>—</td><td>0.28–1.87 (2024)</td><td>Uganda (import)</td><td>2024</td></tr>
-                <tr><td>Crude Palm Oil (import)</td><td>—</td><td>0.28–10.80 (2023)</td><td>Uganda (import)</td><td>2023</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="flex-1 min-w-[350px] flex flex-col justify-center">
-            <ResponsiveContainer width="100%" height={340}>
-              <LineChart data={priceTrendData} margin={{ top: 20, right: 40, left: 10, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" tick={{ fontSize: 16 }} />
-                <YAxis yAxisId="left" label={{ value: 'FFB (UGX/kg)', angle: -90, position: 'insideLeft', fontSize: 14 }} tick={{ fontSize: 16 }} />
-                <YAxis yAxisId="right" orientation="right" label={{ value: 'CPO (USD/kg)', angle: 90, position: 'insideRight', fontSize: 14 }} tick={{ fontSize: 16 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 16 }} />
-                <Line yAxisId="left" type="monotone" dataKey="FFB" stroke="#4CAF50" strokeWidth={3} name="FFB (UGX/kg)" dot={{ r: 6 }} />
-                <Line yAxisId="right" type="monotone" dataKey="CPO" stroke="#2196F3" strokeWidth={3} name="CPO (USD/kg)" dot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        <div className="text-xs text-gray-700 mt-6">
-          <b>Notes:</b> Prices vary by location, market conditions, and supply chain. Retail prices are much higher than farmgate prices. Crude palm oil import prices have stabilized in recent years. Data sources: National Oil Palm Project, Selina Wamucii, Tridge, The Independent Uganda.
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function FarmerDashboard() {
-  const [showFarmSpec, setShowFarmSpec] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [harvestDataForm, setHarvestDataForm] = useState({
+    farmName: '',
+    harvestDate: '',
+    weather: '',
+    totalHarvestedArea: '',
+    palmBatches: '',
+    coconutBatches: '',
+    harvestMethod: '',
+    machines: '',
+    transportMethod: '',
+    timeSpent: '',
+    numberOfWorkers: '',
+    improvementSuggestions: '',
+    generalComment: '',
+  });
 
-  // Add state for farmStats
-  const [farmStats, setFarmStats] = useState([
-    { name: 'Total Farm Area', value: '15 Hectares' },
-    { name: 'Number of Palm Trees', value: '2,350' },
-    { name: 'Last Harvest Yield', value: '4.8 Tons' },
-    { name: 'Growth Stage', value: 'Flowering' },
-  ]);
-  const [farmStatsTemp, setFarmStatsTemp] = useState(farmStats);
+  // Load saved data on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('harvestDataForm');
+      if (saved) {
+        setHarvestDataForm(JSON.parse(saved));
+      }
+    }
+  }, []);
 
-  // Add back showHarvests state
-  const [showHarvests, setShowHarvests] = useState(false);
-
-  // Add back calendar state
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [date, setDate] = useState(new Date());
-  const [farmActivities, setFarmActivities] = useState<{ id: string; date: string; description: string }[]>(
-    JSON.parse(localStorage.getItem('farmActivities') || '[]')
-  );
-  const [newActivityText, setNewActivityText] = useState('');
-
-  const handleEdit = () => {
-    setFarmStatsTemp(farmStats);
-    setEditMode(true);
+  // Save handler
+  const handleSaveHarvestData = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('harvestDataForm', JSON.stringify(harvestDataForm));
+    }
   };
-  const handleSave = () => {
-    setFarmStats(farmStatsTemp);
-    setEditMode(false);
+
+  // Add state for farmSpecsForm: { farmSize: string, location: string, ownerName: string, soilType: string }
+  const [farmSpecsForm, setFarmSpecsForm] = useState({
+    farmSize: '',
+    location: '',
+    ownerName: '',
+    soilType: '',
+    numberOfTractors: '',
+    numberOfTrailers: '',
+    numberOfPalmOilTrees: '',
+    numberOfCoconutTrees: '',
+    areaOfPalmOilTrees: '',
+    areaOfCoconutTrees: '',
+  });
+  // Load saved farm specs on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('farmSpecsForm');
+      if (saved) {
+        setFarmSpecsForm(JSON.parse(saved));
+      }
+    }
+  }, []);
+  // Save handler
+  const handleSaveFarmSpecs = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('farmSpecsForm', JSON.stringify(farmSpecsForm));
+    }
   };
-  const handleCancel = () => {
-    setFarmStatsTemp(farmStats);
-    setEditMode(false);
+
+  // In the 'oip' card, remove the LineChart and replace it with an input field for monthly production (kg), with a Save button. Persist the value in localStorage.
+  // Add state for monthlyProduction and load/save from localStorage.
+  const [monthlyProduction, setMonthlyProduction] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('monthlyProduction');
+      if (saved) setMonthlyProduction(saved);
+    }
+  }, []);
+  const handleSaveMonthlyProduction = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('monthlyProduction', monthlyProduction);
+    }
   };
+
+  // Add state for editableHarvestData, initialized from localStorage or default data
+  const defaultHarvestData = [
+    { month: 'Jan', freshFruitBunches: 1200, crudePalmOil: 900 },
+    { month: 'Feb', freshFruitBunches: 1900, crudePalmOil: 1200 },
+    { month: 'Mar', freshFruitBunches: 1500, crudePalmOil: 1000 },
+    { month: 'Apr', freshFruitBunches: 1800, crudePalmOil: 1100 },
+    { month: 'May', freshFruitBunches: 2100, crudePalmOil: 1400 },
+    { month: 'Jun', freshFruitBunches: 2200, crudePalmOil: 1500 },
+  ];
+  const [editableHarvestData, setEditableHarvestData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('editableHarvestData');
+      if (saved) return JSON.parse(saved);
+    }
+    return defaultHarvestData;
+  });
+  // Update handleHarvestDataChange and the form map to use explicit types
+  const handleHarvestDataChange = (idx: number, field: string, value: string) => {
+    setEditableHarvestData((prev: any) => prev.map((row: any, i: any) => i === idx ? { ...row, [field]: field === 'month' ? value : Number(value) } : row));
+  };
+  const handleSaveEditableHarvestData = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('editableHarvestData', JSON.stringify(editableHarvestData));
+    }
+  };
+
+  // Add state for selectedMonthIdx
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState(0);
+
+  // Both avgCPO and avgCoconutOil should be calculated from the last six months of editableHarvestData, using the correct keys.
+  const lastSix = editableHarvestData.slice(-6);
+  const avgCPO = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.crudePalmOil || 0), 0) / lastSix.length) : 0;
+  const avgCoconutOil = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.coconutOil || 0), 0) / lastSix.length) : 0;
+
+  // Add state for inventoryOrders in the farmer dashboard
+  const [inventoryOrders, setInventoryOrders] = useState<any[]>([]);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedInventoryOrders = localStorage.getItem('inventoryOrders');
+      if (savedInventoryOrders) setInventoryOrders(JSON.parse(savedInventoryOrders));
+    }
+  }, []);
+
+  // Calculate number of inventory raw material orders to be delivered today
+  const today = new Date().toISOString().split('T')[0];
+  const ordersForToday = inventoryOrders.filter(order => order.deliveryDate === today);
+  const ordersForTodayCount = ordersForToday.length;
 
   return (
     <AppLayout>
       <Head title="Palm Oil Farmer Dashboard" />
 
-      {showHarvests ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white min-h-screen">
-          <div className="flex items-center p-4 border-b">
-            <button onClick={() => setShowHarvests(false)} className="text-2xl text-gray-700 hover:text-black mr-4">
-              ←
-            </button>
-            <h2 className="text-2xl font-bold text-center flex-1">Harvest Details</h2>
-          </div>
-          <div className="flex-1 overflow-auto p-4">
-            <div className="max-w-6xl mx-auto">
-              <HarvestDetailsTable />
-            </div>
-          </div>
-        </div>
-      ) : showFarmSpec ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white min-h-screen">
-          <div className="flex items-center p-4 border-b">
-            <button onClick={() => setShowFarmSpec(false)} className="text-2xl text-gray-700 hover:text-black mr-4">
-              ←
-            </button>
-            <h2 className="text-2xl font-bold text-center flex-1">Farm Specifications</h2>
-          </div>
-          <div className="flex-1 overflow-auto p-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex justify-end mb-4">
-                {!editMode ? (
-                  <button
-                    onClick={handleEdit}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                  >
-                    Edit Values
-            </button>
-                ) : (
-                  <>
-                          <button 
-                      onClick={handleSave}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2"
-                          >
-                      Save
-                          </button>
-                    <button 
-                      onClick={handleCancel}
-                      className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                )}
-                  </div>
-              <FarmStatsCard stats={farmStatsTemp} editMode={editMode} onChange={setFarmStatsTemp} />
-              <EquipmentTable />
-              <TreeAreaPieChart />
-            </div>
-          </div>
-        </div>
-      ) : showCalendar ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white min-h-screen">
-          <div className="flex items-center p-4 border-b">
-            <button onClick={() => setShowCalendar(false)} className="text-2xl text-gray-700 hover:text-black mr-4">
-              ←
-            </button>
-            <h2 className="text-2xl font-bold text-center flex-1">Farm Calendar</h2>
-          </div>
-          <div className="flex-1 overflow-auto p-4 flex justify-center items-start">
-            <div className="max-w-4xl w-full">
-              <Card className="p-6">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold mb-4">Select a Date</CardTitle>
-                </CardHeader>
-                <CardContent className="flex justify-center">
-                  <Calendar 
-                    onChange={(value) => {
-                      if (value instanceof Date) {
-                        setDate(value);
-                      }
-                    }}
-                    value={date}
-                  />
-                </CardContent>
-              </Card>
-              <Card className="mt-8 p-6">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold mb-4">Activities for {date.toDateString()}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {farmActivities.filter(activity => activity.date === date.toDateString()).length > 0 ? (
-                    <ul className="space-y-2 mb-4">
-                      {farmActivities.filter(activity => activity.date === date.toDateString()).map(activity => (
-                        <li key={activity.id} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                          <span>{activity.description}</span>
-                          <button 
-                            onClick={() => setFarmActivities(prev => prev.filter(a => a.id !== activity.id))}
-                            className="text-red-500 hover:text-red-700 ml-4"
-                          >
-                            Delete
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-600 mb-4">No activities scheduled for this date.</p>
-                  )}
-                  <div className="flex items-center space-x-2 mt-4">
-                    <input
-                      type="text"
-                      value={newActivityText}
-                      onChange={(e) => setNewActivityText(e.target.value)}
-                      placeholder="Add new activity..."
-                      className="flex-1 p-2 border rounded"
-                    />
-                    <button 
-                      onClick={() => {
-                        if (newActivityText.trim()) {
-                          setFarmActivities(prev => [
-                            ...prev,
-                            {
-                              id: Date.now().toString(),
-                              date: date.toDateString(),
-                              description: newActivityText.trim(),
-                            },
-                          ]);
-                          setNewActivityText('');
-                        }
-                      }}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                    >
-                      Add Activity
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      ) : (
         <div className="py-12 bg-blue-50">
           <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div className="flex justify-end mb-4">
-              {!editMode ? (
-                <button
-                  onClick={handleEdit}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                >
-                  Edit Values
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Overview Cards */}
               <div className="h-full">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 h-full">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold text-green-800">Fresh Fruit Bunches</CardTitle>
+                    <CardTitle className="text-xl font-bold text-green-800">Today's Raw Material<br/>needed Deliveries</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {!editMode ? (
-                      <div className="text-3xl font-bold text-green-600">2,200 kg</div>
-                    ) : (
-                      <input
-                        type="number"
-                        value={farmStatsTemp[0].value.replace(' kg', '')}
-                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'Fresh Fruit Bunches' ? { ...stat, value: `${Number(e.target.value)} kg` } : stat))}
-                        className="text-3xl font-bold text-green-600 bg-white border-b border-green-300 focus:outline-none w-32 mb-2"
-                      />
-                    )}
-                    <p className="text-sm text-gray-500 mt-2">+15% from last month</p>
+                    <div className="text-3xl font-bold text-green-600">{ordersForTodayCount}</div>
+                    <p className="text-sm text-gray-500 mt-2">Inventory raw material orders to be delivered today</p>
                   </CardContent>
                 </Card>
               </div>
@@ -643,22 +362,11 @@ export default function FarmerDashboard() {
               <div className="h-full">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-amber-50 to-orange-50 h-full">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold text-amber-800">Extraction Rate</CardTitle>
+                    <CardTitle className="text-xl font-bold text-amber-800">Average Monthly Palm Oil Production</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {!editMode ? (
-                      <div className="text-3xl font-bold text-amber-600">92%</div>
-                    ) : (
-                      <input
-                        type="number"
-                        value={farmStatsTemp[1].value.replace('%', '')}
-                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'Extraction Rate' ? { ...stat, value: `${Number(e.target.value)}%` } : stat))}
-                        className="text-3xl font-bold text-amber-600 bg-white border-b border-amber-300 focus:outline-none w-20 mb-2"
-                        min={0}
-                        max={100}
-                      />
-                    )}
-                    <p className="text-sm text-gray-500 mt-2">+5% from last season</p>
+                      <div className="text-3xl font-bold text-amber-600">{avgCPO} litres</div>
+                    <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
                   </CardContent>
                 </Card>
               </div>
@@ -666,20 +374,11 @@ export default function FarmerDashboard() {
               <div className="h-full">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50 h-full">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold text-purple-800">CPO Production</CardTitle>
+                    <CardTitle className="text-xl font-bold text-purple-800">Average Monthly Coconut Oil</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {!editMode ? (
-                      <div className="text-3xl font-bold text-purple-600">1,500 kg</div>
-                    ) : (
-                      <input
-                        type="number"
-                        value={farmStatsTemp[2].value.replace(' kg', '')}
-                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'CPO Production' ? { ...stat, value: `${Number(e.target.value)} kg` } : stat))}
-                        className="text-3xl font-bold text-purple-600 bg-white border-b border-purple-300 focus:outline-none w-32 mb-2"
-                      />
-                    )}
-                    <p className="text-sm text-gray-500 mt-2">+18% from last quarter</p>
+                      <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} litres</div>
+                    <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
                   </CardContent>
                 </Card>
               </div>
@@ -688,18 +387,18 @@ export default function FarmerDashboard() {
               <div className="md:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold">Monthly Production (kg)</CardTitle>
+                    <CardTitle className="text-xl font-bold">Monthly Production (litres)</CardTitle>
                   </CardHeader>
                   <CardContent className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={harvestData}>
+                      <BarChart data={editableHarvestData.slice(-6)}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
-                        <YAxis />
+                        <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="freshFruitBunches" fill="#4CAF50" name="Fresh Fruit Bunches" />
-                        <Bar dataKey="crudePalmOil" fill="#FFC107" name="Crude Palm Oil" />
+                        <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
+                        <Bar dataKey="crudePalmOil" fill="#2196F3" name="Crude Palm Oil" />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -710,24 +409,35 @@ export default function FarmerDashboard() {
               <div>
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold">Extraction Rate Trend (%)</CardTitle>
+                    <CardTitle className="text-xl font-bold">Edit Monthly Oil Production</CardTitle>
+                    <p className="text-gray-600">Update the monthly production values for Coconut Oil and Crude Palm Oil below.</p>
                   </CardHeader>
                   <CardContent className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={oilYieldData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis domain={[70, 100]} />
-                        <Tooltip />
-                        <Line 
-                          type="monotone" 
-                          dataKey="extractionRate" 
-                          stroke="#2196F3" 
-                          strokeWidth={2} 
-                          name="Extraction Rate"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <form onSubmit={handleSaveEditableHarvestData} className="space-y-4 w-full max-w-md mx-auto">
+                      <div className="mb-4">
+                        <label className="font-medium text-gray-700 mr-2">Select Month:</label>
+                        <select
+                          className="border rounded p-2"
+                          value={selectedMonthIdx}
+                          onChange={e => setSelectedMonthIdx(Number(e.target.value))}
+                        >
+                          {editableHarvestData.map((row: any, idx: number) => (
+                            <option key={idx} value={idx}>{row.month}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex items-center w-full justify-between">
+                        <label className="font-medium text-gray-700 w-auto text-left">Coconut Oil (litres)</label>
+                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].coconutOil} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'coconutOil', e.target.value)} placeholder="Litres" />
+                      </div>
+                      <div className="flex items-center w-full justify-between">
+                        <label className="font-medium text-gray-700 w-auto text-left">Crude Palm Oil (litres)</label>
+                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].crudePalmOil} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'crudePalmOil', e.target.value)} placeholder="Litres" />
+                      </div>
+                      <div className="flex justify-end mt-6">
+                        <button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-2 rounded-lg shadow hover:from-blue-600 hover:to-green-600 transition font-semibold text-lg">Save</button>
+                      </div>
+                    </form>
                   </CardContent>
                 </Card>
               </div>
@@ -735,54 +445,222 @@ export default function FarmerDashboard() {
               {/* Action Cards */}
               <div>
                 <Card 
-                  onClick={() => setShowHarvests(true)} 
                   className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
                 >
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold text-blue-800">Harvest Details</CardTitle>
+                  <CardTitle className="text-xl font-bold text-blue-800">Harvest Data</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600">View detailed harvest records and analytics</p>
+                  <p className="text-gray-600">View and manage detailed harvest records, check below 👇</p>
                   </CardContent>
                 </Card>
               </div>
               
               <div>
                 <Card 
-                  onClick={() => setShowFarmSpec(true)} 
-                  className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
+                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
                 >
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold text-green-800">Farm Specifications</CardTitle>
+                  <CardTitle className="text-xl font-bold text-purple-800">Farm Specs</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600">View your farm details and specifications</p>
+                  <p className="text-gray-600">View and manage farm specifications, check below 👇</p>
                   </CardContent>
                 </Card>
               </div>
-              
-              <div>
-                <Card 
-                  onClick={() => setShowCalendar(true)}
-                  className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
-                >
+            <div className="col-span-full w-full">
+              <Card className="w-full">
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold text-purple-800">Farm Calendar</CardTitle>
+                  <CardTitle className="text-xl font-bold text-blue-900">Harvest Data</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600">View and manage farm activities</p>
+                  <form className="space-y-4 w-full max-w-2xl mx-auto" onSubmit={handleSaveHarvestData}>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Farm Name</label>
+                      <input
+                        type="text"
+                        className="border rounded p-2 w-auto flex-1 ml-4 text-right"
+                        value={harvestDataForm.farmName}
+                        onChange={e => setHarvestDataForm(f => ({ ...f, farmName: e.target.value }))}
+                        placeholder="Enter farm name"
+                      />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Harvest Date</label>
+                      <input
+                        type="date"
+                        className="border rounded p-2 w-auto flex-1 ml-4 text-right"
+                        value={harvestDataForm.harvestDate}
+                        onChange={e => setHarvestDataForm(f => ({ ...f, harvestDate: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Weather at Harvest</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.weather} onChange={e => setHarvestDataForm(f => ({ ...f, weather: e.target.value }))} placeholder="e.g. Sunny, Rainy" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Total Harvested Area</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.totalHarvestedArea} onChange={e => setHarvestDataForm(f => ({ ...f, totalHarvestedArea: e.target.value }))} placeholder="e.g. 5 acres" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Batches Harvested (Palm Oil)</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.palmBatches} onChange={e => setHarvestDataForm(f => ({ ...f, palmBatches: e.target.value }))} placeholder="e.g. 10" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Batches Harvested (Coconut)</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.coconutBatches} onChange={e => setHarvestDataForm(f => ({ ...f, coconutBatches: e.target.value }))} placeholder="e.g. 8" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Harvest Method</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.harvestMethod} onChange={e => setHarvestDataForm(f => ({ ...f, harvestMethod: e.target.value }))} placeholder="e.g. Manual, Mechanical" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Machines (if any)</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.machines} onChange={e => setHarvestDataForm(f => ({ ...f, machines: e.target.value }))} placeholder="e.g. Tractor, Harvester" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Transport Method</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.transportMethod} onChange={e => setHarvestDataForm(f => ({ ...f, transportMethod: e.target.value }))} placeholder="e.g. Truck, Cart" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Time Spent</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.timeSpent} onChange={e => setHarvestDataForm(f => ({ ...f, timeSpent: e.target.value }))} placeholder="e.g. 4 hours" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Workers</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.numberOfWorkers} onChange={e => setHarvestDataForm(f => ({ ...f, numberOfWorkers: e.target.value }))} placeholder="e.g. 5" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Improvement Suggestions</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.improvementSuggestions} onChange={e => setHarvestDataForm(f => ({ ...f, improvementSuggestions: e.target.value }))} placeholder="Your suggestions..." />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Harvest General Comment</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.generalComment} onChange={e => setHarvestDataForm(f => ({ ...f, generalComment: e.target.value }))} placeholder="Any comments..." />
+                    </div>
+                    <div className="flex justify-end mt-6">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Save</button>
+                    </div>
+                  </form>
                   </CardContent>
                 </Card>
               </div>
-              
-              {/* Market Prices Card */}
-              <div className="mt-8">
-                <MarketPricesSummary />
+            <div className="col-span-full w-full">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-green-900">Farm Specs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4 w-full max-w-2xl mx-auto" onSubmit={handleSaveFarmSpecs}>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Farm Size</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.farmSize} onChange={e => setFarmSpecsForm(f => ({ ...f, farmSize: e.target.value }))} placeholder="e.g. 10 acres" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Location</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.location} onChange={e => setFarmSpecsForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Kalangala" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Owner Name</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.ownerName} onChange={e => setFarmSpecsForm(f => ({ ...f, ownerName: e.target.value }))} placeholder="e.g. John Doe" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Soil Type</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.soilType} onChange={e => setFarmSpecsForm(f => ({ ...f, soilType: e.target.value }))} placeholder="e.g. Loamy" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Tractors</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfTractors} onChange={e => setFarmSpecsForm(f => ({ ...f, numberOfTractors: e.target.value }))} placeholder="e.g. 2" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Trailers</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfTrailers} onChange={e => setFarmSpecsForm(f => ({ ...f, numberOfTrailers: e.target.value }))} placeholder="e.g. 1" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Palm Oil Trees</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfPalmOilTrees} onChange={e => setFarmSpecsForm(f => ({ ...f, numberOfPalmOilTrees: e.target.value }))} placeholder="e.g. 1000" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Number of Coconut Trees</label>
+                      <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfCoconutTrees} onChange={e => setFarmSpecsForm(f => ({ ...f, numberOfCoconutTrees: e.target.value }))} placeholder="e.g. 500" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Area of Palm Oil Trees</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.areaOfPalmOilTrees} onChange={e => setFarmSpecsForm(f => ({ ...f, areaOfPalmOilTrees: e.target.value }))} placeholder="e.g. 5 acres" />
+                    </div>
+                    <div className="flex items-center w-full justify-between">
+                      <label className="font-medium text-gray-700 w-auto text-left">Area of Coconut Trees</label>
+                      <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.areaOfCoconutTrees} onChange={e => setFarmSpecsForm(f => ({ ...f, areaOfCoconutTrees: e.target.value }))} placeholder="e.g. 3 acres" />
+                    </div>
+                    <div className="flex justify-end mt-6">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Save</button>
               </div>
+                  </form>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
+      </div>
+      {/* Render the Inventory Raw Material Order card below the main dashboard grid */}
+      <div className="col-span-full w-full mt-8">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Inventory Raw Material Order</CardTitle>
+            <CardDescription>Orders placed for raw materials from farms</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {inventoryOrders.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No farm orders placed yet.
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {inventoryOrders
+                    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                    .map((order: any) => (
+                      <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-medium text-gray-800">
+                              Farm Order #{order.id.slice(-6)}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
+                            </p>
+                            {order.deliveryDate && (
+                              <p className="text-sm text-blue-600">
+                                Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                            {order.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-700">Palm Oil:</span>
+                            <span className="ml-2 text-blue-600 font-semibold">
+                              {order.palmOilQuantity}L
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-700">Coconut Oil:</span>
+                            <span className="ml-2 text-blue-600 font-semibold">
+                              {order.coconutOilQuantity}L
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+        </div>
       )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </AppLayout>
   );
 }

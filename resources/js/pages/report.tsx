@@ -3,6 +3,7 @@ import { Head, usePage } from '@inertiajs/react';
 import React, { useRef } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, CartesianGrid, XAxis, YAxis, Bar, LineChart, Line } from 'recharts';
 import useStockStore from '@/store/useStockStore';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 function getDashboardReport(dashboard: string) {
     const reportRef = useRef<HTMLDivElement>(null);
@@ -1046,392 +1047,274 @@ function getDashboardReport(dashboard: string) {
                     </div>
                 </div>
             );
-        case 'farmer':
-            return (
-                <div className="bg-orange-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Farmer Report</h2>
-                    <p>Yield, harvest, and farm performance reports go here.</p>
-                </div>
-            );
-        case 'inventory-manager': {
-            // Get inventory data from localStorage
-            const [palmOilStock, setPalmOilStock] = React.useState(150);
-            const [coconutOilStock, setCoconutOilStock] = React.useState(80);
+        case 'farmer': {
+            // Farmer report: sync with dashboard cards
+            const [harvestDataForm, setHarvestDataForm] = React.useState({
+                farmName: '', harvestDate: '', weather: '', totalHarvestedArea: '', palmBatches: '', coconutBatches: '', harvestMethod: '', machines: '', transportMethod: '', timeSpent: '', numberOfWorkers: '', improvementSuggestions: '', generalComment: '',
+            });
+            const [farmSpecsForm, setFarmSpecsForm] = React.useState({
+                farmSize: '', location: '', ownerName: '', soilType: '', numberOfTractors: '', numberOfTrailers: '', numberOfPalmOilTrees: '', numberOfCoconutTrees: '', areaOfPalmOilTrees: '', areaOfCoconutTrees: '',
+            });
+            const [editableHarvestData, setEditableHarvestData] = React.useState<any[]>([]);
+            const [selectedMonthIdx, setSelectedMonthIdx] = React.useState(0);
             const [inventoryOrders, setInventoryOrders] = React.useState<any[]>([]);
             React.useEffect(() => {
                 if (typeof window !== 'undefined') {
-                    const savedPalmOil = localStorage.getItem('palmOilStock');
-                    const savedCoconutOil = localStorage.getItem('coconutOilStock');
-                    const savedInventoryOrders = localStorage.getItem('inventoryOrders');
-                    if (savedPalmOil) setPalmOilStock(parseInt(savedPalmOil) || 150);
-                    if (savedCoconutOil) setCoconutOilStock(parseInt(savedCoconutOil) || 80);
-                    if (savedInventoryOrders) setInventoryOrders(JSON.parse(savedInventoryOrders));
+                    const savedHarvest = localStorage.getItem('harvestDataForm');
+                    if (savedHarvest) setHarvestDataForm(JSON.parse(savedHarvest));
+                    const savedSpecs = localStorage.getItem('farmSpecsForm');
+                    if (savedSpecs) setFarmSpecsForm(JSON.parse(savedSpecs));
+                    const savedHarvestData = localStorage.getItem('editableHarvestData');
+                    if (savedHarvestData) setEditableHarvestData(JSON.parse(savedHarvestData));
+                    const savedOrders = localStorage.getItem('inventoryOrders');
+                    if (savedOrders) setInventoryOrders(JSON.parse(savedOrders));
                 }
             }, []);
-            // Calculate expected deliveries for today
             const today = new Date().toISOString().split('T')[0];
-            const todaysOrders = inventoryOrders.filter(order => order.deliveryDate === today);
-            const totalPalmOilExpected = todaysOrders.reduce((sum, order) => sum + order.palmOilQuantity, 0);
-            const totalCoconutOilExpected = todaysOrders.reduce((sum, order) => sum + order.coconutOilQuantity, 0);
-            const expectedDeliveries = totalPalmOilExpected + totalCoconutOilExpected;
+            const ordersForToday = inventoryOrders.filter(order => order.deliveryDate === today);
+            const ordersForTodayCount = ordersForToday.length;
+            const lastSix = editableHarvestData.slice(-6);
+            const avgCPO = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.crudePalmOil || 0), 0) / lastSix.length) : 0;
+            const avgCoconutOil = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.coconutOil || 0), 0) / lastSix.length) : 0;
             return (
-                <div className="bg-teal-50 p-6 rounded shadow relative">
-                    <button
-                        onClick={() => window.print()}
-                        className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow"
-                    >
-                        <span role="img" aria-label="print">🖨️</span>
-                        <span>Print Preview</span>
-                    </button>
-                    <h2 className="text-2xl font-bold mb-2">Inventory Manager Report</h2>
-                    <p>Inventory levels, restocking, and supply chain reports go here.</p>
-                    {/* Stat Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 mt-6">
-                        <div className="bg-white rounded p-4 text-center border border-teal-200">
-                            <div className="text-3xl font-bold text-teal-600">{palmOilStock + coconutOilStock}</div>
-                            <div className="text-gray-700 mt-1">Total Stock (L)</div>
-                        </div>
-                        <div className="bg-white rounded p-4 text-center border border-teal-200">
-                            <div className="text-3xl font-bold text-blue-600">{palmOilStock}</div>
-                            <div className="text-gray-700 mt-1">Palm Oil Stock (L)</div>
-                        </div>
-                        <div className="bg-white rounded p-4 text-center border border-teal-200">
-                            <div className="text-3xl font-bold text-green-600">{coconutOilStock}</div>
-                            <div className="text-gray-700 mt-1">Coconut Oil Stock (L)</div>
-                        </div>
-                        <div className="bg-white rounded p-4 text-center border border-teal-200">
-                            <div className="text-3xl font-bold text-purple-600">{expectedDeliveries}</div>
-                            <div className="text-gray-700 mt-1">Expected Deliveries (L)</div>
-                        </div>
+                <>
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={() => window.print()}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow"
+                        >
+                            <span role="img" aria-label="print">🖨️</span>
+                            <span>Print Preview</span>
+                        </button>
                     </div>
-                    {/* Raw Material Order History */}
-                    <div className="mb-8">
-                        <h3 className="text-xl font-semibold mb-4">Raw Material Order History</h3>
-                        <div className="bg-white rounded shadow p-4 border border-teal-200">
-                            <div className="space-y-4">
-                                {(() => {
-                                    const rawMaterialOrders = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('rawMaterialOrders') || '[]') : [];
-                                    if (rawMaterialOrders.length === 0) {
-                                        return (
-                                            <div className="text-center py-8 text-gray-500">
-                                                No raw material orders found.
+                    <form>
+                <div className="bg-orange-50 p-6 rounded shadow">
+                    <h2 className="text-2xl font-bold mb-2">Farmer Report</h2>
+                            <p className="mb-6">Yield, harvest, and farm performance reports.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 h-full">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-xl font-bold text-green-800">Today's Raw Material<br/>needed Deliveries</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-green-600">{ordersForTodayCount}</div>
+                                        <p className="text-sm text-gray-500 mt-2">Inventory raw material orders to be delivered today</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-amber-50 to-orange-50 h-full">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-xl font-bold text-amber-800">Average Monthly Palm Oil Production</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-amber-600">{avgCPO} litres</div>
+                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50 h-full">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-xl font-bold text-purple-800">Average Monthly Coconut Oil</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} litres</div>
+                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                                    </CardContent>
+                                </Card>
                 </div>
-            );
-                                    }
-                                    // Group orders by timestamp (same time = same order)
-                                    const groupedOrders = rawMaterialOrders.reduce((groups: any, order: any) => {
-                                        const timestamp = order.timestamp;
-                                        if (!groups[timestamp]) {
-                                            groups[timestamp] = {
-                                                timestamp: timestamp,
-                                                date: order.date,
-                                                orders: [],
-                                                totalPalmOil: 0,
-                                                totalCoconutOil: 0
-                                            };
-                                        }
-                                        groups[timestamp].orders.push(order);
-                                        groups[timestamp].totalPalmOil += order.totalPalmOil;
-                                        groups[timestamp].totalCoconutOil += order.totalCoconutOil;
-                                        return groups;
-                                    }, {});
-                                    // Convert to array and sort by timestamp (newest first)
-                                    const sortedGroups = Object.values(groupedOrders)
-                                        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-                                    return (
-                                        <div className="space-y-3 max-h-64 overflow-y-auto">
-                                            {sortedGroups.map((group: any, index: number) => (
-                                                <div key={group.timestamp} className="p-4 bg-gray-50 rounded-lg border">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h4 className="font-medium text-gray-800">
-                                                                Order #{index + 1}
-                                                            </h4>
-                                                            <p className="text-sm text-gray-600">
-                                                                {new Date(group.timestamp).toLocaleDateString()} at {new Date(group.timestamp).toLocaleTimeString()}
-                                                            </p>
-                                                            {group.orders.length > 1 && (
-                                                                <p className="text-xs text-blue-600 mt-1">
-                                                                    {group.orders.length} items ordered
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                                            Placed
-                                                        </span>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="text-sm">
-                                                            <span className="font-medium text-gray-700">Palm Oil:</span>
-                                                            <span className="ml-2 text-blue-600 font-semibold">
-                                                                {group.totalPalmOil}L
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            <span className="font-medium text-gray-700">Coconut Oil:</span>
-                                                            <span className="ml-2 text-blue-600 font-semibold">
-                                                                {group.totalCoconutOil}L
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
-                        </div>
-                    </div>
-                    {/* Inventory Raw Material Order */}
-                    <div className="mb-8">
-                        <h3 className="text-xl font-semibold mb-4">Inventory Raw Material Order</h3>
-                        <div className="bg-white rounded shadow p-4 border border-teal-200">
-                            <div className="space-y-4">
-                                {inventoryOrders.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-500">
-                                        No farm orders placed yet.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                                        {inventoryOrders
-                                            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                            .map((order) => (
-                                                <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h4 className="font-medium text-gray-800">
-                                                                Farm Order #{order.id.slice(-6)}
-                                                            </h4>
-                                                            <p className="text-sm text-gray-600">
-                                                                {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
-                                                            </p>
-                                                            {order.deliveryDate && (
-                                                                <p className="text-sm text-blue-600">
-                                                                    Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                                            {order.status}
-                                                        </span>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="text-sm">
-                                                            <span className="font-medium text-gray-700">Palm Oil:</span>
-                                                            <span className="ml-2 text-blue-600 font-semibold">
-                                                                {order.palmOilQuantity}L
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            <span className="font-medium text-gray-700">Coconut Oil:</span>
-                                                            <span className="ml-2 text-blue-600 font-semibold">
-                                                                {order.coconutOilQuantity}L
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    {/* Inventory Status */}
-                    <div className="mb-8">
-                        <h3 className="text-xl font-semibold mb-4">Inventory Status</h3>
-                        <div className="bg-white rounded shadow p-4 border border-teal-200">
-                            <div className="space-y-4">
-                                {(() => {
-                                    const thresholds = { palmOil: 200, coconutOil: 100 };
-                                    const criticalItems = [
-                                        {
-                                            id: 1,
-                                            name: 'Palm Oil',
-                                            current: palmOilStock,
-                                            threshold: thresholds.palmOil,
-                                            isCritical: palmOilStock < thresholds.palmOil,
-                                            status: palmOilStock === 0 ? 'Out of Stock' : palmOilStock < thresholds.palmOil ? 'Low Stock' : 'Adequate Stock'
-                                        },
-                                        {
-                                            id: 2,
-                                            name: 'Coconut Oil',
-                                            current: coconutOilStock,
-                                            threshold: thresholds.coconutOil,
-                                            isCritical: coconutOilStock < thresholds.coconutOil,
-                                            status: coconutOilStock === 0 ? 'Out of Stock' : coconutOilStock < thresholds.coconutOil ? 'Low Stock' : 'Adequate Stock'
-                                        }
-                                    ];
-                                    return criticalItems.map((item) => {
-                                        const getBackgroundColor = () => {
-                                            if (item.status === 'Out of Stock') return 'bg-red-50 border border-red-200';
-                                            if (item.status === 'Low Stock') return 'bg-yellow-50 border border-yellow-200';
-                                            return 'bg-green-50 border border-green-200';
-                                        };
-                                        const getStatusColor = () => {
-                                            if (item.status === 'Out of Stock') return 'text-red-600';
-                                            if (item.status === 'Low Stock') return 'text-yellow-600';
-                                            return 'text-green-600';
-                                        };
-                                        return (
-                                            <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg ${getBackgroundColor()}`}>
-                                                <div>
-                                                    <p className="font-medium">{item.name}</p>
-                                                    <p className="text-sm text-gray-600">
-                                                        Current: {item.current}L | Threshold: {item.threshold}L
-                                                    </p>
-                                                    <p className={`text-xs mt-1 font-semibold ${getStatusColor()}`}>
-                                                        Status: {item.status}
-                                                    </p>
-                                                </div>
+                            <div className="mb-8">
+                                <Card className="h-full">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl font-bold">Monthly Production (litres)</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={lastSix}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="month" />
+                                                <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
+                                                <Tooltip />
+                                                <Legend />
+                                                <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
+                                                <Bar dataKey="crudePalmOil" fill="#2196F3" name="Crude Palm Oil" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+                </div>
+                            <div className="mb-8">
+                                <Card className="w-full">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl font-bold text-blue-900">Harvest Data</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form className="space-y-4 w-full max-w-2xl mx-auto">
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Farm Name</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.farmName} disabled />
                                             </div>
-                                        );
-                                    });
-                                })()}
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Harvest Date</label>
+                                                <input type="date" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.harvestDate} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Weather at Harvest</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.weather} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Total Harvested Area</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.totalHarvestedArea} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Batches Harvested (Palm Oil)</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.palmBatches} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Batches Harvested (Coconut)</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.coconutBatches} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Harvest Method</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.harvestMethod} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Machines (if any)</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.machines} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Transport Method</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.transportMethod} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Time Spent</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.timeSpent} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Workers</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.numberOfWorkers} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Improvement Suggestions</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.improvementSuggestions} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Harvest General Comment</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={harvestDataForm.generalComment} disabled />
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="mb-8">
+                                <Card className="w-full">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl font-bold text-green-900">Farm Specs</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form className="space-y-4 w-full max-w-2xl mx-auto">
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Farm Size</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.farmSize} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Location</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.location} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Owner Name</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.ownerName} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Soil Type</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.soilType} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Tractors</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfTractors} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Trailers</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfTrailers} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Palm Oil Trees</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfPalmOilTrees} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Number of Coconut Trees</label>
+                                                <input type="number" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.numberOfCoconutTrees} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Area of Palm Oil Trees</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.areaOfPalmOilTrees} disabled />
+                                            </div>
+                                            <div className="flex items-center w-full justify-between">
+                                                <label className="font-medium text-gray-700 w-auto text-left">Area of Coconut Trees</label>
+                                                <input type="text" className="border rounded p-2 w-auto flex-1 ml-4 text-right" value={farmSpecsForm.areaOfCoconutTrees} disabled />
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="mb-8">
+                                <Card className="w-full">
+                                    <CardHeader>
+                                        <CardTitle>Inventory Raw Material Order</CardTitle>
+                                        <CardDescription>Orders placed for raw materials from farms</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {inventoryOrders.length === 0 ? (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    No farm orders placed yet.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                                    {inventoryOrders
+                                                        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                                        .map((order: any) => (
+                                                            <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <div>
+                                                                        <h4 className="font-medium text-gray-800">
+                                                                            Farm Order #{order.id.slice(-6)}
+                                                                        </h4>
+                                                                        <p className="text-sm text-gray-600">
+                                                                            {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
+                                                                        </p>
+                                                                        {order.deliveryDate && (
+                                                                            <p className="text-sm text-blue-600">
+                                                                                Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                                                        {order.status}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="text-sm">
+                                                                        <span className="font-medium text-gray-700">Palm Oil:</span>
+                                                                        <span className="ml-2 text-blue-600 font-semibold">
+                                                                            {order.palmOilQuantity}L
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="text-sm">
+                                                                        <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                        <span className="ml-2 text-blue-600 font-semibold">
+                                                                            {order.coconutOilQuantity}L
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
-                    </div>
-                    {/* Analytics Cards from /analytics */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
-                        {/* Order Quantity Trends (Last 7 Orders) */}
-                        <div className="lg:col-span-2">
-                            <div className="bg-white rounded shadow p-4 mb-6">
-                                <h3 className="text-xl font-semibold mb-2">Order Quantity Trends (Last 7 Orders)</h3>
-                                <p className="mb-4 text-gray-600">Variance of Palm Oil and Coconut Oil quantities in recent farm orders</p>
-                                <div className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={(() => {
-                                            const last7Orders = inventoryOrders
-                                                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                                .slice(0, 7)
-                                                .reverse();
-                                            return last7Orders.map((order: any, index: number) => ({
-                                                order: `Order ${index + 1}`,
-                                                'Palm Oil': order.palmOilQuantity,
-                                                'Coconut Oil': order.coconutOilQuantity,
-                                                date: new Date(order.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                            }));
-                                        })()}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="order" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="Palm Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
-                                            <Line type="monotone" dataKey="Coconut Oil" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        </div>
-                        {/* Oil Type Distribution */}
-                        <div>
-                            <div className="bg-white rounded shadow p-4 mb-6">
-                                <h3 className="text-xl font-semibold mb-2">Oil Type Distribution</h3>
-                                <p className="mb-4 text-gray-600">Current inventory by oil type</p>
-                                <div className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={[
-                                                    { name: 'Palm Oil', value: palmOilStock },
-                                                    { name: 'Coconut Oil', value: coconutOilStock },
-                                                ]}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                outerRadius={80}
-                                                fill="#8884d8"
-                                                dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                                            >
-                                                {[
-                                                    { name: 'Palm Oil', value: palmOilStock },
-                                                    { name: 'Coconut Oil', value: coconutOilStock },
-                                                ].map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Supply vs Demand Analysis & Inventory Turnover Rate */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        {/* Supply vs Demand Analysis */}
-                        <div className="bg-white rounded shadow p-4 mb-6">
-                            <h3 className="text-xl font-semibold mb-2">Supply vs Demand Analysis</h3>
-                            <p className="mb-4 text-gray-600">Total expected to be delivered today</p>
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={(() => {
-                                        const today = new Date().toISOString().split('T')[0];
-                                        const todayInventoryDeliveries = inventoryOrders
-                                            .filter((order: any) => order.deliveryDate === today)
-                                            .reduce((acc: any, order: any) => {
-                                                acc.palmOil += order.palmOilQuantity;
-                                                acc.coconutOil += order.coconutOilQuantity;
-                                                return acc;
-                                            }, { palmOil: 0, coconutOil: 0 });
-                                        const todayManufacturerDeliveries = (() => {
-                                            const manufacturerOrders = JSON.parse(localStorage.getItem('manufacturerOrders') || '[]');
-                                            return manufacturerOrders
-                                                .filter((order: any) => order.deliveryDate === today)
-                                                .reduce((acc: any, order: any) => {
-                                                    acc.palmOil += order.palmOilQuantity || 0;
-                                                    acc.coconutOil += order.coconutOilQuantity || 0;
-                                                    return acc;
-                                                }, { palmOil: 0, coconutOil: 0 });
-                                        })();
-                                        return [
-                                            {
-                                                category: 'Palm Oil',
-                                                'Expected Today': todayInventoryDeliveries.palmOil + todayManufacturerDeliveries.palmOil,
-                                            },
-                                            {
-                                                category: 'Coconut Oil',
-                                                'Expected Today': todayInventoryDeliveries.coconutOil + todayManufacturerDeliveries.coconutOil,
-                                            }
-                                        ];
-                                    })()}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="category" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="Expected Today" fill="#10b981" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                        {/* Inventory Turnover Rate */}
-                        <div className="bg-white rounded shadow p-4 mb-6">
-                            <h3 className="text-xl font-semibold mb-2">Inventory Turnover Rate</h3>
-                            <p className="mb-4 text-gray-600">Monthly turnover for different oil types</p>
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={[
-                                        { month: 'Jan', turnover: 85 },
-                                        { month: 'Feb', turnover: 78 },
-                                        { month: 'Mar', turnover: 92 },
-                                        { month: 'Apr', turnover: 88 },
-                                        { month: 'May', turnover: 95 },
-                                        { month: 'Jun', turnover: 82 },
-                                    ]}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="month" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="turnover" fill="#10b981" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    </form>
+                </>
             );
         }
         case 'unofficial-vendor':
