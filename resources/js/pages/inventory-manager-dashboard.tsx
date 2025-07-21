@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import useInventoryChatStore from '@/store/useInventoryChatStore';
 import { Send, BarChart2, TrendingUp, Package, AlertCircle } from 'lucide-react';
 import {
   LineChart,
@@ -109,12 +108,12 @@ const AvailableRawMaterialsCard = ({
   }, [coconutOilStock]);
 
   return (
-  <Card>
-    <CardHeader>
+    <Card>
+      <CardHeader>
         <CardTitle>Available Raw Materials</CardTitle>
         <CardDescription>Current stock levels of raw materials</CardDescription>
-    </CardHeader>
-    <CardContent>
+      </CardHeader>
+      <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Palm Oil (Liters)</label>
@@ -135,15 +134,15 @@ const AvailableRawMaterialsCard = ({
                 Update
               </Button>
               <span className="text-sm text-gray-500">L</span>
-            </div>
+                </div>
             <div className="text-xs text-gray-500">
               Current: {palmOilStock}L
             </div>
-          </div>
+        </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Coconut Oil (Liters)</label>
             <div className="flex items-center space-x-2">
-              <Input
+          <Input
                 type="number"
                 value={coconutOilInput}
                 onChange={(e) => setCoconutOilInput(e.target.value)}
@@ -157,99 +156,13 @@ const AvailableRawMaterialsCard = ({
                 size="sm"
               >
                 Update
-              </Button>
+          </Button>
               <span className="text-sm text-gray-500">L</span>
             </div>
             <div className="text-xs text-gray-500">
               Current: {coconutOilStock}L
             </div>
           </div>
-        </div>
-    </CardContent>
-  </Card>
-);
-};
-
-// Farmer chat store (simple local state for demo)
-const useFarmerChatStore = () => {
-  const [messages, setMessages] = useState([
-    {
-      sender: 'Farmer',
-      text: 'Hello, I have fresh Palm Oil ready for delivery.',
-      timestamp: new Date().toISOString(),
-    },
-  ]);
-
-  const addMessage = (message: { sender: string; text: string; timestamp: string }) => {
-    setMessages((prev) => [...prev, message]);
-  };
-
-  return { messages, addMessage };
-};
-
-const FarmerChatCard = () => {
-  const { messages, addMessage } = useFarmerChatStore();
-  const [newMessage, setNewMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() === '') return;
-    addMessage({
-      sender: 'Farmer',
-      text: newMessage,
-      timestamp: new Date().toISOString(),
-    });
-    setNewMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Farmer Chat</CardTitle>
-        <CardDescription>Chat with Inventory Manager</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md">
-          {messages.length > 0 ? (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.sender === 'Farmer' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`p-3 rounded-lg max-w-xs md:max-w-md ${
-                    message.sender === 'Farmer' ? 'bg-green-500 text-white' : 'bg-gray-200 text-black'
-                  }`}
-                >
-                  <p className="font-semibold">{message.sender}</p>
-                  <p>{message.text}</p>
-                  <p className="text-xs mt-1 opacity-70">
-                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <p>No messages yet. Start a conversation!</p>
-            </div>
-          )}
-        </div>
-        <div className="flex space-x-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-          />
-          <Button onClick={handleSendMessage} variant="default" size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>
@@ -442,169 +355,6 @@ export default function InventoryManagerDashboard() {
           />
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Inventory Trend Chart */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Order Quantity Trends (Last 7 Orders)</CardTitle>
-              <CardDescription>Variance of Palm Oil and Coconut Oil quantities in recent farm orders</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={(() => {
-                    // Get last 7 orders and create chart data
-                    const last7Orders = inventoryOrders
-                      .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                      .slice(0, 7)
-                      .reverse(); // Reverse to show chronological order
-                    
-                    return last7Orders.map((order: any, index: number) => ({
-                      order: `Order ${index + 1}`,
-                      'Palm Oil': order.palmOilQuantity,
-                      'Coconut Oil': order.coconutOilQuantity,
-                      date: new Date(order.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    }));
-                  })()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="order" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="Palm Oil" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2} 
-                      activeDot={{ r: 8 }} 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Coconut Oil" 
-                      stroke="#10b981" 
-                      strokeWidth={2}
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Oil Type Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Oil Type Distribution</CardTitle>
-              <CardDescription>Current inventory by oil type</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={updatedOilTypesData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                    >
-                      {updatedOilTypesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Supply vs Demand Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Supply vs Demand Analysis</CardTitle>
-              <CardDescription>Variance of quantities demanded by inventory and manufacturer</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={(() => {
-                    // Get today's date in YYYY-MM-DD format
-                    const today = new Date().toISOString().split('T')[0];
-                    
-                    // Calculate total quantities expected today from inventory orders
-                    const todayInventoryDeliveries = inventoryOrders
-                      .filter((order: any) => order.deliveryDate === today)
-                      .reduce((acc: any, order: any) => {
-                        acc.palmOil += order.palmOilQuantity;
-                        acc.coconutOil += order.coconutOilQuantity;
-                        return acc;
-                      }, { palmOil: 0, coconutOil: 0 });
-
-                    // Calculate total quantities expected today from manufacturer orders
-                    const todayManufacturerDeliveries = (() => {
-                      const manufacturerOrders = JSON.parse(localStorage.getItem('manufacturerOrders') || '[]');
-                      return manufacturerOrders
-                        .filter((order: any) => order.deliveryDate === today)
-                        .reduce((acc: any, order: any) => {
-                          acc.palmOil += order.palmOilQuantity || 0;
-                          acc.coconutOil += order.coconutOilQuantity || 0;
-                          return acc;
-                        }, { palmOil: 0, coconutOil: 0 });
-                    })();
-
-                    return [
-                      {
-                        category: 'Palm Oil',
-                        'Expected Today': todayInventoryDeliveries.palmOil + todayManufacturerDeliveries.palmOil,
-                      },
-                      {
-                        category: 'Coconut Oil',
-                        'Expected Today': todayInventoryDeliveries.coconutOil + todayManufacturerDeliveries.coconutOil,
-                      }
-                    ];
-                  })()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="Expected Today" fill="#10b981" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Inventory Turnover */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory Turnover Rate</CardTitle>
-              <CardDescription>Monthly turnover for different oil types</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={turnoverData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="turnover" fill="#10b981" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Raw Material Order History */}
         <div className="mb-8">
           <Card>
@@ -696,7 +446,7 @@ export default function InventoryManagerDashboard() {
         <div className="mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Order from Farms</CardTitle>
+              <CardTitle>Order Farmer</CardTitle>
               <CardDescription>Place orders for raw materials from local farms</CardDescription>
             </CardHeader>
             <CardContent>
@@ -850,8 +600,6 @@ export default function InventoryManagerDashboard() {
             onPalmOilChange={setPalmOilStock} 
             onCoconutOilChange={setCoconutOilStock} 
           />
-          <FarmerChatCard />
-          <ChatCard />
         </div>
       </div>
     </AppLayout>
@@ -873,77 +621,6 @@ const StatCard = ({ title, value, change, icon, color }: { title: string; value:
             </p>
           </div>
           <div className={`p-3 rounded-full ${color}`}>{icon}</div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const ChatCard = () => {
-  const { messages, addMessage } = useInventoryChatStore();
-  const [newMessage, setNewMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() === '') return;
-
-    addMessage({
-      sender: 'Inventory Manager',
-      text: newMessage,
-      timestamp: new Date().toISOString(),
-    });
-
-    setNewMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Manufacturer Chat</CardTitle>
-        <CardDescription>Communicate with suppliers and team</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4 h-64 overflow-y-auto mb-4 p-4 border rounded-md">
-          {messages.length > 0 ? (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.sender === 'Inventory Manager' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`p-3 rounded-lg max-w-xs md:max-w-md ${
-                    message.sender === 'Inventory Manager' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
-                  }`}
-                >
-                  <p className="font-semibold">{message.sender}</p>
-                  <p>{message.text}</p>
-                  <p className="text-xs mt-1 opacity-70">
-                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <p>No messages yet. Start a conversation!</p>
-            </div>
-          )}
-        </div>
-        <div className="flex space-x-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-          />
-          <Button onClick={handleSendMessage} variant="default" size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>

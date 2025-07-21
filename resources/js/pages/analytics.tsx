@@ -804,10 +804,173 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'inventory-manager':
+            // --- INVENTORY ANALYTICS CARDS LOGIC ---
+            // Colors for charts
+            const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+            // Inventory orders from localStorage
+            const [inventoryOrders, setInventoryOrders] = useState<any[]>([]);
+            useEffect(() => {
+                if (typeof window !== 'undefined') {
+                    const savedInventoryOrders = localStorage.getItem('inventoryOrders');
+                    if (savedInventoryOrders) setInventoryOrders(JSON.parse(savedInventoryOrders));
+                }
+            }, []);
+            // Oil types data
+            const [palmOilStock, setPalmOilStock] = useState(150);
+            const [coconutOilStock, setCoconutOilStock] = useState(80);
+            useEffect(() => {
+                if (typeof window !== 'undefined') {
+                    const savedPalmOil = localStorage.getItem('palmOilStock');
+                    const savedCoconutOil = localStorage.getItem('coconutOilStock');
+                    if (savedPalmOil) setPalmOilStock(parseInt(savedPalmOil) || 150);
+                    if (savedCoconutOil) setCoconutOilStock(parseInt(savedCoconutOil) || 80);
+                }
+            }, []);
+            const updatedOilTypesData = [
+                { name: 'Palm Oil', value: palmOilStock },
+                { name: 'Coconut Oil', value: coconutOilStock },
+            ];
+            // Turnover data (mock or from localStorage)
+            const turnoverData = [
+                { month: 'Jan', turnover: 85 },
+                { month: 'Feb', turnover: 78 },
+                { month: 'Mar', turnover: 92 },
+                { month: 'Apr', turnover: 88 },
+                { month: 'May', turnover: 95 },
+                { month: 'Jun', turnover: 82 },
+            ];
             return (
                 <div className="bg-teal-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Inventory Manager Analytics</h2>
                     <p>Inventory levels, restocking, and supply chain analytics go here.</p>
+                    {/* Inventory Analytics Cards */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
+                        {/* Order Quantity Trends (Last 7 Orders) */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white rounded shadow p-4 mb-6">
+                                <h3 className="text-xl font-semibold mb-2">Order Quantity Trends (Last 7 Orders)</h3>
+                                <p className="mb-4 text-gray-600">Variance of Palm Oil and Coconut Oil quantities in recent farm orders</p>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={(() => {
+                                            const last7Orders = inventoryOrders
+                                                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                                .slice(0, 7)
+                                                .reverse();
+                                            return last7Orders.map((order: any, index: number) => ({
+                                                order: `Order ${index + 1}`,
+                                                'Palm Oil': order.palmOilQuantity,
+                                                'Coconut Oil': order.coconutOilQuantity,
+                                                date: new Date(order.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                            }));
+                                        })()}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="order" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="Palm Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
+                                            <Line type="monotone" dataKey="Coconut Oil" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Oil Type Distribution */}
+                        <div>
+                            <div className="bg-white rounded shadow p-4 mb-6">
+                                <h3 className="text-xl font-semibold mb-2">Oil Type Distribution</h3>
+                                <p className="mb-4 text-gray-600">Current inventory by oil type</p>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={updatedOilTypesData}
+                                                cx="50%"
+                                                cy="50%"
+                                                labelLine={false}
+                                                outerRadius={80}
+                                                fill="#8884d8"
+                                                dataKey="value"
+                                                label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                                            >
+                                                {updatedOilTypesData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Supply vs Demand Analysis & Inventory Turnover Rate */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        {/* Supply vs Demand Analysis */}
+                        <div className="bg-white rounded shadow p-4 mb-6">
+                            <h3 className="text-xl font-semibold mb-2">Supply vs Demand Analysis</h3>
+                            <p className="mb-4 text-gray-600">Total expected to be delivered today</p>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={(() => {
+                                        const today = new Date().toISOString().split('T')[0];
+                                        const todayInventoryDeliveries = inventoryOrders
+                                            .filter((order: any) => order.deliveryDate === today)
+                                            .reduce((acc: any, order: any) => {
+                                                acc.palmOil += order.palmOilQuantity;
+                                                acc.coconutOil += order.coconutOilQuantity;
+                                                return acc;
+                                            }, { palmOil: 0, coconutOil: 0 });
+                                        const todayManufacturerDeliveries = (() => {
+                                            const manufacturerOrders = JSON.parse(localStorage.getItem('manufacturerOrders') || '[]');
+                                            return manufacturerOrders
+                                                .filter((order: any) => order.deliveryDate === today)
+                                                .reduce((acc: any, order: any) => {
+                                                    acc.palmOil += order.palmOilQuantity || 0;
+                                                    acc.coconutOil += order.coconutOilQuantity || 0;
+                                                    return acc;
+                                                }, { palmOil: 0, coconutOil: 0 });
+                                        })();
+                                        return [
+                                            {
+                                                category: 'Palm Oil',
+                                                'Expected Today': todayInventoryDeliveries.palmOil + todayManufacturerDeliveries.palmOil,
+                                            },
+                                            {
+                                                category: 'Coconut Oil',
+                                                'Expected Today': todayInventoryDeliveries.coconutOil + todayManufacturerDeliveries.coconutOil,
+                                            }
+                                        ];
+                                    })()}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="category" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="Expected Today" fill="#10b981" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                        {/* Inventory Turnover Rate */}
+                        <div className="bg-white rounded shadow p-4 mb-6">
+                            <h3 className="text-xl font-semibold mb-2">Inventory Turnover Rate</h3>
+                            <p className="mb-4 text-gray-600">Monthly turnover for different oil types</p>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={turnoverData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="month" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="turnover" fill="#10b981" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             );
         case 'unofficial-vendor':

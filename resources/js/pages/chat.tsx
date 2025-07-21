@@ -685,6 +685,134 @@ const ManufacturerChat = () => {
     );
 };
 
+function InventoryChat() {
+    const [activeChat, setActiveChat] = React.useState<'farmer' | 'manufacturer'>('farmer');
+    const [farmerMessages, setFarmerMessages] = React.useState([
+        { sender: 'Inventory Manager', text: 'Hello Farmer! Ready to coordinate raw materials?', timestamp: new Date().toISOString() }
+    ]);
+    const [manufacturerMessages, setManufacturerMessages] = React.useState([
+        { sender: 'Inventory Manager', text: 'Hello Manufacturer! Ready to coordinate supply?', timestamp: new Date().toISOString() }
+    ]);
+    const [newMessage, setNewMessage] = React.useState('');
+    const [isReplying, setIsReplying] = React.useState(false);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() === '') return;
+        const msg = {
+            sender: 'Inventory Manager',
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+        };
+        if (activeChat === 'farmer') {
+            setFarmerMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setFarmerMessages(prev => [...prev, {
+                    sender: 'Farmer',
+                    text: 'Thank you for your message! I will prepare the raw materials.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        } else {
+            setManufacturerMessages(prev => [...prev, msg]);
+            setIsReplying(true);
+            setTimeout(() => {
+                setManufacturerMessages(prev => [...prev, {
+                    sender: 'Manufacturer',
+                    text: 'Thank you for your message! We will coordinate supply soon.',
+                    timestamp: new Date().toISOString(),
+                }]);
+                setIsReplying(false);
+            }, 1200);
+        }
+        setNewMessage('');
+    };
+
+    const messages = activeChat === 'farmer' ? farmerMessages : manufacturerMessages;
+    const chatTitle = activeChat === 'farmer' ? 'Farmer' : 'Manufacturer';
+    const chatDesc = activeChat === 'farmer'
+        ? 'Chat directly with the farmer for raw material coordination.'
+        : 'Chat directly with the manufacturer for supply coordination.';
+    const avatar = activeChat === 'farmer' ? 'FA' : 'MA';
+
+    return (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="text-white px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(82, 122, 154, 0.9)' }}>
+                        <span className="text-white font-semibold text-sm">{avatar}</span>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold">{chatTitle} Chat</h3>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{chatDesc}</p>
+                    </div>
+                </div>
+                <div className="flex space-x-2">
+                    <Button
+                        onClick={() => setActiveChat('farmer')}
+                        variant={activeChat === 'farmer' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'farmer' ? 'text-white' : 'text-white hover:bg-white/20'}
+                        style={activeChat === 'farmer' ? { background: 'rgba(75, 80, 232, 0.8)' } : {}}
+                    >
+                        Farmer
+                    </Button>
+                    <Button
+                        onClick={() => setActiveChat('manufacturer')}
+                        variant={activeChat === 'manufacturer' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={activeChat === 'manufacturer' ? 'text-white' : 'text-white hover:bg-white/20'}
+                        style={activeChat === 'manufacturer' ? { background: 'rgba(75, 80, 232, 0.8)' } : {}}
+                    >
+                        Manufacturer
+                    </Button>
+                </div>
+            </div>
+            {/* Chat Area */}
+            <div className="flex flex-col h-96 bg-gray-100 p-4 overflow-y-auto">
+                {messages.map((message, idx) => (
+                    <div key={idx} className={`flex mb-2 ${message.sender === 'Inventory Manager' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${message.sender === 'Inventory Manager' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
+                            <p className="font-medium">{message.sender}</p>
+                            <p className="mt-1">{message.text}</p>
+                            <p className="text-xs text-gray-200 mt-1">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                ))}
+                {isReplying && (
+                    <div className="flex justify-start mb-2">
+                        <div className="max-w-xs md:max-w-md rounded-lg p-3 bg-gray-200 text-black opacity-70">
+                            <p className="font-medium">{chatTitle}</p>
+                            <p className="mt-1 italic">Typing...</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+            {/* Input Area */}
+            <div className="bg-white p-4 border-t flex space-x-2">
+                <Input
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder={`Type your message to the ${chatTitle.toLowerCase()}...`}
+                    className="flex-1 rounded-full border-gray-300"
+                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                    disabled={isReplying}
+                />
+                <Button
+                    onClick={handleSendMessage}
+                    className="rounded-full p-2"
+                    style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.9) 0%, rgba(75, 80, 232, 0.8) 100%)' }}
+                    disabled={!newMessage.trim() || isReplying}
+                >
+                    <Send className="h-4 w-4 text-white" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
 const CategoryButton = ({ category, activeCategory, setActiveCategory, icon }: { category: MessageCategory, activeCategory: MessageCategory, setActiveCategory: (c: MessageCategory) => void, icon: React.ReactNode }) => (
     <Button
         variant={activeCategory === category ? 'default' : 'ghost'}
@@ -994,6 +1122,20 @@ function DistributorChat() {
 export default function Chat() {
     const { dashboard: dashboardProp } = usePage().props as { dashboard?: string };
     const dashboard = dashboardProp || '';
+
+    // Show InventoryChat if dashboard is inventory-manager, else fallback to default
+    if (dashboard === 'inventory-manager') {
+        return (
+            <AppLayout>
+                <div>
+                    <Head title="Inventory Chat" />
+                    <div className="container mx-auto px-4 py-8">
+                        <InventoryChat />
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout>
