@@ -10,8 +10,15 @@ import useStockStore from '@/store/useStockStore';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
+type ProductionEntry = {
+  date: string;
+  'Cooking Oil': number;
+  Shampoo: number;
+  Margarine: number;
+};
+
 // Initial production data
-const initialProductionData = [
+const initialProductionData: ProductionEntry[] = [
     { date: '2025-07-01', 'Cooking Oil': 400, Shampoo: 240, Margarine: 300 },
     { date: '2025-07-02', 'Cooking Oil': 300, Shampoo: 139, Margarine: 450 },
     { date: '2025-07-03', 'Cooking Oil': 200, Shampoo: 240, Margarine: 200 },
@@ -70,15 +77,15 @@ function AddProductionDataCard({ onAddData }: { onAddData: (data: { date: string
     );
 }
 
-function getDashboardAnalytics(dashboard: string) {
-    const [productionData, setProductionData] = useState(initialProductionData);
+function DashboardAnalytics({ dashboard }: { dashboard: string }) {
+    const [productionData, setProductionData] = useState<ProductionEntry[]>(initialProductionData);
     const [notification, setNotification] = useState<string | null>(null);
 
     // Calculate analytics data based on current production data
     const analyticsData = useMemo(() => {
         const productNames = productionData.length > 0 ? Object.keys(productionData[0]).filter(key => key !== 'date') : [];
         const totalProduction = productNames.reduce((acc, productName) => {
-            acc[productName] = productionData.reduce((sum, entry) => sum + ((entry as any)[productName] || 0), 0);
+            acc[productName] = productionData.reduce((sum, entry) => sum + Number(entry[productName as keyof ProductionEntry] ?? 0), 0);
             return acc;
         }, {} as Record<string, number>);
 
@@ -89,12 +96,12 @@ function getDashboardAnalytics(dashboard: string) {
     const { averageProduction, productNames, totalProduction } = useMemo(() => {
         const productNames = productionData.length > 0 ? Object.keys(productionData[0]).filter(key => key !== 'date') : [];
         const totalProduction = productNames.reduce((acc, productName) => {
-            acc[productName] = productionData.reduce((sum, entry) => sum + ((entry as any)[productName] || 0), 0);
+            acc[productName] = productionData.reduce((sum, entry) => sum + Number(entry[productName as keyof ProductionEntry] ?? 0), 0);
             return acc;
         }, {} as Record<string, number>);
         const averageProduction = productNames.reduce((acc, productName) => {
             const total = totalProduction[productName];
-            const count = productionData.filter(entry => ((entry as any)[productName] || 0) > 0).length;
+            const count = productionData.filter(entry => Number(entry[productName as keyof ProductionEntry] ?? 0) > 0).length;
             acc[productName] = count > 0 ? total / count : 0;
             return acc;
         }, {} as Record<string, number>);
@@ -228,7 +235,7 @@ function getDashboardAnalytics(dashboard: string) {
 
                     {/* Production Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                        {productNames.map((productName, index) => (
+                        {productNames.map((productName) => (
                             <div key={productName} className="bg-white rounded shadow p-4">
                                 <h3 className="text-lg font-semibold mb-2">{productName} Summary</h3>
                                 <div className="space-y-2">
@@ -242,7 +249,7 @@ function getDashboardAnalytics(dashboard: string) {
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Days with Data:</span>
-                                        <strong>{productionData.filter(entry => ((entry as any)[productName] || 0) > 0).length}</strong>
+                                        <strong>{productionData.filter(entry => Number(entry[productName as keyof ProductionEntry] ?? 0) > 0).length}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +271,7 @@ function getDashboardAnalytics(dashboard: string) {
                     <p>Distribution, logistics, and delivery analytics go here.</p>
                 </div>
             );
-        case 'admin':
+        case 'admin': {
             // Get data from localStorage
             let acceptedVendors: string[] = [];
             let rejectedVendors: string[] = [];
@@ -279,17 +286,9 @@ function getDashboardAnalytics(dashboard: string) {
             // Pie chart data for submitted vs processed applications
             const processedCount = acceptedVendors.length + rejectedVendors.length;
             const submittedCount = pdfFiles.length;
-            const unprocessedCount = submittedCount - processedCount;
             const submissionPieData = [
                 { name: 'No Feedback', value: submittedCount },
                 { name: 'Given feedback', value: processedCount },
-            ];
-            // Pie chart data for viewed/unviewed
-            const viewedCount = pdfFiles.filter((f: { name: string }) => acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) || rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))).length;
-            const unviewedCount = pdfFiles.length - viewedCount;
-            const viewedPieData = [
-                { name: 'Viewed', value: viewedCount },
-                { name: 'Unviewed', value: unviewedCount },
             ];
             // Pie chart data for accepted/rejected
             const acceptedPieData = [
@@ -320,19 +319,12 @@ function getDashboardAnalytics(dashboard: string) {
                 departmentCountMap[dept] = (departmentCountMap[dept] || 0) + 1;
             });
             const departmentBarData: DepartmentBar[] = Object.entries(departmentCountMap).map(([department, count]) => ({ department, count }));
-            // Pie chart data for feedback provided/unprovided
-            // Assume feedback is provided if the application is in accepted or rejected
+            // Approval rate percentage
             const feedbackCount = pdfFiles.filter((f: { name: string }) =>
                 acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) ||
                 rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))
             ).length;
             const noFeedbackCount = pdfFiles.length - feedbackCount;
-            const feedbackPieData = [
-                { name: 'Provided Feedback', value: feedbackCount },
-                { name: 'No Feedback', value: noFeedbackCount },
-            ];
-            // Approval rate percentage
-            const approvalRate = processedCount > 0 ? (acceptedVendors.length / processedCount) * 100 : 0;
             // Percentages for accepted and rejected
             const totalProcessed = acceptedVendors.length + rejectedVendors.length;
             const acceptedPercent = totalProcessed > 0 ? (acceptedVendors.length / totalProcessed) * 100 : 0;
@@ -394,6 +386,7 @@ function getDashboardAnalytics(dashboard: string) {
                     </div>
                 </div>
             );
+        }
         case 'customer':
             return (
                 <div className="bg-blue-100 p-6 rounded shadow">
@@ -401,7 +394,7 @@ function getDashboardAnalytics(dashboard: string) {
                     <p>Order history, preferences, and engagement analytics go here.</p>
                 </div>
             );
-        case 'factory-store':
+        case 'factory-store': {
             // Example data for the graph
             const stockByBoxData = [
                 { name: 'Cooking Oil', boxes: 120 },
@@ -418,6 +411,7 @@ function getDashboardAnalytics(dashboard: string) {
                     </div>
                 </div>
             );
+        }
         case 'farmer':
             return (
                 <div className="bg-orange-50 p-6 rounded shadow">
@@ -503,7 +497,7 @@ export default function Analytics() {
             <div>
                 <Head title="Analytics" />
                 <div className="container mx-auto px-4 py-8">
-                    {getDashboardAnalytics(dashboard)}
+                    <DashboardAnalytics dashboard={dashboard} />
                 </div>
             </div>
         </AppLayout>
