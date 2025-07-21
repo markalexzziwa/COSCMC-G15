@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FarmStatsCard } from '@/components/farm-stats-card';
-import { HarvestSummaryCard } from '@/components/harvest-summary-card';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   BarChart,
@@ -17,18 +16,10 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-  AreaChart,
-  Area
+  Cell
 } from 'recharts';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-
-interface FarmActivity {
-  id: string;
-  date: string;
-  description: string;
-}
 
 // Sample data for the charts
 const harvestData = [
@@ -49,65 +40,414 @@ const oilYieldData = [
   { month: 'Jun', extractionRate: 92 },
 ];
 
-const inventoryData = [
-  { day: 'Mon', stock: 1200, demand: 1000 },
-  { day: 'Tue', stock: 900, demand: 1100 },
-  { day: 'Wed', stock: 800, demand: 1200 },
-  { day: 'Thu', stock: 1100, demand: 1000 },
-  { day: 'Fri', stock: 1300, demand: 900 },
-  { day: 'Sat', stock: 1500, demand: 800 },
-];
+// Replace HarvestDetailsCard with an editable table-like form for harvest details
+function HarvestDetailsTable() {
+  const initialSections = [
+    {
+      heading: 'Basic Farm Information',
+      fields: [
+        { label: 'Farm name/location', value: '' },
+        { label: 'Harvest date(s)', value: '' },
+        { label: 'Field/block identification', value: '' },
+        { label: 'Weather conditions during harvest', value: '' },
+      ],
+    },
+    {
+      heading: 'Harvesting Data',
+      fields: [
+        { label: 'Total harvested area', value: '' },
+        { label: 'Number of bunches harvested', value: '' },
+        { label: 'Average bunch weight (kg)', value: '' },
+        { label: 'Total FFB yield', value: '' },
+        { label: 'Harvesting method', value: '' },
+        { label: 'Harvesting team details', value: '' },
+      ],
+    },
+    {
+      heading: 'Fruit Quality & Ripeness Assessment',
+      fields: [
+        { label: 'Ripeness level', value: '' },
+        { label: 'Fruit quality grading', value: '' },
+        { label: 'Oil content estimation', value: '' },
+        { label: 'Presence of pests/diseases', value: '' },
+      ],
+    },
+    {
+      heading: 'Post-Harvest Handling',
+      fields: [
+        { label: 'Transportation method', value: '' },
+        { label: 'Time from harvest to processing', value: '' },
+        { label: 'Storage conditions', value: '' },
+        { label: 'Losses recorded', value: '' },
+      ],
+    },
+    {
+      heading: 'Labor & Cost Details',
+      fields: [
+        { label: 'Labor hours spent', value: '' },
+        { label: 'Harvesting cost per ton', value: '' },
+        { label: 'Equipment used & maintenance notes', value: '' },
+      ],
+    },
+    {
+      heading: 'Observations & Challenges',
+      fields: [
+        { label: 'Issues faced', value: '' },
+        { label: 'Unusual findings', value: '' },
+        { label: 'Suggestions for improvement', value: '' },
+      ],
+    },
+    {
+      heading: 'Yield Comparison & Trends',
+      fields: [
+        { label: 'Comparison with previous harvests', value: '' },
+        { label: 'Long-term trends', value: '' },
+      ],
+    },
+    {
+      heading: 'Additional Notes',
+      fields: [
+        { label: 'Special treatments applied', value: '' },
+        { label: 'Compliance with sustainability/certification standards', value: '' },
+      ],
+    },
+  ];
+  const [editMode, setEditMode] = useState(false);
+  const [sections, setSections] = useState(initialSections);
+  const [tempSections, setTempSections] = useState(initialSections);
+
+  const handleEdit = () => {
+    setTempSections(sections);
+    setEditMode(true);
+  };
+  const handleSave = () => {
+    setSections(tempSections);
+    setEditMode(false);
+  };
+  const handleCancel = () => {
+    setTempSections(sections);
+    setEditMode(false);
+  };
+
+  const handleFieldChange = (sectionIdx: number, fieldIdx: number, value: string) => {
+    setTempSections(prev => prev.map((section, sIdx) =>
+      sIdx === sectionIdx
+        ? { ...section, fields: section.fields.map((f, fIdx) => fIdx === fieldIdx ? { ...f, value } : f) }
+        : section
+    ));
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-black">Harvest Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-end mb-4">
+          {!editMode ? (
+            <button onClick={handleEdit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Edit</button>
+          ) : (
+            <>
+              <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">Save</button>
+              <button onClick={handleCancel} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">Cancel</button>
+            </>
+          )}
+        </div>
+        <div className="space-y-8">
+          {sections.map((section, sectionIdx) => (
+            <table key={section.heading} className="min-w-full border text-sm bg-white">
+              <thead>
+                <tr>
+                  <th colSpan={2} className="bg-gray-100 text-left py-2 px-4 text-base font-semibold border-b">{section.heading}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(editMode ? tempSections : sections)[sectionIdx].fields.map((field, fieldIdx) => (
+                  <tr key={field.label} className="border-b">
+                    <td className="py-2 px-4 w-1/3 font-medium">{field.label}</td>
+                    <td className="py-2 px-4">
+                      {editMode ? (
+                        <input
+                          type="text"
+                          value={tempSections[sectionIdx].fields[fieldIdx].value}
+                          onChange={e => handleFieldChange(sectionIdx, fieldIdx, e.target.value)}
+                          className="border rounded p-1 w-full"
+                        />
+                      ) : (
+                        <span>{field.value || <span className="text-gray-400">(not set)</span>}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EquipmentTable() {
+  const initialEquipment = [
+    { type: 'Tractor', number: '' },
+    { type: 'Transportation Truck', number: '' },
+  ];
+  const [editMode, setEditMode] = useState(false);
+  const [equipment, setEquipment] = useState(initialEquipment);
+  const [tempEquipment, setTempEquipment] = useState(initialEquipment);
+
+  const handleEdit = () => {
+    setTempEquipment(equipment);
+    setEditMode(true);
+  };
+  const handleSave = () => {
+    setEquipment(tempEquipment);
+    setEditMode(false);
+  };
+  const handleCancel = () => {
+    setTempEquipment(equipment);
+    setEditMode(false);
+  };
+  const handleChange = (idx: number, value: string) => {
+    setTempEquipment(prev => prev.map((row, i) => i === idx ? { ...row, number: value } : row));
+  };
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="text-black">Farm Equipment</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-end mb-4">
+          {!editMode ? (
+            <button onClick={handleEdit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Edit</button>
+          ) : (
+            <>
+              <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">Save</button>
+              <button onClick={handleCancel} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">Cancel</button>
+            </>
+          )}
+        </div>
+        <table className="min-w-full border text-sm">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b text-left">Equipment Type</th>
+              <th className="py-2 px-4 border-b text-left">Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(editMode ? tempEquipment : equipment).map((row, idx) => (
+              <tr key={row.type} className="border-b">
+                <td className="py-2 px-4 font-medium">{row.type}</td>
+                <td className="py-2 px-4">
+                  {editMode ? (
+                    <input
+                      type="number"
+                      value={tempEquipment[idx].number}
+                      onChange={e => handleChange(idx, e.target.value)}
+                      className="border rounded p-1 w-24"
+                    />
+                  ) : (
+                    <span>{row.number || <span className="text-gray-400">(not set)</span>}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TreeAreaPieChart() {
+  const initialData = [
+    { name: 'Mature Trees', value: 65 },
+    { name: 'Young Trees', value: 20 },
+    { name: 'New Plantings', value: 15 },
+  ];
+  const [editMode, setEditMode] = useState(false);
+  const [data, setData] = useState(initialData);
+  const [tempData, setTempData] = useState(initialData);
+  const handleEdit = () => {
+    setTempData(data);
+    setEditMode(true);
+  };
+  const handleSave = () => {
+    setData(tempData);
+    setEditMode(false);
+  };
+  const handleCancel = () => {
+    setTempData(data);
+    setEditMode(false);
+  };
+  const handleChange = (idx: number, value: string) => {
+    setTempData(prev => prev.map((row, i) => i === idx ? { ...row, value: Number(value) } : row));
+  };
+  const COLORS = ['#4CAF50', '#FFC107', '#9C27B0'];
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="text-black">Tree Area by Growth Stage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-end mb-4">
+          {!editMode ? (
+            <button onClick={handleEdit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Edit</button>
+          ) : (
+            <>
+              <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">Save</button>
+              <button onClick={handleCancel} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">Cancel</button>
+            </>
+          )}
+        </div>
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="w-full md:w-1/2">
+            <PieChart width={300} height={300}>
+              <Pie
+                data={editMode ? tempData : data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`}
+              >
+                {(editMode ? tempData : data).map((entry, idx) => (
+                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+          </div>
+          <div className="w-full md:w-1/2">
+            <table className="min-w-full border text-sm">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b text-left">Growth Stage</th>
+                  <th className="py-2 px-4 border-b text-left">Area (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(editMode ? tempData : data).map((row, idx) => (
+                  <tr key={row.name} className="border-b">
+                    <td className="py-2 px-4 font-medium">{row.name}</td>
+                    <td className="py-2 px-4">
+                      {editMode ? (
+                        <input
+                          type="number"
+                          value={tempData[idx].value}
+                          onChange={e => handleChange(idx, e.target.value)}
+                          className="border rounded p-1 w-24"
+                        />
+                      ) : (
+                        <span>{row.value}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MarketPricesSummary() {
+  // Example price trend data for the graph
+  const priceTrendData = [
+    { year: '2023', FFB: 700, CPO: 1.5 },
+    { year: '2024', FFB: 831, CPO: 1.2 },
+    { year: '2025', FFB: 1023, CPO: 1.0 },
+  ];
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="text-2xl font-extrabold text-green-900 tracking-wide mb-2">Palm Oil Market Prices (Uganda)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+          <div className="flex-1 flex flex-col justify-center">
+            <table className="w-full border text-base mb-6 bg-white rounded shadow">
+              <thead>
+                <tr>
+                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Product</th>
+                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Price (UGX/kg)</th>
+                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Price (USD/kg)</th>
+                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Location/Source</th>
+                  <th className="py-3 px-6 border-b text-left font-bold text-lg">Date/Period</th>
+                </tr>
+              </thead>
+              <tbody className="text-lg">
+                <tr className="bg-green-50 font-semibold">
+                  <td>FFB (farmgate)</td><td className="text-green-800 font-bold">1023</td><td>~0.27</td><td>Kalangala (NOPP)</td><td>Mar 2025</td>
+                </tr>
+                <tr><td>FFB (farmgate, prev.)</td><td>700–831</td><td></td><td>Uganda</td><td>Dec prev. year</td></tr>
+                <tr><td>Palm nuts/kernels</td><td>7,293–11,412</td><td></td><td>Kampala/Jinja (retail)</td><td>Recent</td></tr>
+                <tr><td>Crude Palm Oil (import)</td><td>—</td><td>0.28–1.87 (2024)</td><td>Uganda (import)</td><td>2024</td></tr>
+                <tr><td>Crude Palm Oil (import)</td><td>—</td><td>0.28–10.80 (2023)</td><td>Uganda (import)</td><td>2023</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="flex-1 min-w-[350px] flex flex-col justify-center">
+            <ResponsiveContainer width="100%" height={340}>
+              <LineChart data={priceTrendData} margin={{ top: 20, right: 40, left: 10, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" tick={{ fontSize: 16 }} />
+                <YAxis yAxisId="left" label={{ value: 'FFB (UGX/kg)', angle: -90, position: 'insideLeft', fontSize: 14 }} tick={{ fontSize: 16 }} />
+                <YAxis yAxisId="right" orientation="right" label={{ value: 'CPO (USD/kg)', angle: 90, position: 'insideRight', fontSize: 14 }} tick={{ fontSize: 16 }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 16 }} />
+                <Line yAxisId="left" type="monotone" dataKey="FFB" stroke="#4CAF50" strokeWidth={3} name="FFB (UGX/kg)" dot={{ r: 6 }} />
+                <Line yAxisId="right" type="monotone" dataKey="CPO" stroke="#2196F3" strokeWidth={3} name="CPO (USD/kg)" dot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="text-xs text-gray-700 mt-6">
+          <b>Notes:</b> Prices vary by location, market conditions, and supply chain. Retail prices are much higher than farmgate prices. Crude palm oil import prices have stabilized in recent years. Data sources: National Oil Palm Project, Selina Wamucii, Tridge, The Independent Uganda.
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function FarmerDashboard() {
-  const [showHarvests, setShowHarvests] = useState(false);
   const [showFarmSpec, setShowFarmSpec] = useState(false);
-  const [message, setMessage] = useState('');
-  // Editable values state
-  const [freshFruitBunches, setFreshFruitBunches] = useState(2200);
-  const [extractionRate, setExtractionRate] = useState(92);
-  const [cpoProduction, setCpoProduction] = useState(1500);
   const [editMode, setEditMode] = useState(false);
-  const [tempValues, setTempValues] = useState({
-    freshFruitBunches: 2200,
-    extractionRate: 92,
-    cpoProduction: 1500,
-  });
 
+  // Add state for farmStats
+  const [farmStats, setFarmStats] = useState([
+    { name: 'Total Farm Area', value: '15 Hectares' },
+    { name: 'Number of Palm Trees', value: '2,350' },
+    { name: 'Last Harvest Yield', value: '4.8 Tons' },
+    { name: 'Growth Stage', value: 'Flowering' },
+  ]);
+  const [farmStatsTemp, setFarmStatsTemp] = useState(farmStats);
+
+  // Add back showHarvests state
+  const [showHarvests, setShowHarvests] = useState(false);
+
+  // Add back calendar state
   const [showCalendar, setShowCalendar] = useState(false);
   const [date, setDate] = useState(new Date());
-  const [farmActivities, setFarmActivities] = useState<FarmActivity[]>(
+  const [farmActivities, setFarmActivities] = useState<{ id: string; date: string; description: string }[]>(
     JSON.parse(localStorage.getItem('farmActivities') || '[]')
   );
   const [newActivityText, setNewActivityText] = useState('');
 
-  // Save activities to local storage whenever they change
-  useEffect(() => {
-    localStorage.setItem('farmActivities', JSON.stringify(farmActivities));
-  }, [farmActivities]);
-
-  const handleSendMessage = () => {
-    // In a real app, this would send to backend
-    alert(`Message sent to inventory manager: ${message}`);
-    setMessage('');
-  };
-
   const handleEdit = () => {
-    setTempValues({
-      freshFruitBunches,
-      extractionRate,
-      cpoProduction,
-    });
+    setFarmStatsTemp(farmStats);
     setEditMode(true);
   };
-
   const handleSave = () => {
-    setFreshFruitBunches(Number(tempValues.freshFruitBunches));
-    setExtractionRate(Number(tempValues.extractionRate));
-    setCpoProduction(Number(tempValues.cpoProduction));
+    setFarmStats(farmStatsTemp);
     setEditMode(false);
   };
-
   const handleCancel = () => {
+    setFarmStatsTemp(farmStats);
     setEditMode(false);
   };
 
@@ -125,51 +465,7 @@ export default function FarmerDashboard() {
           </div>
           <div className="flex-1 overflow-auto p-4">
             <div className="max-w-6xl mx-auto">
-              <HarvestSummaryCard />
-              
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold">Monthly Production</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={harvestData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="freshFruitBunches" fill="#4CAF50" name="Fresh Fruit Bunches" />
-                        <Bar dataKey="crudePalmOil" fill="#FFC107" name="Crude Palm Oil" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold">Extraction Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={oilYieldData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis domain={[70, 100]} />
-                        <Tooltip />
-                        <Line 
-                          type="monotone" 
-                          dataKey="extractionRate" 
-                          stroke="#2196F3" 
-                          strokeWidth={2} 
-                          activeDot={{ r: 8 }} 
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+              <HarvestDetailsTable />
             </div>
           </div>
         </div>
@@ -183,69 +479,34 @@ export default function FarmerDashboard() {
           </div>
           <div className="flex-1 overflow-auto p-4">
             <div className="max-w-6xl mx-auto">
-              <FarmStatsCard />
-              
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold">Plantation Area</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Mature Trees', value: 65 },
-                            { name: 'Young Trees', value: 20 },
-                            { name: 'New Plantings', value: 15 }
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`}
-                        >
-                          <Cell fill="#4CAF50" />
-                          <Cell fill="#FFC107" />
-                          <Cell fill="#9C27B0" />
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold">Production Forecast</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          { month: 'Jul', forecast: 2300, target: 2400 },
-                          { month: 'Aug', forecast: 2500, target: 2500 },
-                          { month: 'Sep', forecast: 2700, target: 2600 },
-                          { month: 'Oct', forecast: 2900, target: 2700 },
-                          { month: 'Nov', forecast: 3100, target: 2800 },
-                          { month: 'Dec', forecast: 3400, target: 3000 },
-                        ]}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="forecast" stroke="#FF5722" strokeWidth={2} name="Forecast" />
-                        <Line type="monotone" dataKey="target" stroke="#607D8B" strokeWidth={2} strokeDasharray="5 5" name="Target" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+              <div className="flex justify-end mb-4">
+                {!editMode ? (
+                  <button
+                    onClick={handleEdit}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                  >
+                    Edit Values
+            </button>
+                ) : (
+                  <>
+                          <button 
+                      onClick={handleSave}
+                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2"
+                          >
+                      Save
+                          </button>
+                    <button 
+                      onClick={handleCancel}
+                      className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+                  </div>
+              <FarmStatsCard stats={farmStatsTemp} editMode={editMode} onChange={setFarmStatsTemp} />
+              <EquipmentTable />
+              <TreeAreaPieChart />
             </div>
           </div>
         </div>
@@ -274,7 +535,6 @@ export default function FarmerDashboard() {
                   />
                 </CardContent>
               </Card>
-
               <Card className="mt-8 p-6">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold mb-4">Activities for {date.toDateString()}</CardTitle>
@@ -366,12 +626,12 @@ export default function FarmerDashboard() {
                   </CardHeader>
                   <CardContent>
                     {!editMode ? (
-                      <div className="text-3xl font-bold text-green-600">{freshFruitBunches.toLocaleString()} kg</div>
+                      <div className="text-3xl font-bold text-green-600">2,200 kg</div>
                     ) : (
                       <input
                         type="number"
-                        value={tempValues.freshFruitBunches}
-                        onChange={e => setTempValues(v => ({ ...v, freshFruitBunches: Number(e.target.value) }))}
+                        value={farmStatsTemp[0].value.replace(' kg', '')}
+                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'Fresh Fruit Bunches' ? { ...stat, value: `${Number(e.target.value)} kg` } : stat))}
                         className="text-3xl font-bold text-green-600 bg-white border-b border-green-300 focus:outline-none w-32 mb-2"
                       />
                     )}
@@ -387,12 +647,12 @@ export default function FarmerDashboard() {
                   </CardHeader>
                   <CardContent>
                     {!editMode ? (
-                      <div className="text-3xl font-bold text-amber-600">{extractionRate}%</div>
+                      <div className="text-3xl font-bold text-amber-600">92%</div>
                     ) : (
                       <input
                         type="number"
-                        value={tempValues.extractionRate}
-                        onChange={e => setTempValues(v => ({ ...v, extractionRate: Number(e.target.value) }))}
+                        value={farmStatsTemp[1].value.replace('%', '')}
+                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'Extraction Rate' ? { ...stat, value: `${Number(e.target.value)}%` } : stat))}
                         className="text-3xl font-bold text-amber-600 bg-white border-b border-amber-300 focus:outline-none w-20 mb-2"
                         min={0}
                         max={100}
@@ -410,12 +670,12 @@ export default function FarmerDashboard() {
                   </CardHeader>
                   <CardContent>
                     {!editMode ? (
-                      <div className="text-3xl font-bold text-purple-600">{cpoProduction.toLocaleString()} kg</div>
+                      <div className="text-3xl font-bold text-purple-600">1,500 kg</div>
                     ) : (
                       <input
                         type="number"
-                        value={tempValues.cpoProduction}
-                        onChange={e => setTempValues(v => ({ ...v, cpoProduction: Number(e.target.value) }))}
+                        value={farmStatsTemp[2].value.replace(' kg', '')}
+                        onChange={e => setFarmStatsTemp(prev => prev.map(stat => stat.name === 'CPO Production' ? { ...stat, value: `${Number(e.target.value)} kg` } : stat))}
                         className="text-3xl font-bold text-purple-600 bg-white border-b border-purple-300 focus:outline-none w-32 mb-2"
                       />
                     )}
@@ -442,46 +702,6 @@ export default function FarmerDashboard() {
                         <Bar dataKey="crudePalmOil" fill="#FFC107" name="Crude Palm Oil" />
                       </BarChart>
                     </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Inventory Communication Card */}
-              <div>
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold">Inventory Status</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-64 flex flex-col">
-                    <div className="flex-1">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={inventoryData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="day" />
-                          <YAxis />
-                          <Tooltip />
-                          <Area type="monotone" dataKey="stock" stroke="#4CAF50" fill="#4CAF50" fillOpacity={0.2} name="Stock" />
-                          <Area type="monotone" dataKey="demand" stroke="#FF5722" fill="#FF5722" fillOpacity={0.2} name="Demand" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-4">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="text"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          placeholder="Message inventory manager..."
-                          className="flex-1 p-2 border rounded"
-                        />
-                        <button 
-                          onClick={handleSendMessage}
-                          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                        >
-                          Send
-                        </button>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -543,9 +763,7 @@ export default function FarmerDashboard() {
               
               <div>
                 <Card 
-                  onClick={() => {
-                    setShowCalendar(true);
-                  }}
+                  onClick={() => setShowCalendar(true)}
                   className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
                 >
                   <CardHeader>
@@ -557,18 +775,9 @@ export default function FarmerDashboard() {
                 </Card>
               </div>
               
-              <div>
-                <Card 
-                  onClick={() => window.location.href = '/analytics'} 
-                  className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
-                >
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-purple-800">Market Prices</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">Check current palm oil market prices</p>
-                  </CardContent>
-                </Card>
+              {/* Market Prices Card */}
+              <div className="mt-8">
+                <MarketPricesSummary />
               </div>
             </div>
           </div>

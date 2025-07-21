@@ -1,16 +1,22 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage } from '@inertiajs/react';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useStockStore from '@/store/useStockStore';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
+type ProductionEntry = {
+  date: string;
+  'Cooking Oil': number;
+  Shampoo: number;
+  Margarine: number;
+};
+
 // Initial production data
-const initialProductionData = [
+const initialProductionData: ProductionEntry[] = [
     { date: '2025-07-01', 'Cooking Oil': 400, Shampoo: 240, Margarine: 300 },
     { date: '2025-07-02', 'Cooking Oil': 300, Shampoo: 139, Margarine: 450 },
     { date: '2025-07-03', 'Cooking Oil': 200, Shampoo: 240, Margarine: 200 },
@@ -20,7 +26,7 @@ const initialProductionData = [
     { date: '2025-07-07', 'Cooking Oil': 349, Shampoo: 430, Margarine: 210 },
 ];
 
-function AddProductionDataCard({ onAddData }: { onAddData: (data: { date: string, product: string, quantity: number }) => void }) {
+function AddProductionDataCard() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [cookingOilUnits, setCookingOilUnits] = useState('');
     const [shampooUnits, setShampooUnits] = useState('');
@@ -33,43 +39,34 @@ function AddProductionDataCard({ onAddData }: { onAddData: (data: { date: string
         'Margarine': 400,   // 400g per container
     };
 
-    const productPackageUnits = {
-        'Cooking Oil': 'jerrican',
-        'Shampoo': 'tube',
-        'Margarine': 'container',
-    };
-
-    // Get existing data for the selected date
-    const getExistingData = () => {
+    // Wrap getExistingData in useCallback
+    const getExistingData = useCallback(() => {
         const savedRecords = localStorage.getItem('manufacturerProductionRecords');
         if (!savedRecords) return { 
             cookingOil: { quantity: 0, units: 0 },
             shampoo: { quantity: 0, units: 0 },
             margarine: { quantity: 0, units: 0 }
         };
-        
-        const records = JSON.parse(savedRecords);
-        const existingRecords = records.filter((record: any) => record.date === date);
-        
-        const cookingOilRecords = existingRecords.filter((record: any) => record.productName === 'Cooking Oil');
-        const shampooRecords = existingRecords.filter((record: any) => record.productName === 'Shampoo');
-        const margarineRecords = existingRecords.filter((record: any) => record.productName === 'Margarine');
-        
+        const records: Array<{ date: string; productName: string; quantity: number }> = JSON.parse(savedRecords);
+        const existingRecords = records.filter((record) => record.date === date);
+        const cookingOilRecords = existingRecords.filter((record) => record.productName === 'Cooking Oil');
+        const shampooRecords = existingRecords.filter((record) => record.productName === 'Shampoo');
+        const margarineRecords = existingRecords.filter((record) => record.productName === 'Margarine');
         return {
             cookingOil: {
-                quantity: cookingOilRecords.reduce((total: number, record: any) => total + record.quantity, 0),
-                units: Math.floor(cookingOilRecords.reduce((total: number, record: any) => total + record.quantity, 0) / productPackageSizes['Cooking Oil'])
+                quantity: cookingOilRecords.reduce((total, record) => total + record.quantity, 0),
+                units: Math.floor(cookingOilRecords.reduce((total, record) => total + record.quantity, 0) / productPackageSizes['Cooking Oil'])
             },
             shampoo: {
-                quantity: shampooRecords.reduce((total: number, record: any) => total + record.quantity, 0),
-                units: Math.floor(shampooRecords.reduce((total: number, record: any) => total + record.quantity, 0) / productPackageSizes['Shampoo'])
+                quantity: shampooRecords.reduce((total, record) => total + record.quantity, 0),
+                units: Math.floor(shampooRecords.reduce((total, record) => total + record.quantity, 0) / productPackageSizes['Shampoo'])
             },
             margarine: {
-                quantity: margarineRecords.reduce((total: number, record: any) => total + record.quantity, 0),
-                units: Math.floor(margarineRecords.reduce((total: number, record: any) => total + record.quantity, 0) / productPackageSizes['Margarine'])
+                quantity: margarineRecords.reduce((total, record) => total + record.quantity, 0),
+                units: Math.floor(margarineRecords.reduce((total, record) => total + record.quantity, 0) / productPackageSizes['Margarine'])
             }
         };
-    };
+    }, [date]);
 
     const [existingData, setExistingData] = useState({ 
         cookingOil: { quantity: 0, units: 0 },
@@ -81,17 +78,17 @@ function AddProductionDataCard({ onAddData }: { onAddData: (data: { date: string
     useEffect(() => {
         const data = getExistingData();
         setExistingData(data);
-    }, [date]);
+    }, [date, getExistingData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
         // Get existing records
         const savedRecords = localStorage.getItem('manufacturerProductionRecords');
-        let existingRecords = savedRecords ? JSON.parse(savedRecords) : [];
+        let existingRecords: Array<{ id: string; productName: string; quantity: number; unit: string; timestamp: string; date: string }> = savedRecords ? JSON.parse(savedRecords) : [];
         
         // Remove existing records for the selected date
-        existingRecords = existingRecords.filter((record: any) => record.date !== date);
+        existingRecords = existingRecords.filter((record) => record.date !== date);
         
         // Process each product that has units entered
         const products = [
@@ -218,9 +215,10 @@ function AddProductionDataCard({ onAddData }: { onAddData: (data: { date: string
     );
 }
 
-function getDashboardAnalytics(dashboard: string) {
-    const [productionData, setProductionData] = useState(initialProductionData);
-    const [notification, setNotification] = useState<string | null>(null);
+function DashboardAnalytics({ dashboard }: { dashboard: string }) {
+    const [productionData, setProductionData] = useState<ProductionEntry[]>(initialProductionData);
+    // Always call useStockStore at the top
+    const factoryStock = useStockStore((state) => state.stock);
 
     // Load production data from localStorage for manufacturer
     useEffect(() => {
@@ -233,7 +231,7 @@ function getDashboardAnalytics(dashboard: string) {
                     // Convert records to the format expected by charts
                     const dateMap: { [date: string]: { [product: string]: number } } = {};
                     
-                    records.forEach((record: any) => {
+                    records.forEach((record: { date: string; productName: string; quantity: number }) => {
                         if (!dateMap[record.date]) {
                             dateMap[record.date] = {};
                         }
@@ -287,7 +285,7 @@ function getDashboardAnalytics(dashboard: string) {
     const analyticsData = useMemo(() => {
         const productNames = productionData.length > 0 ? Object.keys(productionData[0]).filter(key => key !== 'date') : [];
         const totalProduction = productNames.reduce((acc, productName) => {
-            acc[productName] = productionData.reduce((sum, entry) => sum + ((entry as any)[productName] || 0), 0);
+            acc[productName] = productionData.reduce((sum, entry) => sum + Number(entry[productName as keyof ProductionEntry] ?? 0), 0);
             return acc;
         }, {} as Record<string, number>);
 
@@ -298,12 +296,12 @@ function getDashboardAnalytics(dashboard: string) {
     const { averageProduction, productNames, totalProduction } = useMemo(() => {
         const productNames = productionData.length > 0 ? Object.keys(productionData[0]).filter(key => key !== 'date') : [];
         const totalProduction = productNames.reduce((acc, productName) => {
-            acc[productName] = productionData.reduce((sum, entry) => sum + ((entry as any)[productName] || 0), 0);
+            acc[productName] = productionData.reduce((sum, entry) => sum + Number(entry[productName as keyof ProductionEntry] ?? 0), 0);
             return acc;
         }, {} as Record<string, number>);
         const averageProduction = productNames.reduce((acc, productName) => {
             const total = totalProduction[productName];
-            const count = productionData.filter(entry => ((entry as any)[productName] || 0) > 0).length;
+            const count = productionData.filter(entry => Number(entry[productName as keyof ProductionEntry] ?? 0) > 0).length;
             acc[productName] = count > 0 ? total / count : 0;
             return acc;
         }, {} as Record<string, number>);
@@ -311,74 +309,125 @@ function getDashboardAnalytics(dashboard: string) {
         return { totalProduction, averageProduction, productNames };
     }, [productionData]);
 
-    const handleAddProductionData = (newData: { date: string; product: string; quantity: number }) => {
-        // Save to localStorage in the same format as manufacturer dashboard
-        const savedRecords = localStorage.getItem('manufacturerProductionRecords');
-        const existingRecords = savedRecords ? JSON.parse(savedRecords) : [];
-        
-        // Create new record in manufacturer dashboard format
-        const newRecord = {
-            id: Date.now().toString(),
-            productName: newData.product,
-            quantity: newData.quantity,
-            unit: newData.product === 'Cooking Oil' ? 'ml' : newData.product === 'Shampoo' ? 'ml' : 'g',
-            timestamp: new Date().toISOString(),
-            date: newData.date,
-        };
-        
-        // Add to existing records
-        const updatedRecords = [...existingRecords, newRecord];
-        localStorage.setItem('manufacturerProductionRecords', JSON.stringify(updatedRecords));
-        
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new Event('localStorageChange'));
-        
-        // Update local state for immediate UI update
-        setProductionData(prevData => {
-            const existingEntryIndex = prevData.findIndex(d => d.date === newData.date);
-
-            if (existingEntryIndex > -1) {
-                // Update existing date entry
-                const updatedData = [...prevData];
-                const existingEntry = updatedData[existingEntryIndex];
-                const newQuantity = (existingEntry[newData.product as keyof typeof existingEntry] || 0) as number + newData.quantity;
-
-                updatedData[existingEntryIndex] = {
-                    ...existingEntry,
-                    [newData.product]: newQuantity,
-                };
-                return updatedData;
-            } else {
-                // Add new date entry
-                const newEntry = {
-                    date: newData.date,
-                    'Cooking Oil': 0,
-                    Shampoo: 0,
-                    Margarine: 0,
-                    [newData.product]: newData.quantity,
-                };
-                return [...prevData, newEntry].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            }
-        });
-        
-        // Calculate units from quantity for display
-        const packageSize = newData.product === 'Cooking Oil' ? 500 : newData.product === 'Shampoo' ? 200 : 400;
-        const packageUnit = newData.product === 'Cooking Oil' ? 'jerrican' : newData.product === 'Shampoo' ? 'tube' : 'container';
-        const units = Math.floor(newData.quantity / packageSize);
-        
-        setNotification(`Added ${units} ${packageUnit}s (${newData.quantity.toLocaleString()} ${newData.product === 'Cooking Oil' ? 'ml' : newData.product === 'Shampoo' ? 'ml' : 'g'}) of ${newData.product} for ${newData.date} - Data saved to production records!`);
-        setTimeout(() => setNotification(null), 3000);
+    // Move all variable declarations outside of case blocks
+    // For 'factory-store'
+    const stockByBoxData: { name: string; boxes: number }[] = factoryStock.map(item => {
+        const currentPackages = Math.floor(item.quantity / item.packageSize);
+        const currentBoxes = Math.floor(currentPackages / item.boxSize);
+        return { name: item.name, boxes: currentBoxes };
+    });
+    // For 'distributor'
+    let distributorStock = {
+        cookingOil: 450,
+        shampoo: 280,
+        margarine: 320,
     };
+    if (dashboard === 'distributor' && typeof window !== 'undefined') {
+        const stored = localStorage.getItem('distributorStock');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed && typeof parsed === 'object') distributorStock = parsed;
+            } catch { /* ignore error, fallback to default distributorStock */ }
+        }
+    }
+    const productCards = [
+        { name: 'Cooking Oil', value: distributorStock.cookingOil },
+        { name: 'Shampoo', value: distributorStock.shampoo },
+        { name: 'Soft Margarine', value: distributorStock.margarine },
+    ];
+    const statusData = [
+        { status: 'Sufficient', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 400).length },
+        { status: 'Low', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 0 && v <= 400).length },
+        { status: 'Out of Stock', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v === 0).length },
+    ];
+    // For 'admin'
+    let acceptedVendors: string[] = [];
+    let rejectedVendors: string[] = [];
+    let pdfFiles: { name: string }[] = [];
+    let workforceTasks: { date?: string; department?: string }[] = [];
+    if (dashboard === 'admin' && typeof window !== 'undefined') {
+        acceptedVendors = JSON.parse(localStorage.getItem('acceptedVendors') || '[]');
+        rejectedVendors = JSON.parse(localStorage.getItem('rejectedVendors') || '[]');
+        pdfFiles = JSON.parse(localStorage.getItem('pdfFiles') || '[]');
+        workforceTasks = JSON.parse(localStorage.getItem('workforceTasks') || '[]');
+    }
+    // Pie chart data for submitted vs processed applications
+    const processedCount = acceptedVendors.length + rejectedVendors.length;
+    const submittedCount = pdfFiles.length;
+    const submissionPieData = [
+        { name: 'No Feedback', value: submittedCount },
+        { name: 'Given feedback', value: processedCount },
+    ];
+    // Pie chart data for accepted/rejected
+    const acceptedPieData = [
+        { name: 'Accepted', value: acceptedVendors.length },
+        { name: 'Rejected', value: rejectedVendors.length },
+    ];
+    // Line graph data for workforce tasks over time
+    type WorkforceLine = { date: string; count: number };
+    const workforceLineData: WorkforceLine[] = [];
+    const dateCountMap: Record<string, number> = {};
+    workforceTasks.forEach((task) => {
+        const date = task.date || 'Unknown';
+        dateCountMap[date] = (dateCountMap[date] || 0) + 1;
+    });
+    Object.entries(dateCountMap).forEach(([date, count]) => {
+        workforceLineData.push({ date, count });
+    });
+    workforceLineData.sort((a, b) => {
+        if (a.date === 'Unknown') return 1;
+        if (b.date === 'Unknown') return -1;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+    // Bar graph data for department vs number of workforce
+    type DepartmentBar = { department: string; count: number };
+    const departmentCountMap: Record<string, number> = {};
+    workforceTasks.forEach((task) => {
+        const dept = task.department || 'Unknown';
+        departmentCountMap[dept] = (departmentCountMap[dept] || 0) + 1;
+    });
+    const departmentBarData: DepartmentBar[] = Object.entries(departmentCountMap).map(([department, count]) => ({ department, count }));
+    // Approval rate percentage
+    const feedbackCount = pdfFiles.filter((f) =>
+        acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) ||
+        rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))
+    ).length;
+    const noFeedbackCount = pdfFiles.length - feedbackCount;
+    // Percentages for accepted and rejected
+    const totalProcessed = acceptedVendors.length + rejectedVendors.length;
+    const acceptedPercent = totalProcessed > 0 ? (acceptedVendors.length / totalProcessed) * 100 : 0;
+    const rejectedPercent = totalProcessed > 0 ? (rejectedVendors.length / totalProcessed) * 100 : 0;
+    // Approval rate percentage (portion of 'Given feedback' in the pie chart)
+    const approvalRatePieTotal = processedCount + noFeedbackCount;
+    const approvalRatePiePercent = approvalRatePieTotal > 0 ? (processedCount / approvalRatePieTotal) * 100 : 0;
+
+    // For 'unofficial-vendor'
+    let vendorAcceptedVendors: string[] = [];
+    let vendorRejectedVendors: string[] = [];
+    let vendorPieData: { name: string; value: number }[] = [];
+    let totalVendors = 0;
+    let vendorAcceptedPercent = 0;
+    let vendorRejectedPercent = 0;
+    if (dashboard === 'unofficial-vendor' && typeof window !== 'undefined') {
+        const saved = localStorage.getItem('acceptedVendors');
+        vendorAcceptedVendors = saved ? JSON.parse(saved) : [];
+        const savedRejected = localStorage.getItem('rejectedVendors');
+        vendorRejectedVendors = savedRejected ? JSON.parse(savedRejected) : [];
+        vendorPieData = [
+            { name: 'Accepted', value: vendorAcceptedVendors.length },
+            { name: 'Rejected', value: vendorRejectedVendors.length },
+        ];
+        totalVendors = vendorAcceptedVendors.length + vendorRejectedVendors.length;
+        vendorAcceptedPercent = totalVendors > 0 ? (vendorAcceptedVendors.length / totalVendors) * 100 : 0;
+        vendorRejectedPercent = totalVendors > 0 ? (vendorRejectedVendors.length / totalVendors) * 100 : 0;
+    }
 
     switch (dashboard) {
         case 'manufacturer':
             return (
                 <div className="bg-blue-50 p-6 rounded shadow">
-                    {notification && (
-                        <div className="fixed top-24 right-5 z-50 rounded-md bg-green-500 p-4 text-white shadow-lg animate-in fade-in-0 slide-in-from-top-5">
-                            {notification}
-                        </div>
-                    )}
+                    {/* Removed notification display as per edit hint */}
                     <h2 className="text-4xl font-extrabold mb-2 text-center">Manufacturer Analytics</h2>
                     <p className="text-lg text-gray-700 text-center mb-6">Production, supply chain, and factory performance analytics go here.</p>
                     
@@ -459,7 +508,7 @@ function getDashboardAnalytics(dashboard: string) {
                         </div>
                         </div>
                         <div className="md:col-span-1 flex items-center">
-                            <AddProductionDataCard onAddData={handleAddProductionData} />
+                            <AddProductionDataCard />
                         </div>
                     </div>
 
@@ -494,9 +543,9 @@ function getDashboardAnalytics(dashboard: string) {
                                             </thead>
                                             <tbody className="divide-y divide-blue-200">
                                                 {records
-                                                    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                                    .sort((a: { timestamp: string }, b: { timestamp: string }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                                                     .slice(0, 10)
-                                                    .map((record: any, index: number) => (
+                                                    .map((record: { id: string; date: string; productName: string; quantity: number; unit: string; timestamp: string }, index: number) => (
                                                         <tr key={record.id} className={index % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
                                                             <td className="px-4 py-2 text-sm">{record.date}</td>
                                                             <td className="px-4 py-2 text-sm font-medium">{record.productName}</td>
@@ -527,7 +576,7 @@ function getDashboardAnalytics(dashboard: string) {
 
                     {/* Production Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                        {productNames.map((productName, index) => (
+                        {productNames.map((productName) => (
                             <div key={productName} className="bg-white rounded shadow p-4">
                                 <h3 className="text-lg font-semibold mb-2">{productName} Summary</h3>
                                 <div className="space-y-2">
@@ -541,7 +590,7 @@ function getDashboardAnalytics(dashboard: string) {
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Days with Data:</span>
-                                        <strong>{productionData.filter(entry => ((entry as any)[productName] || 0) > 0).length}</strong>
+                                        <strong>{productionData.filter(entry => Number(entry[productName as keyof ProductionEntry] ?? 0) > 0).length}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -562,32 +611,6 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'distributor':
-            // Get distributor stock from localStorage
-            let distributorStock = {
-                cookingOil: 450,
-                shampoo: 280,
-                margarine: 320,
-            };
-            if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('distributorStock');
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed && typeof parsed === 'object') distributorStock = parsed;
-                    } catch {}
-                }
-            }
-            const productCards = [
-                { name: 'Cooking Oil', value: distributorStock.cookingOil },
-                { name: 'Shampoo', value: distributorStock.shampoo },
-                { name: 'Soft Margarine', value: distributorStock.margarine },
-            ];
-            // Stock by status: Sufficient (>400), Low (1-400), Out (0)
-            const statusData = [
-                { status: 'Sufficient', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 400).length },
-                { status: 'Low', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v > 0 && v <= 400).length },
-                { status: 'Out of Stock', count: [distributorStock.cookingOil, distributorStock.shampoo, distributorStock.margarine].filter(v => v === 0).length },
-            ];
             return (
                 <div className="bg-yellow-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Distributor Analytics</h2>
@@ -637,82 +660,7 @@ function getDashboardAnalytics(dashboard: string) {
                     </div>
                 </div>
             );
-        case 'admin':
-            // Get data from localStorage
-            let acceptedVendors: string[] = [];
-            let rejectedVendors: string[] = [];
-            let pdfFiles: { name: string }[] = [];
-            let workforceTasks: { date?: string; department?: string }[] = [];
-            if (typeof window !== 'undefined') {
-                acceptedVendors = JSON.parse(localStorage.getItem('acceptedVendors') || '[]');
-                rejectedVendors = JSON.parse(localStorage.getItem('rejectedVendors') || '[]');
-                pdfFiles = JSON.parse(localStorage.getItem('pdfFiles') || '[]');
-                workforceTasks = JSON.parse(localStorage.getItem('workforceTasks') || '[]');
-            }
-            // Pie chart data for submitted vs processed applications
-            const processedCount = acceptedVendors.length + rejectedVendors.length;
-            const submittedCount = pdfFiles.length;
-            const unprocessedCount = submittedCount - processedCount;
-            const submissionPieData = [
-                { name: 'No Feedback', value: submittedCount },
-                { name: 'Given feedback', value: processedCount },
-            ];
-            // Pie chart data for viewed/unviewed
-            const viewedCount = pdfFiles.filter((f: { name: string }) => acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) || rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))).length;
-            const unviewedCount = pdfFiles.length - viewedCount;
-            const viewedPieData = [
-                { name: 'Viewed', value: viewedCount },
-                { name: 'Unviewed', value: unviewedCount },
-            ];
-            // Pie chart data for accepted/rejected
-            const acceptedPieData = [
-                { name: 'Accepted', value: acceptedVendors.length },
-                { name: 'Rejected', value: rejectedVendors.length },
-            ];
-            // Line graph data for workforce tasks over time
-            type WorkforceLine = { date: string; count: number };
-            const workforceLineData: WorkforceLine[] = [];
-            const dateCountMap: Record<string, number> = {};
-            workforceTasks.forEach((task: { date?: string }) => {
-                const date = task.date || 'Unknown';
-                dateCountMap[date] = (dateCountMap[date] || 0) + 1;
-            });
-            Object.entries(dateCountMap).forEach(([date, count]) => {
-                workforceLineData.push({ date, count });
-            });
-            workforceLineData.sort((a, b) => {
-                if (a.date === 'Unknown') return 1;
-                if (b.date === 'Unknown') return -1;
-                return new Date(a.date).getTime() - new Date(b.date).getTime();
-            });
-            // Bar graph data for department vs number of workforce
-            type DepartmentBar = { department: string; count: number };
-            const departmentCountMap: Record<string, number> = {};
-            workforceTasks.forEach((task: { department?: string }) => {
-                const dept = task.department || 'Unknown';
-                departmentCountMap[dept] = (departmentCountMap[dept] || 0) + 1;
-            });
-            const departmentBarData: DepartmentBar[] = Object.entries(departmentCountMap).map(([department, count]) => ({ department, count }));
-            // Pie chart data for feedback provided/unprovided
-            // Assume feedback is provided if the application is in accepted or rejected
-            const feedbackCount = pdfFiles.filter((f: { name: string }) =>
-                acceptedVendors.includes(f.name.replace(/\.pdf$/i, '')) ||
-                rejectedVendors.includes(f.name.replace(/\.pdf$/i, ''))
-            ).length;
-            const noFeedbackCount = pdfFiles.length - feedbackCount;
-            const feedbackPieData = [
-                { name: 'Provided Feedback', value: feedbackCount },
-                { name: 'No Feedback', value: noFeedbackCount },
-            ];
-            // Approval rate percentage
-            const approvalRate = processedCount > 0 ? (acceptedVendors.length / processedCount) * 100 : 0;
-            // Percentages for accepted and rejected
-            const totalProcessed = acceptedVendors.length + rejectedVendors.length;
-            const acceptedPercent = totalProcessed > 0 ? (acceptedVendors.length / totalProcessed) * 100 : 0;
-            const rejectedPercent = totalProcessed > 0 ? (rejectedVendors.length / totalProcessed) * 100 : 0;
-            // Approval rate percentage (portion of 'Given feedback' in the pie chart)
-            const approvalRatePieTotal = processedCount + noFeedbackCount;
-            const approvalRatePiePercent = approvalRatePieTotal > 0 ? (processedCount / approvalRatePieTotal) * 100 : 0;
+        case 'admin': {
             return (
                 <div className="bg-blue-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Admin Analytics</h2>
@@ -767,6 +715,7 @@ function getDashboardAnalytics(dashboard: string) {
                     </div>
                 </div>
             );
+        }
         case 'customer':
             return (
                 <div className="bg-blue-100 p-6 rounded shadow">
@@ -779,13 +728,6 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'factory-store':
-            // Get live stock data from store
-            const factoryStock = useStockStore((state) => state.stock);
-            const stockByBoxData = factoryStock.map(item => {
-                const currentPackages = Math.floor(item.quantity / item.packageSize);
-                const currentBoxes = Math.floor(currentPackages / item.boxSize);
-                return { name: item.name, boxes: currentBoxes };
-            });
             return (
                 <div className="bg-purple-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Factory Store Analytics</h2>
@@ -974,31 +916,9 @@ function getDashboardAnalytics(dashboard: string) {
                 </div>
             );
         case 'unofficial-vendor':
-            // Get vendor data from localStorage
-            let vendorAcceptedVendors: string[] = [];
-            let vendorRejectedVendors: string[] = [];
-            if (typeof window !== 'undefined') {
-                const saved = localStorage.getItem('acceptedVendors');
-                vendorAcceptedVendors = saved ? JSON.parse(saved) : [];
-                const savedRejected = localStorage.getItem('rejectedVendors');
-                vendorRejectedVendors = savedRejected ? JSON.parse(savedRejected) : [];
-            }
-            
-            // Pie chart data for accepted vs rejected vendors
-            const vendorPieData = [
-                { name: 'Accepted', value: vendorAcceptedVendors.length },
-                { name: 'Rejected', value: vendorRejectedVendors.length },
-            ];
-            
-            // Calculate percentages
-            const totalVendors = vendorAcceptedVendors.length + vendorRejectedVendors.length;
-            const vendorAcceptedPercent = totalVendors > 0 ? (vendorAcceptedVendors.length / totalVendors) * 100 : 0;
-            const vendorRejectedPercent = totalVendors > 0 ? (vendorRejectedVendors.length / totalVendors) * 100 : 0;
-            
             return (
                 <div className="bg-blue-50 border-2 border-purple-600 p-6 rounded-xl shadow">
                     <h2 className="text-2xl font-bold text-black-900 mb-6">Vendor Application Analytics</h2>
-                    
                     {/* Summary Section */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold text-black-900 mb-4">Application Summary</h3>
@@ -1013,7 +933,6 @@ function getDashboardAnalytics(dashboard: string) {
                             </div>
                         </div>
                     </div>
-                    
                     {/* Pie Chart Section */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold text-black-900 mb-4">Application Status Distribution</h3>
@@ -1039,13 +958,12 @@ function getDashboardAnalytics(dashboard: string) {
                                                 <Cell fill="#10b981" /> {/* Green for accepted */}
                                                 <Cell fill="#ef4444" /> {/* Red for rejected */}
                                             </Pie>
-                                            <Tooltip formatter={(value, name) => [`${value} applications`, name]} />
+                                            <Tooltip formatter={(value) => [`${value} applications`, 'Applications']} />
                                             <Legend />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
-                            
                             {/* Statistics Card */}
                             <div className="bg-white rounded shadow p-4 border border-purple-200">
                                 <h4 className="text-lg font-semibold mb-4 text-black-900">Application Statistics</h4>
@@ -1070,7 +988,6 @@ function getDashboardAnalytics(dashboard: string) {
                             </div>
                         </div>
                     </div>
-                    
                     {/* Application Status Note */}
                     <div className="bg-purple-50 border border-purple-200 rounded p-4">
                         <h4 className="font-semibold text-purple-900 mb-2">Analytics Information</h4>
@@ -1144,15 +1061,15 @@ function CustomerOrderBarGraph() {
             if (typeof window !== 'undefined') {
                 const savedOrders = localStorage.getItem('customerOrders');
                 if (savedOrders) {
-                    const orders = JSON.parse(savedOrders);
+                    const orders: Array<{ items: Array<{ name: string; quantity: number }> }> = JSON.parse(savedOrders);
                     
                     // Aggregate product quantities and count orders for each product
                     const productTotals: { [key: string]: number } = {};
                     const productOrderCounts: { [key: string]: number } = {};
                     
-                    orders.forEach((order: any) => {
+                    orders.forEach((order) => {
                         if (order.items && Array.isArray(order.items)) {
-                            order.items.forEach((item: any) => {
+                            order.items.forEach((item) => {
                                 if (item.name && item.quantity) {
                                     productTotals[item.name] = (productTotals[item.name] || 0) + item.quantity;
                                     productOrderCounts[item.name] = (productOrderCounts[item.name] || 0) + 1;
@@ -1203,7 +1120,7 @@ function CustomerOrderBarGraph() {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis />
-                            <Tooltip formatter={(value, name) => [`${value} units`, 'Average Quantity']} />
+                            <Tooltip formatter={(value) => [`${value} units`, 'Average Quantity']} />
                             <Legend />
                             <Bar dataKey="quantity" fill="#3b82f6" />
                         </BarChart>
@@ -1222,14 +1139,14 @@ function CustomerOrderBarGraph() {
 }
 
 function GeneralOrdersCard() {
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Array<{ id: string; date: string; items: Array<{ name: string; quantity: number; price?: number }>; total: number; discountedAmount: number }>>([]);
 
     useEffect(() => {
         const loadOrders = () => {
             if (typeof window !== 'undefined') {
                 const savedOrders = localStorage.getItem('customerOrders');
                 if (savedOrders) {
-                    const parsedOrders = JSON.parse(savedOrders);
+                    const parsedOrders: Array<{ id: string; date: string; items: Array<{ name: string; quantity: number; price?: number }>; total: number; discountedAmount: number }> = JSON.parse(savedOrders);
                     setOrders(parsedOrders);
                 }
             }
@@ -1281,7 +1198,7 @@ function GeneralOrdersCard() {
                                     </td>
                                     <td className="border border-gray-300 px-4 py-2">
                                         <div className="space-y-1">
-                                            {order.items && order.items.map((item: any, itemIndex: number) => (
+                                            {order.items && order.items.map((item: { name: string; quantity: number; price?: number }, itemIndex: number) => (
                                                 <div key={itemIndex} className="text-sm">
                                                     {item.name} x {item.quantity} @ Ugx {item.price?.toLocaleString()}
                                                 </div>
@@ -1328,9 +1245,9 @@ function AvailableRetailStockBarGraph() {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) {
-            setStockData(parsed.map((p: any) => ({ name: p.name, stock: p.stock })));
+            setStockData(parsed.map((p: { name: string; stock: number }) => ({ name: p.name, stock: p.stock })));
           }
-        } catch {}
+        } catch { /* ignore error */ }
       }
     }
   }, []);
@@ -1362,7 +1279,7 @@ export default function Analytics() {
             <div>
                 <Head title="Analytics" />
                 <div className="container mx-auto px-4 py-8">
-                    {getDashboardAnalytics(dashboard)}
+                    <DashboardAnalytics dashboard={dashboard} />
                 </div>
             </div>
         </AppLayout>
