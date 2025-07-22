@@ -54,7 +54,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     return (
         <>
-            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-400/20 print:hidden" style={{ background: 'linear-gradient(90deg, rgba(82, 122, 154, 0.8) 0%, rgba(75, 80, 232, 0.7) 100%)' }}>
+            <div className="border-b border-sidebar-border/80 backdrop-blur-md bg-yellow-400/20 print:hidden" style={{ background: 'linear-gradient(90deg, rgba(71, 115, 151, 0.8) 0%, rgba(41, 46, 194, 0.7) 100%)' }}>
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
@@ -73,7 +73,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => (
-                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
+                                                <Link
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
+                                                    className="flex items-center space-x-2 font-medium"
+                                                >
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                     <span>{item.title}</span>
                                                 </Link>
@@ -92,50 +97,30 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
-                        <NavigationMenu className="flex h-full items-stretch">
-                            <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
-                                    <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                        {item.onClick ? (
-                                            <button
-                                                type="button"
-                                                onClick={item.onClick}
-                                                className={cn(
-                                                    navigationMenuTriggerStyle(),
-                                                    page.url === item.href && activeItemStyles,
-                                                    'h-13 cursor-pointer px-6 flex-1 justify-center',
-                                                )}
-                                            >
-                                                {item.title === 'Guest Mode' && <span role="img" aria-label="man" className="mr-2">🧑‍🦱</span>}
-                                                {item.title === 'Report' && <span role="img" aria-label="book" className="mr-2">📖</span>}
-                                                {item.title === 'Analytics' && <span role="img" aria-label="pie chart" className="mr-2">📊</span>}
-                                                {item.title === 'Chat' && <span role="img" aria-label="chat" className="mr-2">💬</span>}
-                                                {item.title}
-                                            </button>
-                                        ) : (
+                    <div className="ml-6 hidden lg:flex flex-1 justify-center items-center space-x-8">
+                        {mainNavItems.map((item, index) => {
+                            const isActive = page.url === item.href;
+                            let icon = null;
+                            if (item.title === 'Home') icon = <span className="text-4xl">🏠</span>;
+                            if (item.title === 'Report') icon = <span className="text-4xl">📃</span>;
+                            if (item.title === 'Analytics') icon = <span className="text-4xl">📈</span>;
+                            if (item.title === 'Chat') icon = <span className="text-4xl">📩</span>;
+                            if (item.title === 'Guest Mode') icon = <span className="text-4xl">👨‍💼</span>;
+                            return (
                                             <Link
+                                    key={item.title}
                                                 href={item.href}
-                                                className={cn(
-                                                    navigationMenuTriggerStyle(),
-                                                    page.url === item.href && activeItemStyles,
-                                                    'h-13 cursor-pointer px-6 flex-1 justify-center',
-                                                )}
-                                            >
-                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                                {item.title === 'Report' && <span role="img" aria-label="book" className="mr-2">📖</span>}
-                                                {item.title === 'Analytics' && <span role="img" aria-label="pie chart" className="mr-2">📊</span>}
-                                                {item.title === 'Chat' && <span role="img" aria-label="chat" className="mr-2">💬</span>}
-                                                {item.title}
+                                    onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
+                                    className={`group flex flex-col items-center px-4 py-2 rounded-xl transition-all duration-200
+                                        ${isActive ? 'bg-blue-100 text-blue-700 font-bold shadow' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600'}
+                                    `}
+                                    style={{ minWidth: 80 }}
+                                >
+                                    {icon}
+                                    <span className={`mt-1 text-base tracking-wide transition-colors duration-200 ${isActive ? 'text-black' : 'text-white'} group-hover:text-black`}>{item.title.replace('Home', 'Home')}</span>
                                             </Link>
-                                        )}
-                                        {page.url === item.href && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                        )}
-                                    </NavigationMenuItem>
-                                ))}
-                            </NavigationMenuList>
-                        </NavigationMenu>
+                            );
+                        })}
                     </div>
 
                     <div className="ml-auto flex items-center space-x-2">

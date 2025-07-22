@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import useStockStore from '@/store/useStockStore';
+import DistributorStockDistributionCard from '@/components/distributor-stock-distribution-card';
+import DistributorStockByStatusCard from '@/components/distributor-stock-by-status-card';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
 type ProductionEntry = {
@@ -425,75 +427,17 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
 
     switch (dashboard) {
         case 'manufacturer':
+            // Get last 7 days of production data
+            const last7DaysData = productionData.slice(-7);
             return (
-                <div className="bg-blue-50 p-6 rounded shadow">
-                    {/* Removed notification display as per edit hint */}
-                    <h2 className="text-4xl font-extrabold mb-2 text-center">Manufacturer Analytics</h2>
-                    <p className="text-lg text-gray-700 text-center mb-6">Production, supply chain, and factory performance analytics go here.</p>
-                    
-                    {/* Production Analytics Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div className="bg-white rounded shadow p-4">
-                                <h3 className="text-xl font-semibold mb-2">Production Analytics</h3>
-                                <p className="mb-4 text-gray-600">Total production distribution.</p>
-                                <div className="h-[400px] w-full">
-                                    <ResponsiveContainer>
-                                        <PieChart>
-                                            <Pie data={analyticsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
-                                                {analyticsData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip />
-                                            <Legend />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded shadow p-4">
-                                <h3 className="text-xl font-semibold mb-2">Average Production</h3>
-                                <p className="mb-4 text-gray-600">Average production per product.</p>
-                            <div className="h-[400px] w-full flex items-center justify-center">
-                                <ul className="space-y-4 text-lg">
-                                    {Object.entries(averageProduction).map(([name, avg]) => (
-                                        <li key={name} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                            <span className="font-medium">{name}</span>
-                                            <strong className="text-xl">{avg.toFixed(2)}</strong>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-
-                    {/* Production Charts Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                        <div className="md:col-span-2 grid grid-cols-1 gap-6">
-                        <div className="bg-white rounded shadow p-4">
-                            <h3 className="text-xl font-semibold mb-2">Production Bar Chart</h3>
-                            <p className="mb-4 text-gray-600">Daily production quantities of different products.</p>
-                            <div className="h-[400px] w-full">
-                                <ResponsiveContainer>
-                                    <BarChart data={productionData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="date" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="Cooking Oil" fill="#3b82f6" />
-                                        <Bar dataKey="Shampoo" fill="#10b981" />
-                                        <Bar dataKey="Margarine" fill="#f59e0b" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded shadow p-4">
-                            <h3 className="text-xl font-semibold mb-2">Production Line Chart</h3>
-                            <p className="mb-4 text-gray-600">Daily production trends of different products.</p>
-                            <div className="h-[400px] w-full">
-                                <ResponsiveContainer>
-                                    <LineChart data={productionData}>
+                <div>
+                    <h2 className="text-4xl font-extrabold text-center mb-2 text-blue-900">Manufacturer Analytics</h2>
+                    <p className="text-lg text-gray-600 text-center mb-6">Monitor your factory's production trends and performance over the past week.</p>
+                    <div className="bg-white rounded shadow p-6 mt-6 w-full">
+                        <h3 className="text-xl font-semibold mb-4">Production Trends (Last 7 Days)</h3>
+                        <div className="h-80 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={last7DaysData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="date" />
                                         <YAxis />
@@ -505,96 +449,6 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
-                        </div>
-                        </div>
-                        <div className="md:col-span-1 flex items-center">
-                            <AddProductionDataCard />
-                        </div>
-                    </div>
-
-                    {/* Production Records Section */}
-                    <div className="mt-6">
-                        <h3 className="text-xl font-semibold mb-4">Production Records</h3>
-                        <div className="bg-white rounded shadow p-4 border border-blue-200">
-                            {(() => {
-                                const savedRecords = localStorage.getItem('manufacturerProductionRecords');
-                                const records = savedRecords ? JSON.parse(savedRecords) : [];
-                                
-                                if (records.length === 0) {
-                                    return (
-                                        <div className="text-center text-gray-500 py-8">
-                                            <p>No production records found.</p>
-                                            <p className="text-sm mt-2">Add production data using the form above or from the manufacturer dashboard.</p>
-                                        </div>
-                                    );
-                                }
-                                
-                                return (
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full">
-                                            <thead className="bg-blue-50">
-                                                <tr>
-                                                    <th className="px-4 py-2 text-left text-xs font-medium text-blue-900 uppercase">Date</th>
-                                                    <th className="px-4 py-2 text-left text-xs font-medium text-blue-900 uppercase">Product</th>
-                                                    <th className="px-4 py-2 text-left text-xs font-medium text-blue-900 uppercase">Quantity</th>
-                                                    <th className="px-4 py-2 text-left text-xs font-medium text-blue-900 uppercase">Unit</th>
-                                                    <th className="px-4 py-2 text-left text-xs font-medium text-blue-900 uppercase">Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-blue-200">
-                                                {records
-                                                    .sort((a: { timestamp: string }, b: { timestamp: string }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                                    .slice(0, 10)
-                                                    .map((record: { id: string; date: string; productName: string; quantity: number; unit: string; timestamp: string }, index: number) => (
-                                                        <tr key={record.id} className={index % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
-                                                            <td className="px-4 py-2 text-sm">{record.date}</td>
-                                                            <td className="px-4 py-2 text-sm font-medium">{record.productName}</td>
-                                                            <td className="px-4 py-2 text-sm">{record.quantity.toLocaleString()}</td>
-                                                            <td className="px-4 py-2 text-sm">{record.unit}</td>
-                                                            <td className="px-4 py-2 text-sm">
-                                                                {new Date(record.timestamp).toLocaleTimeString([], { 
-                                                                    hour: '2-digit', 
-                                                                    minute: '2-digit',
-                                                                    second: '2-digit'
-                                                                })}
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                }
-                                            </tbody>
-                                        </table>
-                                        {records.length > 10 && (
-                                            <div className="text-center text-sm text-gray-500 mt-2">
-                                                Showing latest 10 records of {records.length} total records
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                    </div>
-
-                    {/* Production Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                        {productNames.map((productName) => (
-                            <div key={productName} className="bg-white rounded shadow p-4">
-                                <h3 className="text-lg font-semibold mb-2">{productName} Summary</h3>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <span>Total Production:</span>
-                                        <strong>{totalProduction[productName]}</strong>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Average Daily:</span>
-                                        <strong>{averageProduction[productName].toFixed(2)}</strong>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Days with Data:</span>
-                                        <strong>{productionData.filter(entry => Number(entry[productName as keyof ProductionEntry] ?? 0) > 0).length}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             );
@@ -611,53 +465,25 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                 </div>
             );
         case 'distributor':
+            let distributorStock = {
+                cookingOil: 450,
+                shampoo: 280,
+                margarine: 320,
+            };
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('distributorStock');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && typeof parsed === 'object') distributorStock = parsed;
+                    } catch {}
+                }
+            }
             return (
-                <div className="bg-yellow-50 p-6 rounded shadow">
-                    <h2 className="text-2xl font-bold mb-2">Distributor Analytics</h2>
-                    <p>Distribution, logistics, and delivery analytics go here.</p>
-                    {/* Current Stock Distribution Pie Chart */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8 mt-8">
-                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Current Stock Distribution</h3>
-                            <p className="mt-1 text-sm text-gray-500">Breakdown of current stock for each product</p>
-                        </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie data={productCards} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                                            {productCards.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Stocks by Status Bar Chart */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
-                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Stocks by Status</h3>
-                            <p className="mt-1 text-sm text-gray-500">Number of products in each stock status</p>
-                        </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={statusData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="status" />
-                                        <YAxis allowDecimals={false} />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="count" fill="#f59e0b" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <h2 className="text-4xl font-extrabold text-center mb-2 text-yellow-600">Distributor Analytics</h2>
+                    <DistributorStockDistributionCard stock={distributorStock} />
+                    <DistributorStockByStatusCard stock={distributorStock} />
                 </div>
             );
         case 'admin': {

@@ -4,6 +4,8 @@ import React, { useRef } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, CartesianGrid, XAxis, YAxis, Bar, LineChart, Line } from 'recharts';
 import useStockStore from '@/store/useStockStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import DistributorStockDistributionCard from '@/components/distributor-stock-distribution-card';
+import DistributorStockByStatusCard from '@/components/distributor-stock-by-status-card';
 
 function getDashboardReport(dashboard: string) {
     const reportRef = useRef<HTMLDivElement>(null);
@@ -37,18 +39,6 @@ function getDashboardReport(dashboard: string) {
         }
         return (
             <div ref={reportRef} className="bg-blue-50 p-6 rounded shadow">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex justify-center">
-                    <img src="/apple-touch-icon.png" alt="CK-OILS Logo" className="h-20 w-20" />
-                    </div>
-                    <button
-                        onClick={handlePrint}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                    >
-                        <span>🖨️</span>
-                        <span>Print Report</span>
-                    </button>
-                </div>
                 <h2 className="text-2xl font-bold mb-2">Admin Report</h2>
                 <p className="mb-6">System operations, vendor approvals, and user management reports.</p>
                 {/* Summary Section */}
@@ -521,64 +511,70 @@ function getDashboardReport(dashboard: string) {
                 { name: 'Soft Margarine', value: distributorStock.margarine, unit: 'containers', color: 'bg-green-50', text: 'text-green-700' },
             ];
             return (
-                <div className="bg-yellow-50 p-6 rounded shadow">
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                    <h2 className="text-2xl font-bold mb-2">Distributor Report</h2>
-                    <p>Distribution, logistics, and delivery reports go here.</p>
-                        </div>
-                        <button
-                            onClick={() => window.print()}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                        >
-                            <span role="img" aria-label="print">🖨️</span>
-                            <span>Print Report</span>
-                        </button>
-                    </div>
-                    {/* Summary Cards */}
-                    <DistributorSummaryCards stock={distributorStock} />
-                    {/* Individual Product Stock Cards */}
-                    <div className="flex flex-wrap gap-6 justify-center mt-4 mb-8 w-full">
-                        {productCards.map(product => (
-                            <div key={product.name} className={`${product.color} border rounded-lg shadow px-8 py-4 flex flex-col items-center min-w-[180px] max-w-[220px]`}>
-                                <span className={`text-2xl font-bold ${product.text} mt-1`}>{product.value} {product.unit}</span>
+                <>
+                    <button
+                        onClick={() => window.print()}
+                        className="fixed top-4 right-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow print:hidden"
+                    >
+                        <span role="img" aria-label="print">🖨️</span>
+                        <span>Print Preview</span>
+                    </button>
+                    <div className="bg-yellow-50 p-6 rounded shadow">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold mb-2">Distributor Report</h2>
+                                <p>Distribution, logistics, and delivery reports go here.</p>
                             </div>
-                        ))}
-                    </div>
-                    {/* Available Orders (Retail Order History) */}
-                    <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
-                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Available Orders</h3>
-                            <p className="mt-1 text-sm text-gray-500">All retail orders placed and available for processing</p>
                         </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <RetailOrderHistory />
+                        {/* Stock Distribution and Status Cards */}
+                        
+                        {/* Summary Cards */}
+                        <DistributorSummaryCards stock={distributorStock} />
+                        {/* Individual Product Stock Cards */}
+                        <div className="flex flex-wrap gap-6 justify-center mt-4 mb-8 w-full">
+                            {productCards.map(product => (
+                                <div key={product.name} className={`${product.color} border rounded-lg shadow px-8 py-4 flex flex-col items-center min-w-[180px] max-w-[220px]`}>
+                                    <span className={`text-2xl font-bold ${product.text} mt-1`}>{product.value} {product.unit}</span>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                    {/* Current Stock Table */}
-                    <div className="bg-white rounded shadow overflow-hidden border border-green-200 mb-8">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className="bg-green-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Product</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Stock</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Unit</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-green-200">
-                                    {productCards.map(product => (
-                                        <tr key={product.name}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.value}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.unit}</td>
+                        {/* Available Orders (Retail Order History) */}
+                        <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+                            <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                                <h3 className="text-lg leading-6 font-medium text-gray-900">Available Orders</h3>
+                                <p className="mt-1 text-sm text-gray-500">All retail orders placed and available for processing</p>
+                            </div>
+                            <div className="px-4 py-5 sm:p-6">
+                                <RetailOrderHistory />
+                            </div>
+                        </div>
+                        {/* Current Stock Table */}
+                        <div className="bg-white rounded shadow overflow-hidden border border-green-200 mb-8">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead className="bg-green-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Product</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Stock</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-900 uppercase tracking-wider">Unit</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-green-200">
+                                        {productCards.map(product => (
+                                            <tr key={product.name}>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.value}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.unit}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                        <DistributorStockDistributionCard stock={distributorStock} />
+                        <DistributorStockByStatusCard stock={distributorStock} />
                     </div>
-                </div>
+                </>
             );
         }
         case 'customer':
@@ -784,23 +780,24 @@ function getDashboardReport(dashboard: string) {
                     </div>
                 </div>
             );
-        case 'factory-store':
+        case 'factory-store': {
             // Get stock data from useStockStore
             const factoryStock = useStockStore((state) => state.stock);
             return (
+                <>
+                    <button
+                        onClick={() => window.print()}
+                        className="fixed top-4 right-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow print:hidden"
+                    >
+                        <span role="img" aria-label="print">🖨️</span>
+                        <span>Print Preview</span>
+                    </button>
                 <div ref={reportRef} className="bg-purple-50 p-6 rounded shadow">
                     <div className="flex justify-between items-center mb-6">
                         <div>
                     <h2 className="text-2xl font-bold mb-2">Factory Store Report</h2>
                             <p className="text-gray-600">Stock, packaging, and supply reports</p>
                         </div>
-                        <button
-                            onClick={handlePrint}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                        >
-                            <span>🖨️</span>
-                            <span>Print Report</span>
-                        </button>
                     </div>
                     {/* Sales Summary Cards */}
                     <FactoryStoreSalesSummaryCards />
@@ -1046,7 +1043,9 @@ function getDashboardReport(dashboard: string) {
                         </p>
                     </div>
                 </div>
+                </>
             );
+        }
         case 'farmer': {
             // Farmer report: sync with dashboard cards
             const [harvestDataForm, setHarvestDataForm] = React.useState({
@@ -1460,6 +1459,266 @@ function getDashboardReport(dashboard: string) {
                     </div>
                 </div>
             );
+        case 'inventory-manager': {
+            // State and logic for report (mirroring dashboard)
+            const [palmOilStock, setPalmOilStock] = React.useState(() => {
+                if (typeof window !== 'undefined') {
+                    const saved = localStorage.getItem('palmOilStock');
+                    return saved ? parseInt(saved) || 150 : 150;
+                }
+                return 150;
+            });
+            const [coconutOilStock, setCoconutOilStock] = React.useState(() => {
+                if (typeof window !== 'undefined') {
+                    const saved = localStorage.getItem('coconutOilStock');
+                    return saved ? parseInt(saved) || 80 : 80;
+                }
+                return 80;
+            });
+            const [inventoryOrders, setInventoryOrders] = React.useState(() => {
+                if (typeof window !== 'undefined') {
+                    const saved = localStorage.getItem('inventoryOrders');
+                    return saved ? JSON.parse(saved) : [];
+                }
+                return [];
+            });
+            const thresholds = { palmOil: 200, coconutOil: 100 };
+            const expectedDeliveries = (() => {
+                const today = new Date().toISOString().split('T')[0];
+                const todaysOrders = inventoryOrders.filter((order: any) => order.deliveryDate === today);
+                const totalPalmOilExpected = todaysOrders.reduce((sum: number, order: any) => sum + order.palmOilQuantity, 0);
+                const totalCoconutOilExpected = todaysOrders.reduce((sum: number, order: any) => sum + order.coconutOilQuantity, 0);
+                return {
+                    palmOil: totalPalmOilExpected,
+                    coconutOil: totalCoconutOilExpected,
+                    total: totalPalmOilExpected + totalCoconutOilExpected
+                };
+            })();
+            const criticalItems = [
+                {
+                    id: 1,
+                    name: 'Palm Oil',
+                    current: palmOilStock,
+                    threshold: thresholds.palmOil,
+                    isCritical: palmOilStock < thresholds.palmOil,
+                    status: palmOilStock === 0 ? 'Out of Stock' : palmOilStock < thresholds.palmOil ? 'Low Stock' : 'Adequate Stock'
+                },
+                {
+                    id: 2,
+                    name: 'Coconut Oil',
+                    current: coconutOilStock,
+                    threshold: thresholds.coconutOil,
+                    isCritical: coconutOilStock < thresholds.coconutOil,
+                    status: coconutOilStock === 0 ? 'Out of Stock' : coconutOilStock < thresholds.coconutOil ? 'Low Stock' : 'Adequate Stock'
+                }
+            ];
+            const allInventoryItems = criticalItems;
+            const updatedOilTypesData = [
+                { name: 'Palm Oil', value: Math.round((palmOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
+                { name: 'Coconut Oil', value: Math.round((coconutOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
+            ];
+            return (
+                <>
+                    <button
+                        onClick={() => window.print()}
+                        className="fixed top-4 right-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow print:hidden"
+                    >
+                        <span role="img" aria-label="print">🖨️</span>
+                        <span>Print Preview</span>
+                    </button>
+                    <div className="bg-teal-50 p-6 rounded shadow">
+                        <h2 className="text-4xl font-extrabold text-center mb-2 text-teal-800">Inventory Manager Report</h2>
+                        <p className="text-lg text-gray-600 text-center mb-6">Overview of inventory operations, stock levels, and management activities.</p>
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                            <div className="bg-white rounded shadow p-6 flex flex-col items-center">
+                                <div className="text-sm font-medium text-gray-500">Total Stock</div>
+                                <div className="text-2xl font-bold mt-1">{palmOilStock + coconutOilStock} L</div>
+                            </div>
+                            <div className="bg-white rounded shadow p-6 flex flex-col items-center">
+                                <div className="text-sm font-medium text-gray-500">Palm Oil Stock</div>
+                                <div className="text-2xl font-bold mt-1">{palmOilStock} L</div>
+                                <div className={`text-sm mt-1 ${palmOilStock < thresholds.palmOil ? 'text-yellow-600' : 'text-green-600'}`}>{palmOilStock < thresholds.palmOil ? 'Low Stock' : 'Adequate Stock'}</div>
+                            </div>
+                            <div className="bg-white rounded shadow p-6 flex flex-col items-center">
+                                <div className="text-sm font-medium text-gray-500">Coconut Oil Stock</div>
+                                <div className="text-2xl font-bold mt-1">{coconutOilStock} L</div>
+                                <div className={`text-sm mt-1 ${coconutOilStock < thresholds.coconutOil ? 'text-red-600' : 'text-green-600'}`}>{coconutOilStock < thresholds.coconutOil ? 'Low Stock' : 'Adequate Stock'}</div>
+                            </div>
+                            <div className="bg-white rounded shadow p-6 flex flex-col items-center">
+                                <div className="text-sm font-medium text-gray-500">Expected Deliveries</div>
+                                <div className="text-2xl font-bold mt-1">{expectedDeliveries.total} L</div>
+                            </div>
+                        </div>
+                        {/* Raw Material Order History */}
+                        <div className="mb-8">
+                            <div className="bg-white rounded shadow p-6">
+                                <div className="text-xl font-semibold mb-2">Raw Material Order History</div>
+                                <div className="text-gray-600 mb-4">History of raw material orders from manufacturers</div>
+                                <div className="space-y-4">
+                                    {(() => {
+                                        const rawMaterialOrders = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('rawMaterialOrders') || '[]') : [];
+                                        if (rawMaterialOrders.length === 0) {
+                                            return (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    No raw material orders found.
+                                                </div>
+                                            );
+                                        }
+                                        const groupedOrders = rawMaterialOrders.reduce((groups: any, order: any) => {
+                                            const timestamp = order.timestamp;
+                                            if (!groups[timestamp]) {
+                                                groups[timestamp] = {
+                                                    timestamp: timestamp,
+                                                    date: order.date,
+                                                    orders: [],
+                                                    totalPalmOil: 0,
+                                                    totalCoconutOil: 0
+                                                };
+                                            }
+                                            groups[timestamp].orders.push(order);
+                                            groups[timestamp].totalPalmOil += order.totalPalmOil;
+                                            groups[timestamp].totalCoconutOil += order.totalCoconutOil;
+                                            return groups;
+                                        }, {});
+                                        const sortedGroups = Object.values(groupedOrders)
+                                            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                                        return (
+                                            <div className="space-y-3 max-h-64 overflow-y-auto">
+                                                {sortedGroups.map((group: any, index: number) => (
+                                                    <div key={group.timestamp} className="p-4 bg-gray-50 rounded-lg border">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <div className="font-medium text-gray-800">
+                                                                    Order #{index + 1}
+                                                                </div>
+                                                                <div className="text-sm text-gray-600">
+                                                                    {new Date(group.timestamp).toLocaleDateString()} at {new Date(group.timestamp).toLocaleTimeString()}
+                                                                </div>
+                                                                {group.orders.length > 1 && (
+                                                                    <div className="text-xs text-blue-600 mt-1">
+                                                                        {group.orders.length} items ordered
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                                                Placed
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Palm Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {group.totalPalmOil}L
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {group.totalCoconutOil}L
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        </div>                   {/* Inventory Raw Material Order */}
+                        <div className="mb-8">
+                            <div className="bg-white rounded shadow p-6">
+                                <div className="text-xl font-semibold mb-2">Inventory Raw Material Order</div>
+                                <div className="text-gray-600 mb-4">Orders placed for raw materials from farms</div>
+                                <div className="space-y-4">
+                                    {inventoryOrders.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500">
+                                            No farm orders placed yet.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                                            {inventoryOrders
+                                                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                                .map((order: any) => (
+                                                    <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <div className="font-medium text-gray-800">
+                                                                    Farm Order #{order.id.slice(-6)}
+                                                                </div>
+                                                                <div className="text-sm text-gray-600">
+                                                                    {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
+                                                                </div>
+                                                                {order.deliveryDate && (
+                                                                    <div className="text-sm text-blue-600">
+                                                                        Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                                                {order.status}
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Palm Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {order.palmOilQuantity}L
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm">
+                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="ml-2 text-blue-600 font-semibold">
+                                                                    {order.coconutOilQuantity}L
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        {/* 2x2 Grid for Inventory Status and Available Raw Materials */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded shadow p-6">
+                                <div className="text-xl font-semibold mb-2">Inventory Status</div>
+                                <div className="text-gray-600 mb-4">Current stock levels and status</div>
+                                <div className="space-y-4">
+                                    {allInventoryItems.map((item) => {
+                                        const getBackgroundColor = () => {
+                                            if (item.status === 'Out of Stock') return 'bg-red-50 border border-red-200';
+                                            if (item.status === 'Low Stock') return 'bg-yellow-50 border border-yellow-200';
+                                            return 'bg-green-50 border border-green-200';
+                                        };
+                                        const getStatusColor = () => {
+                                            if (item.status === 'Out of Stock') return 'text-red-600';
+                                            if (item.status === 'Low Stock') return 'text-yellow-600';
+                                            return 'text-green-600';
+                                        };
+                                        return (
+                                            <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg ${getBackgroundColor()}`}>
+                                                <div>
+                                                    <p className="font-medium">{item.name}</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        Current: {item.current}L | Threshold: {item.threshold}L
+                                                    </p>
+                                                    <p className={`text-xs mt-1 font-semibold ${getStatusColor()}`}>
+                                                        Status: {item.status}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
         default:
             return (
                 <div className="bg-gray-50 p-6 rounded shadow">
