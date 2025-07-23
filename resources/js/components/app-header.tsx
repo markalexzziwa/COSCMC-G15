@@ -77,15 +77,13 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     key={item.title}
                                                     href={item.href}
                                                     onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
-                                                    className="flex items-center space-x-2 font-medium"
+                                                    className="flex items-center space-x-2 font-medium bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
                                                 >
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
                                         </div>
-
-                                        {/* Removed Repository and Documentation links */}
                                     </div>
                                 </div>
                             </SheetContent>
@@ -97,28 +95,22 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="ml-6 hidden lg:flex flex-1 justify-center items-center space-x-8">
-                        {mainNavItems.map((item, index) => {
+                    <div className="ml-6 hidden lg:flex flex-1 justify-center items-center space-x-4">
+                        {mainNavItems.map((item) => {
                             const isActive = page.url === item.href;
-                            let icon = null;
-                            if (item.title === 'Home') icon = <span className="text-4xl">🏠</span>;
-                            if (item.title === 'Report') icon = <span className="text-4xl">📃</span>;
-                            if (item.title === 'Analytics') icon = <span className="text-4xl">📈</span>;
-                            if (item.title === 'Chat') icon = <span className="text-4xl">📩</span>;
-                            if (item.title === 'Guest Mode') icon = <span className="text-4xl">👨‍💼</span>;
                             return (
-                                            <Link
+                                <Link
                                     key={item.title}
-                                                href={item.href}
+                                    href={item.href}
                                     onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
-                                    className={`group flex flex-col items-center px-4 py-2 rounded-xl transition-all duration-200
-                                        ${isActive ? 'bg-blue-100 text-blue-700 font-bold shadow' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600'}
+                                    className={`group flex items-center justify-center px-6 py-2 rounded-lg transition-all duration-200
+                                        ${isActive ? 'bg-green-700 text-white font-bold shadow-lg' : 'bg-green-500 text-white hover:bg-green-600'}
                                     `}
-                                    style={{ minWidth: 80 }}
                                 >
-                                    {icon}
-                                    <span className={`mt-1 text-base tracking-wide transition-colors duration-200 ${isActive ? 'text-black' : 'text-white'} group-hover:text-black`}>{item.title.replace('Home', 'Home')}</span>
-                                            </Link>
+                                    <span className="text-base tracking-wide">
+                                        {item.title}
+                                    </span>
+                                </Link>
                             );
                         })}
                     </div>
@@ -126,7 +118,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
                             {/* Search icon removed */}
-                            {/* Removed Repository and Documentation icon buttons */}
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
