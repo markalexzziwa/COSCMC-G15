@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { Button } from '@/components/ui/button';
 
 // Sample data for the charts
 const harvestData = [
@@ -241,6 +242,15 @@ export default function FarmerDashboard() {
     e.preventDefault();
     if (typeof window !== 'undefined') {
       localStorage.setItem('harvestDataForm', JSON.stringify(harvestDataForm));
+      // Add to harvest history
+      const newEntry = {
+        date: harvestDataForm.harvestDate,
+        palmBatches: harvestDataForm.palmBatches,
+        coconutBatches: harvestDataForm.coconutBatches,
+      };
+      const updatedHistory = [newEntry, ...harvestHistory];
+      setHarvestHistory(updatedHistory);
+      localStorage.setItem('harvestHistory', JSON.stringify(updatedHistory));
     }
   };
 
@@ -323,7 +333,7 @@ export default function FarmerDashboard() {
   // Both avgCPO and avgCoconutOil should be calculated from the last six months of editableHarvestData, using the correct keys.
   const lastSix = editableHarvestData.slice(-6);
   const avgCPO = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.crudePalmOil || 0), 0) / lastSix.length) : 0;
-  const avgCoconutOil = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.coconutOil || 0), 0) / lastSix.length) : 0;
+  const avgCoconutOil = lastSix.length > 0 ? Math.round(lastSix.reduce((sum: number, row: any) => sum + (row.coconut || 0), 0) / lastSix.length) : 0;
 
   // Add state for inventoryOrders in the farmer dashboard
   const [inventoryOrders, setInventoryOrders] = useState<any[]>([]);
@@ -339,18 +349,82 @@ export default function FarmerDashboard() {
   const ordersForToday = inventoryOrders.filter(order => order.deliveryDate === today);
   const ordersForTodayCount = ordersForToday.length;
 
+  // In Inventory Raw Material Order history:
+  const [orders, setOrders] = useState<any[]>([]);
+  useEffect(() => {
+      const loadOrders = () => {
+          if (typeof window !== 'undefined') {
+              const stored = localStorage.getItem('inventoryOrders');
+              if (stored) {
+                  setOrders(JSON.parse(stored));
+              }
+          }
+      };
+      loadOrders();
+      const handleStorage = (e: StorageEvent) => {
+          if (e.key === 'inventoryOrders') {
+              loadOrders();
+          }
+      };
+      window.addEventListener('storage', handleStorage);
+      return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  // Add state for harvest history
+  const [harvestHistory, setHarvestHistory] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('harvestHistory');
+      if (saved) return JSON.parse(saved);
+    }
+    return [];
+  });
+
   return (
     <AppLayout>
       <Head title="Palm Oil Farmer Dashboard" />
 
         <div className="py-12 bg-blue-50">
           <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            {/* Add a 4-card grid row near the top of the dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Farm Size Card */}
+              <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                <CardTitle className="text-lg font-bold mb-2">Farm Size</CardTitle>
+                <div className="text-2xl font-extrabold text-green-700">{farmSpecsForm.farmSize || 'N/A'}</div>
+                <div className="text-sm text-gray-500">Total area of the farm</div>
+              </Card>
+              {/* Area (Palm Oil) Card */}
+              <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                <CardTitle className="text-lg font-bold mb-2">Area (Palm Oil)</CardTitle>
+                <div className="text-2xl font-extrabold text-yellow-700">{farmSpecsForm.areaOfPalmOilTrees || 'N/A'}</div>
+                <div className="text-sm text-gray-500">Area with palm oil trees</div>
+              </Card>
+              {/* Area (Coconut) Card */}
+              <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                <CardTitle className="text-lg font-bold mb-2">Area (Coconut)</CardTitle>
+                <div className="text-2xl font-extrabold text-blue-700">{farmSpecsForm.areaOfCoconutTrees || 'N/A'}</div>
+                <div className="text-sm text-gray-500">Area with coconut trees</div>
+              </Card>
+              {/* Latest Harvest Card */}
+              <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                <CardTitle className="text-lg font-bold mb-2">Latest Harvest</CardTitle>
+                {harvestHistory && harvestHistory.length > 0 ? (
+                  <>
+                    <div className="text-xl font-semibold text-gray-800">{harvestHistory[0].date || 'N/A'}</div>
+                    <div className="text-sm text-green-700 mt-1">Palm Oil Fruits: <span className="font-bold">{harvestHistory[0].palmBatches || 0}</span></div>
+                    <div className="text-sm text-blue-700">Coconut: <span className="font-bold">{harvestHistory[0].coconutBatches || 0}</span></div>
+                  </>
+                ) : (
+                  <div className="text-gray-500">No harvests yet</div>
+                )}
+              </Card>
+            </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Overview Cards */}
               <div className="h-full">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 h-full">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold text-green-800">Today's Raw Material<br/>needed Deliveries</CardTitle>
+                    <CardTitle className="text-xl font-bold text-green-800">Today's total kgs<br/>to be Deliveries</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold text-green-600">{ordersForTodayCount}</div>
@@ -365,8 +439,8 @@ export default function FarmerDashboard() {
                     <CardTitle className="text-xl font-bold text-amber-800">Average Monthly Palm Oil Production</CardTitle>
                   </CardHeader>
                   <CardContent>
-                      <div className="text-3xl font-bold text-amber-600">{avgCPO} litres</div>
-                    <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                      <div className="text-3xl font-bold text-amber-600">{avgCPO} kg</div>
+                    <p className="text-sm text-gray-500 mt-2">Average monthly production (kg)</p>
                   </CardContent>
                 </Card>
               </div>
@@ -374,11 +448,11 @@ export default function FarmerDashboard() {
               <div className="h-full">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50 h-full">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold text-purple-800">Average Monthly Coconut Oil</CardTitle>
+                    <CardTitle className="text-xl font-bold text-purple-800">Average Monthly Coconut</CardTitle>
                   </CardHeader>
                   <CardContent>
-                      <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} litres</div>
-                    <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                      <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} kg</div>
+                    <p className="text-sm text-gray-500 mt-2">Average monthly production (kg)</p>
                   </CardContent>
                 </Card>
               </div>
@@ -387,18 +461,18 @@ export default function FarmerDashboard() {
               <div className="md:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold">Monthly Production (litres)</CardTitle>
+                    <CardTitle className="text-xl font-bold">Monthly Production (kg)</CardTitle>
                   </CardHeader>
                   <CardContent className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={editableHarvestData.slice(-6)}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
-                        <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
+                        <YAxis label={{ value: 'Monthly Production (kg)', angle: -90, position: 'insideLeft' }} />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
-                        <Bar dataKey="crudePalmOil" fill="#2196F3" name="Crude Palm Oil" />
+                        <Bar dataKey="coconut" fill="#4CAF50" name="Coconut" />
+                        <Bar dataKey="crudePalmOil" fill="#2196F3" name="Palm Oil Fruits" />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -410,7 +484,7 @@ export default function FarmerDashboard() {
                 <Card className="h-full">
                   <CardHeader>
                     <CardTitle className="text-xl font-bold">Edit Monthly Oil Production</CardTitle>
-                    <p className="text-gray-600">Update the monthly production values for Coconut Oil and Crude Palm Oil below.</p>
+                    <p className="text-gray-600">Update the monthly production values for Coconut and Palm Oil Fruits below.</p>
                   </CardHeader>
                   <CardContent className="h-64">
                     <form onSubmit={handleSaveEditableHarvestData} className="space-y-4 w-full max-w-md mx-auto">
@@ -427,12 +501,12 @@ export default function FarmerDashboard() {
                         </select>
                       </div>
                       <div className="flex items-center w-full justify-between">
-                        <label className="font-medium text-gray-700 w-auto text-left">Coconut Oil (litres)</label>
-                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].coconutOil} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'coconutOil', e.target.value)} placeholder="Litres" />
+                        <label className="font-medium text-gray-700 w-auto text-left">Coconut (kg)</label>
+                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].coconut} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'coconut', e.target.value)} placeholder="kg" />
                       </div>
                       <div className="flex items-center w-full justify-between">
-                        <label className="font-medium text-gray-700 w-auto text-left">Crude Palm Oil (litres)</label>
-                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].crudePalmOil} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'crudePalmOil', e.target.value)} placeholder="Litres" />
+                        <label className="font-medium text-gray-700 w-auto text-left">Palm Oil Fruits (kg)</label>
+                        <input type="number" className="border rounded p-2 w-40 text-right" value={editableHarvestData[selectedMonthIdx].crudePalmOil} onChange={e => handleHarvestDataChange(selectedMonthIdx, 'crudePalmOil', e.target.value)} placeholder="kg" />
                       </div>
                       <div className="flex justify-end mt-6">
                         <button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-2 rounded-lg shadow hover:from-blue-600 hover:to-green-600 transition font-semibold text-lg">Save</button>
@@ -441,33 +515,106 @@ export default function FarmerDashboard() {
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Action Cards */}
-              <div>
-                <Card 
-                  className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
-                >
-                  <CardHeader>
-                  <CardTitle className="text-xl font-bold text-blue-800">Harvest Data</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                  <p className="text-gray-600">View and manage detailed harvest records, check below 👇</p>
-                  </CardContent>
-                </Card>
+              <div className="col-span-full w-full mt-8">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Inventory Raw Material Order</CardTitle>
+            <CardDescription>Orders placed for raw materials from farms</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {inventoryOrders.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No farm orders placed yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {inventoryOrders
+                    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                    .map((order: any) => (
+                      <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-medium text-gray-800">
+                              Farm Order #{order.id.slice(-6)}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
+                            </p>
+                            {order.deliveryDate && (
+                              <p className="text-sm text-blue-600">
+                                Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          {order.status && (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                          )}
+                          <Button
+                            onClick={() => {
+                                // Update order status to 'order received' in localStorage and state
+                                const updatedOrders = inventoryOrders.map(o => o.id === order.id ? { ...o, status: 'order received' } : o);
+                                setInventoryOrders(updatedOrders);
+                                setOrders(updatedOrders);
+                                if (typeof window !== 'undefined') {
+                                    localStorage.setItem('inventoryOrders', JSON.stringify(updatedOrders));
+                                }
+                            }}
+                            className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                        >
+                            Receive
+                        </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-700">Palm Oil:</span>
+                            <span className="ml-2 text-blue-600 font-semibold">
+                              {order.palmOilQuantity}kg
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-700">Coconut:</span>
+                            <span className="ml-2 text-blue-600 font-semibold">
+                              {order.coconutOilQuantity}kg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+        </div>
+      )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      {/* Add the Harvest card below the main dashboard grid */}
+      <div className="col-span-full w-full mt-8">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Harvest</CardTitle>
+            <CardDescription>Records of number of bunches harvested for each product on each harvest date</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {harvestHistory.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No harvest records found.</div>
+            ) : (
+              <div className="space-y-3">
+                {harvestHistory.map((entry, idx) => (
+                  <div key={idx} className="p-4 bg-gray-50 rounded-lg border flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <div className="font-medium text-gray-800">Harvest Date: {entry.date || 'N/A'}</div>
+                      <div className="text-sm text-gray-700 mt-1">Palm Oil Fruits Bunches: <span className="font-semibold">{entry.palmBatches || 0}</span></div>
+                      <div className="text-sm text-gray-700">Coconut Bunches: <span className="font-semibold">{entry.coconutBatches || 0}</span></div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              
-              <div>
-                <Card 
-                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 h-full flex flex-col justify-center cursor-pointer hover:shadow-xl transition"
-                >
-                  <CardHeader>
-                  <CardTitle className="text-xl font-bold text-purple-800">Farm Specs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                  <p className="text-gray-600">View and manage farm specifications, check below 👇</p>
-                  </CardContent>
-                </Card>
-              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
             <div className="col-span-full w-full">
               <Card className="w-full">
                   <CardHeader>
@@ -603,64 +750,7 @@ export default function FarmerDashboard() {
         </div>
       </div>
       {/* Render the Inventory Raw Material Order card below the main dashboard grid */}
-      <div className="col-span-full w-full mt-8">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Inventory Raw Material Order</CardTitle>
-            <CardDescription>Orders placed for raw materials from farms</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {inventoryOrders.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No farm orders placed yet.
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {inventoryOrders
-                    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                    .map((order: any) => (
-                      <div key={order.id} className="p-4 bg-gray-50 rounded-lg border">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-medium text-gray-800">
-                              Farm Order #{order.id.slice(-6)}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              {new Date(order.timestamp).toLocaleDateString()} at {new Date(order.timestamp).toLocaleTimeString()}
-                            </p>
-                            {order.deliveryDate && (
-                              <p className="text-sm text-blue-600">
-                                Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                            {order.status}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-sm">
-                            <span className="font-medium text-gray-700">Palm Oil:</span>
-                            <span className="ml-2 text-blue-600 font-semibold">
-                              {order.palmOilQuantity}L
-                            </span>
-                          </div>
-                          <div className="text-sm">
-                            <span className="font-medium text-gray-700">Coconut Oil:</span>
-                            <span className="ml-2 text-blue-600 font-semibold">
-                              {order.coconutOilQuantity}L
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-        </div>
-      )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
     </AppLayout>
   );
 }

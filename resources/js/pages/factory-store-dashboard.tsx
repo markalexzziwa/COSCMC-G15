@@ -71,6 +71,7 @@ export default function FactoryStoreDashboard() {
 
             <div className="container mx-auto px-4 py-8">
                 <h1 className="text-3xl font-bold mb-6">Factory Store Dashboard</h1>
+                <DistributorOrdersForecastCard />
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
                     <FactoryStoreSalesSummaryCards />
                 </div>
@@ -98,6 +99,77 @@ export default function FactoryStoreDashboard() {
             </div>
         </AppLayout>
     )
+}
+
+function DistributorOrdersForecastCard() {
+    const [orders, setOrders] = useState<any[]>([]);
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed.slice(-6) : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+    const chartData = orders.map(order => {
+        const data: any = { date: new Date(order.date).toLocaleDateString() };
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+                data[item.name] = item.quantity;
+            });
+        }
+        return data;
+    });
+    function linearForecast(values: number[]) {
+        const n = values.length;
+        if (n < 2) return values[n - 1] || 0;
+        const xSum = (n * (n - 1)) / 2;
+        const ySum = values.reduce((a, b) => a + b, 0);
+        const xxSum = (n * (n - 1) * (2 * n - 1)) / 6;
+        const xySum = values.reduce((sum, y, i) => sum + i * y, 0);
+        const denominator = n * xxSum - xSum * xSum;
+        if (denominator === 0) return values[n - 1] || 0;
+        const slope = (n * xySum - xSum * ySum) / denominator;
+        const intercept = (ySum - slope * xSum) / n;
+        return Math.round(slope * n + intercept);
+    }
+    const productNames = ['Cooking Oil', 'Shampoo', 'Soft Margarine'];
+    const forecasts: { [key: string]: number } = {};
+    productNames.forEach(name => {
+        const vals = chartData.map(d => d[name] ?? 0);
+        forecasts[name] = linearForecast(vals);
+    });
+    return (
+        <div className="w-full flex flex-row items-center justify-center mb-8">
+            <div className="w-full max-w-xs flex flex-col items-center justify-center">
+                <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-4 py-3 shadow font-semibold w-full">
+                    <div className="text-base font-bold mb-1">Expected future Demand</div>
+                    {productNames.map((name) => {
+                        const vals = chartData.map(d => d[name] ?? 0);
+                        const lastVal = vals.length > 0 ? vals[vals.length - 1] : 0;
+                        const forecastVal = forecasts[name];
+                        let arrow = null;
+                        if (forecastVal > lastVal) {
+                            arrow = <span className="ml-1 text-green-600" title="Up">▲</span>;
+                        } else if (forecastVal < lastVal) {
+                            arrow = <span className="ml-1 text-red-600" title="Down">▼</span>;
+                        }
+                        return (
+                            <div key={name} className="mb-1 flex justify-between items-center">
+                                <span>{name}:</span>
+                                <span className="font-mono flex items-center">{forecastVal}{arrow}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function CombinedFactoryStoreChatCard() {
@@ -381,17 +453,22 @@ const UpdateStockCard = ({
 function DistributorOrderHistoryCard() {
   const [orders, setOrders] = useState<any[]>([]);
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('distributorOrders');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setOrders(Array.isArray(parsed) ? parsed.reverse() : []);
-        } catch {
-          setOrders([]);
+    const loadOrders = () => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                setOrders(JSON.parse(stored));
+            }
         }
-      }
-    }
+    };
+    loadOrders();
+    const handleStorage = (e: StorageEvent) => {
+        if (e.key === 'distributorOrders') {
+            loadOrders();
+        }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
   if (orders.length === 0) {
     return <div className="bg-white shadow rounded-lg p-8 text-gray-500">No distributor orders found.</div>;
@@ -424,7 +501,24 @@ function DistributorOrderHistoryCard() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ugx {order.total ? Number(order.total).toLocaleString() : ''}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-green-700">Ugx {order.discountedTotal ? Number(order.discountedTotal).toLocaleString() : ''}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">Placed</span>
+                    {order.status && (
+                        <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-blue-600">
+                            {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                    )}
+                    <Button
+                        onClick={() => {
+                            // Update order status to 'order received' in localStorage and state
+                            const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'order received' } : o);
+                            setOrders(updatedOrders);
+                            if (typeof window !== 'undefined') {
+                                localStorage.setItem('distributorOrders', JSON.stringify(updatedOrders));
+                            }
+                        }}
+                        className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                    >
+                        Receive
+                    </Button>
                 </td>
               </tr>
             ))}

@@ -7,6 +7,128 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import DistributorStockDistributionCard from '@/components/distributor-stock-distribution-card';
 import DistributorStockByStatusCard from '@/components/distributor-stock-by-status-card';
 
+// Add this component at the top-level (before getDashboardReport):
+function DistributorOrdersLineGraphCard() {
+    const [orders, setOrders] = React.useState<any[]>([]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed.slice(-6) : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+    // Prepare data for line chart
+    const chartData = orders.map(order => {
+        const data: any = { date: new Date(order.date).toLocaleDateString() };
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+                data[item.name] = item.quantity;
+            });
+        }
+        return data;
+    });
+    return (
+        <div className="bg-white rounded shadow p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-2">Distributor Orders (Last 6 Orders)</h3>
+            <p className="mb-4 text-gray-600">Line graph of product quantities in the last 6 distributor orders.</p>
+            <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="Cooking Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} name="Cooking Oil" />
+                        <Line type="monotone" dataKey="Shampoo" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} name="Shampoo" />
+                        <Line type="monotone" dataKey="Soft Margarine" stroke="#f59e0b" strokeWidth={2} activeDot={{ r: 8 }} name="Soft Margarine" />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
+
+// Add this component at the top-level (before getDashboardReport):
+function DistributorOrdersForecastCard() {
+    // Use the same logic as in analytics
+    const [orders, setOrders] = React.useState<any[]>([]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed.slice(-6) : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+    // Prepare data for line chart
+    const chartData = orders.map(order => {
+        const data: any = { date: new Date(order.date).toLocaleDateString() };
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+                data[item.name] = item.quantity;
+            });
+        }
+        return data;
+    });
+    function linearForecast(values: number[]) {
+        const n = values.length;
+        if (n < 2) return values[n - 1] || 0;
+        const xSum = (n * (n - 1)) / 2;
+        const ySum = values.reduce((a, b) => a + b, 0);
+        const xxSum = (n * (n - 1) * (2 * n - 1)) / 6;
+        const xySum = values.reduce((sum, y, i) => sum + i * y, 0);
+        const denominator = n * xxSum - xSum * xSum;
+        if (denominator === 0) return values[n - 1] || 0;
+        const slope = (n * xySum - xSum * ySum) / denominator;
+        const intercept = (ySum - slope * xSum) / n;
+        return Math.round(slope * n + intercept);
+    }
+    const productNames = ['Cooking Oil', 'Shampoo', 'Soft Margarine'];
+    const forecasts: { [key: string]: number } = {};
+    productNames.forEach(name => {
+        const vals = chartData.map(d => d[name] ?? 0);
+        forecasts[name] = linearForecast(vals);
+    });
+    return (
+        <div className="w-full flex flex-row items-center justify-center mb-8">
+            <div className="w-full max-w-xs flex flex-col items-center justify-center">
+                <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-4 py-3 shadow font-semibold w-full">
+                    <div className="text-base font-bold mb-1">Expected future Demand</div>
+                    {productNames.map((name) => {
+                        const vals = chartData.map(d => d[name] ?? 0);
+                        const lastVal = vals.length > 0 ? vals[vals.length - 1] : 0;
+                        const forecastVal = forecasts[name];
+                        let arrow = null;
+                        if (forecastVal > lastVal) {
+                            arrow = <span className="ml-1 text-green-600" title="Up">▲</span>;
+                        } else if (forecastVal < lastVal) {
+                            arrow = <span className="ml-1 text-red-600" title="Down">▼</span>;
+                        }
+                        return (
+                            <div key={name} className="mb-1 flex justify-between items-center">
+                                <span>{name}:</span>
+                                <span className="font-mono flex items-center">{forecastVal}{arrow}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function getDashboardReport(dashboard: string) {
     const reportRef = useRef<HTMLDivElement>(null);
     
@@ -59,6 +181,9 @@ function getDashboardReport(dashboard: string) {
                         </div>
                     </div>
                 </div>
+                <DistributorOrdersForecastCard />
+                {/* Distributor Orders (Last 6 Orders) Line Graph Card */}
+                <DistributorOrdersLineGraphCard />
                 {/* Accepted Vendors Section */}
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold mb-2">Accepted Applications</h3>
@@ -629,7 +754,7 @@ function getDashboardReport(dashboard: string) {
                 <div ref={reportRef} className="bg-blue-50 p-6 rounded shadow">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                    <h2 className="text-2xl font-bold mb-2">Customer Report</h2>
+                            <h2 className="text-2xl font-bold mb-2">Customer Report</h2>
                             <p className="text-gray-600">Order history, preferences, and engagement reports</p>
                         </div>
                         <button
@@ -640,7 +765,7 @@ function getDashboardReport(dashboard: string) {
                             <span>Print Report</span>
                         </button>
                     </div>
-
+                    <CustomerClassCard />
                     {/* Order Statistics Section */}
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold mb-4">Order Statistics</h3>
@@ -1057,6 +1182,7 @@ function getDashboardReport(dashboard: string) {
             const [editableHarvestData, setEditableHarvestData] = React.useState<any[]>([]);
             const [selectedMonthIdx, setSelectedMonthIdx] = React.useState(0);
             const [inventoryOrders, setInventoryOrders] = React.useState<any[]>([]);
+            const [harvestHistory, setHarvestHistory] = React.useState<any[]>([]);
             React.useEffect(() => {
                 if (typeof window !== 'undefined') {
                     const savedHarvest = localStorage.getItem('harvestDataForm');
@@ -1067,6 +1193,8 @@ function getDashboardReport(dashboard: string) {
                     if (savedHarvestData) setEditableHarvestData(JSON.parse(savedHarvestData));
                     const savedOrders = localStorage.getItem('inventoryOrders');
                     if (savedOrders) setInventoryOrders(JSON.parse(savedOrders));
+                    const savedHarvestHistory = localStorage.getItem('harvestHistory');
+                    if (savedHarvestHistory) setHarvestHistory(JSON.parse(savedHarvestHistory));
                 }
             }, []);
             const today = new Date().toISOString().split('T')[0];
@@ -1089,7 +1217,41 @@ function getDashboardReport(dashboard: string) {
                     <form>
                 <div className="bg-orange-50 p-6 rounded shadow">
                     <h2 className="text-2xl font-bold mb-2">Farmer Report</h2>
-                            <p className="mb-6">Yield, harvest, and farm performance reports.</p>
+                    <p className="mb-6">Yield, harvest, and farm performance reports.</p>
+                    {/* 4-card grid row inserted inside the report */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                      {/* Farm Size Card */}
+                      <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                        <CardTitle className="text-lg font-bold mb-2">Farm Size</CardTitle>
+                        <div className="text-2xl font-extrabold text-green-700">{farmSpecsForm.farmSize || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">Total area of the farm</div>
+                      </Card>
+                      {/* Area (Palm Oil) Card */}
+                      <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                        <CardTitle className="text-lg font-bold mb-2">Area (Palm Oil)</CardTitle>
+                        <div className="text-2xl font-extrabold text-yellow-700">{farmSpecsForm.areaOfPalmOilTrees || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">Area with palm oil trees</div>
+                      </Card>
+                      {/* Area (Coconut) Card */}
+                      <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                        <CardTitle className="text-lg font-bold mb-2">Area (Coconut)</CardTitle>
+                        <div className="text-2xl font-extrabold text-blue-700">{farmSpecsForm.areaOfCoconutTrees || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">Area with coconut trees</div>
+                      </Card>
+                      {/* Latest Harvest Card */}
+                      <Card className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
+                        <CardTitle className="text-lg font-bold mb-2">Latest Harvest</CardTitle>
+                        {harvestHistory && harvestHistory.length > 0 ? (
+                          <>
+                            <div className="text-xl font-semibold text-gray-800">{harvestHistory[0].date || 'N/A'}</div>
+                            <div className="text-sm text-green-700 mt-1">Palm Oil Fruits: <span className="font-bold">{harvestHistory[0].palmBatches || 0}</span></div>
+                            <div className="text-sm text-blue-700">Coconut: <span className="font-bold">{harvestHistory[0].coconutBatches || 0}</span></div>
+                          </>
+                        ) : (
+                          <div className="text-gray-500">No harvests yet</div>
+                        )}
+                      </Card>
+                    </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-green-50 to-emerald-100 h-full">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -2210,6 +2372,43 @@ function FactoryStoreSalesSummaryCards() {
   );
 }
 
+// Add this component at the top-level (before getDashboardReport):
+function CustomerClassCard() {
+    const [customerClass, setCustomerClass] = React.useState('Bronze');
+    React.useEffect(() => {
+        function calculate() {
+            if (typeof window !== 'undefined') {
+                const savedOrders = localStorage.getItem('customerOrders');
+                if (savedOrders) {
+                    const orders = JSON.parse(savedOrders);
+                    if (orders.length > 0) {
+                        const total = orders.reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+                        const avg = total / orders.length;
+                        if (avg < 75000) setCustomerClass('Bronze');
+                        else if (avg < 195000) setCustomerClass('Silver');
+                        else setCustomerClass('Gold');
+                        return;
+                    }
+                }
+            }
+            setCustomerClass('Bronze');
+        }
+        calculate();
+        const handleStorage = () => calculate();
+        window.addEventListener('storage', handleStorage);
+        window.addEventListener('localStorageChange', handleStorage);
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            window.removeEventListener('localStorageChange', handleStorage);
+        };
+    }, []);
+    return (
+        <div className="mb-6 flex items-center justify-center">
+            <span className={`px-4 py-2 rounded-full font-bold text-white text-lg ${customerClass === 'Gold' ? 'bg-yellow-500' : customerClass === 'Silver' ? 'bg-gray-400' : 'bg-orange-700'}`}>Current Customer Class: {customerClass}</span>
+        </div>
+    );
+}
+
 export default function Report() {
     const { dashboard: dashboardProp } = usePage().props as { dashboard?: string };
     const dashboard = dashboardProp || '';
@@ -2252,6 +2451,7 @@ export default function Report() {
                     )}
                     {/* Pass ref to report content for print */}
                     <div ref={(dashboard === 'admin' || dashboard === 'unofficial-vendor') ? reportRef : undefined}>
+                        {/* Removed the 'Report kdj' heading */}
                         {getDashboardReport(dashboard)}
                     </div>
                 </div>

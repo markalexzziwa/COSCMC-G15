@@ -313,8 +313,8 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-100">
                                         <tr>
-                                            <th className="p-2">Username</th>
-                                            <th className="p-2">Status</th>
+                                            <th className="p-2 text-left">Username</th>
+                                            <th className="p-2 text-right">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -323,18 +323,18 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                             const isViewed = acceptedVendors.includes(username) || rejectedVendors.includes(username);
                                             return (
                                                 <tr key={file.name} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                                                    <td className="p-2">{username}</td>
-                                                    <td className="p-2">
+                                                    <td className="p-2 text-left">{username}</td>
+                                                    <td className="p-2 text-right">
                                                         {isViewed ? (
                                                             <button
-                                                                className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs flex items-center gap-1"
+                                                                className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs flex items-center gap-1 float-right"
                                                                 onClick={() => handleViewClick(file)}
                                                             >
                                                                 <Check className="w-3 h-3" /> Viewed
                                                             </button>
                                                         ) : (
                                                             <button
-                                                                className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs"
+                                                                className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs float-right"
                                                                 onClick={() => handleViewClick(file)}
                                                             >
                                                                 View
@@ -397,7 +397,7 @@ export default function AdminDashboard({ vendors = [] }: { vendors: Vendor[] }) 
                                             <li key={name} className="flex justify-between">
                                                 <span>{name}</span>
                                                 {acceptedVendorDates[name] && (
-                                                    <span className="text-xs text-green-700">{acceptedVendorDates[name]}</span>
+                                                    <span className="text-xs text-green-700">{acceptedVendorDates[name]} 10:10am</span>
                                                 )}
                                             </li>
                                         ))}

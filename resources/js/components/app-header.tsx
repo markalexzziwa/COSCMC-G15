@@ -9,38 +9,52 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
-const mainNavItems: NavItem[] = [
+type NavItemWithEmoji = {
+    title: string;
+    href: string;
+    icon?: any;
+    onClick?: (e: any) => void;
+    emoji?: string;
+};
+
+const mainNavItems: NavItemWithEmoji[] = [
     {
         title: 'Home',
         href: '/dashboard',
         icon: LayoutGrid,
+        emoji: '🏠',
     },
     {
         title: 'Report',
         href: '/report',
+        icon: Folder,
+        emoji: '📄',
     },
     {
         title: 'Analytics',
         href: '/analytics',
+        icon: BookOpen,
+        emoji: '📊',
     },
     {
         title: 'Chat',
         href: '/chat',
+        icon: Search,
+        emoji: '📬',
     },
     {
         title: 'Guest Mode',
         href: '/welcome',
         onClick: () => router.post(route('logout')),
+        emoji: '👤',
     },
 ];
-
-const rightNavItems: NavItem[] = [];
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
@@ -77,9 +91,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     key={item.title}
                                                     href={item.href}
                                                     onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
-                                                    className="flex items-center space-x-2 font-medium bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+                                                    className={
+                                                        `flex items-center space-x-2 font-medium bg-blue-200 hover:bg-blue-300 text-black px-6 py-3 rounded-lg text-lg transition-all duration-200 ` +
+                                                        (page.url === item.href ? 'bg-blue-900 text-white px-8 py-4 text-2xl' : '')
+                                                    }
                                                 >
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span className="mr-2">{item.emoji}</span>
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
@@ -103,13 +120,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     key={item.title}
                                     href={item.href}
                                     onClick={item.title === 'Guest Mode' ? (e) => { e.preventDefault(); router.post(route('logout')); } : item.onClick}
-                                    className={`group flex items-center justify-center px-6 py-2 rounded-lg transition-all duration-200
-                                        ${isActive ? 'bg-green-700 text-white font-bold shadow-lg' : 'bg-green-500 text-white hover:bg-green-600'}
+                                    className={`group flex items-center justify-center rounded-lg transition-all duration-200 px-6 py-3 text-lg
+                                        ${isActive ? 'bg-blue-900 text-white px-8 py-4 text-2xl font-bold shadow-lg' : 'bg-blue-300 text-black hover:bg-blue-500'}
                                     `}
                                 >
-                                    <span className="text-base tracking-wide">
-                                        {item.title}
-                                    </span>
+                                    <span className="mr-2">{item.emoji}</span>
+                                    <span className="tracking-wide">{item.title}</span>
                                 </Link>
                             );
                         })}

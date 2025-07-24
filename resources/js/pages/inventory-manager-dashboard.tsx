@@ -116,7 +116,7 @@ const AvailableRawMaterialsCard = ({
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Palm Oil (Liters)</label>
+            <label className="text-sm font-medium text-gray-700">Palm Oil (kg)</label>
             <div className="flex items-center space-x-2">
               <Input
                 type="number"
@@ -133,14 +133,14 @@ const AvailableRawMaterialsCard = ({
               >
                 Update
               </Button>
-              <span className="text-sm text-gray-500">L</span>
+              <span className="text-sm text-gray-500">kg</span>
                 </div>
             <div className="text-xs text-gray-500">
-              Current: {palmOilStock}L
+              Current: {palmOilStock}kg
             </div>
         </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Coconut Oil (Liters)</label>
+            <label className="text-sm font-medium text-gray-700">Coconut (kg)</label>
             <div className="flex items-center space-x-2">
           <Input
                 type="number"
@@ -157,10 +157,10 @@ const AvailableRawMaterialsCard = ({
               >
                 Update
           </Button>
-              <span className="text-sm text-gray-500">L</span>
+              <span className="text-sm text-gray-500">kg</span>
             </div>
             <div className="text-xs text-gray-500">
-              Current: {coconutOilStock}L
+              Current: {coconutOilStock}kg
             </div>
           </div>
         </div>
@@ -307,17 +307,17 @@ export default function InventoryManagerDashboard() {
 
   return (
     <AppLayout>
-      <Head title="Cooking Oil Inventory Dashboard" />
+      <Head title="Inventory Managment" />
 
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Cooking Oil Inventory</h1>
-            <p className="text-gray-600">Monitor and manage your cooking oil supply chain</p>
+            <h1 className="text-3xl font-bold text-gray-800">Palm oil fruits and Coconut Inventory</h1>
+            <p className="text-gray-600">Monitor and manage your raw materials adquetly</p>
           </div>
           {isNotificationVisible && (
-            <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+            <div className="bg-blue-100 border-l-4 border-blue-50 text-blue-900 p-4 rounded">
               <p>Inventory levels updated 5 minutes ago</p>
             </div>
           )}
@@ -327,29 +327,29 @@ export default function InventoryManagerDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="Total Stock"
-            value={`${palmOilStock + coconutOilStock} L`}
+            value={`${palmOilStock + coconutOilStock} kg`}
             change="+2.5%"
             icon={<Package className="h-6 w-6" />}
             color="bg-blue-100 text-blue-600"
           />
           <StatCard
             title="Palm Oil Stock"
-            value={`${palmOilStock} L`}
+            value={`${palmOilStock} kg`}
             change={palmOilStock < thresholds.palmOil ? "Low Stock" : "Adequate Stock"}
             icon={<TrendingUp className="h-6 w-6" />}
             color={palmOilStock < thresholds.palmOil ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600"}
           />
           <StatCard
             title="Coconut Oil Stock"
-            value={`${coconutOilStock} L`}
+            value={`${coconutOilStock} kg`}
             change={coconutOilStock < thresholds.coconutOil ? "Low Stock" : "Adequate Stock"}
             icon={<AlertCircle className="h-6 w-6" />}
             color={coconutOilStock < thresholds.coconutOil ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}
           />
           <StatCard
             title="Expected Deliveries"
-            value={`${expectedDeliveries.total} L`}
-            change={`${expectedDeliveries.total > 0 ? '+' : ''}${expectedDeliveries.total} L`}
+            value={`${expectedDeliveries.total} kg`}
+            change={`${expectedDeliveries.total > 0 ? '+' : ''}${expectedDeliveries.total} kg`}
             icon={<BarChart2 className="h-6 w-6" />}
             color="bg-purple-100 text-purple-600"
           />
@@ -414,21 +414,19 @@ export default function InventoryManagerDashboard() {
                                 </p>
                               )}
                             </div>
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                              Placed
-                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="text-sm">
                               <span className="font-medium text-gray-700">Palm Oil:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
-                                {group.totalPalmOil}L
+                                {group.totalPalmOil}kg
                               </span>
                             </div>
                             <div className="text-sm">
                               <span className="font-medium text-gray-700">Coconut Oil:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
-                                {group.totalCoconutOil}L
+                                {group.totalCoconutOil}kg
                               </span>
                             </div>
                           </div>
@@ -453,7 +451,7 @@ export default function InventoryManagerDashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Palm Oil Quantity (L)</label>
+                    <label className="text-sm font-medium text-gray-700">Palm Oil Quantity (kg)</label>
                     <Input
                       type="number"
                       value={farmOrder.palmOilQuantity}
@@ -463,7 +461,7 @@ export default function InventoryManagerDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Coconut Oil Quantity (L)</label>
+                    <label className="text-sm font-medium text-gray-700">Coconut Oil Quantity (kg)</label>
                     <Input
                       type="number"
                       value={farmOrder.coconutOilQuantity}
@@ -531,18 +529,31 @@ export default function InventoryManagerDashboard() {
                             <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
                               {order.status}
                             </span>
+                            <Button
+                                onClick={() => {
+                                    // Update order status to 'products reached' in localStorage and state
+                                    const updatedOrders = inventoryOrders.map(o => o.id === order.id ? { ...o, status: 'products reached' } : o);
+                                    setInventoryOrders(updatedOrders);
+                                    if (typeof window !== 'undefined') {
+                                        localStorage.setItem('inventoryOrders', JSON.stringify(updatedOrders));
+                                    }
+                                }}
+                                className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                            >
+                                Receive
+                            </Button>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="text-sm">
                               <span className="font-medium text-gray-700">Palm Oil:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
-                                {order.palmOilQuantity}L
+                                {order.palmOilQuantity}kg
                               </span>
                             </div>
                             <div className="text-sm">
                               <span className="font-medium text-gray-700">Coconut Oil:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
-                                {order.coconutOilQuantity}L
+                                {order.coconutOilQuantity}kg
                               </span>
                             </div>
                           </div>
@@ -582,7 +593,7 @@ export default function InventoryManagerDashboard() {
                     <div>
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-gray-600">
-                        Current: {item.current}L | Threshold: {item.threshold}L
+                        Current: {item.current}kg | Threshold: {item.threshold}kg
                       </p>
                         <p className={`text-xs mt-1 font-semibold ${getStatusColor()}`}>
                           Status: {item.status}

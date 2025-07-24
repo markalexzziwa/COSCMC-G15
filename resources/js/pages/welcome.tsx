@@ -48,7 +48,7 @@ export default function Welcome() {
                         <Link href="/" className="flex items-center gap-2">
                             <img src="/apple-touch-icon.png" alt="CK-OILS Logo" className="h-16 w-16" />
                             <div>
-                                <span className="font-bold">CK-OILS COMPANY LTD UGANDA</span>
+                                <span className="font-bold">CLASSIC KRAFT OILS COMPANY LTD UGANDA</span>
                                 <br />
                                 <span className="text-sm font-bold">P.O Box 1234, Kampala, Uganda</span>
                             </div>
@@ -87,13 +87,15 @@ export default function Welcome() {
                         </nav>
                     </div>
                 </header>
-
+                {/* Info Card with Side Transitions */}
+                
                 <div className="flex w-full grow flex-col items-center justify-center p-6 lg:p-8">
                     <main className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
-                        <div className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
-                            <div className="flex flex-row items-center justify-center w-full bg-pink-300/10 backdrop-blur-sm p-3 pb-3 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-5 dark:bg-white/5 dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-br-lg rounded-bl-lg">
+                        <div className="flex w-full flex-col-reverse lg:flex-row">
+                            <div className="flex flex-row items-center justify-center w-full bg-white-300/50 backdrop-blur-sm p-3 pb-3 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-5 dark:bg-white/5 dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-br-lg rounded-bl-lg">
                                 <div className="flex flex-col items-start">
-                                    <p className="mt-0 text-5xl font-extrabold text-black dark:text-white text-left leading-tight">Welcome to<br/>CK-Oils Company Ltd Uganda</p></div>
+                                    <p className="mt-0 text-5xl font-extrabold text-black dark:text-white text-left leading-tight">Classic Kraft Oils <br/>Company Ltd Uganda</p>
+                                    <p className="mt-4 text-2xl text-gray-600 dark:text-gray-300 text-left leading-snug">Experience the modern technology by ordering our products online aywhere in Uganda</p></div>
                                 <img src="/apple-touch-icon.png" alt="CK-Oils Icon" className="max-w-[240px] lg:max-w-[340px] mr-6" />
                             </div>
                         </div>
@@ -103,7 +105,8 @@ export default function Welcome() {
                             {notification}
                         </div>
                     )}
-                    <div className="mt-8 w-full max-w-4xl">
+                    <InfoCardWithTransitions />
+                    <div className="mt-8 w-full max-w-4xl bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                         <h2 className="mb-4 text-center text-3xl font-bold">Our Products</h2>
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                             {products.map(product => (
@@ -118,7 +121,7 @@ export default function Welcome() {
                                         {product.description}
                                     </p>
                                     <p className="mt-4 text-lg font-bold text-green-600">
-                                        Ugx {product.price.toLocaleString()}
+                                        Ugx {product.price != null && !isNaN(Number(product.price)) ? Number(product.price).toLocaleString() : 'N/A'}
                                     </p>
                                 </div>
                             ))}
@@ -142,5 +145,61 @@ export default function Welcome() {
             <Footer />
             </div>
         </>
+    );
+}
+
+function InfoCardWithTransitions() {
+    const messages = [
+        {
+            title: 'Technological Development',
+            text: 'Due to technological development, the company has set up this system to serve you better.'
+        },
+        {
+            title: 'Buy Our Products',
+            text: 'Customers are encouraged to buy the available products at competitive prices.'
+        },
+        {
+            title: 'Vendor Applicants',
+            text: 'Vendor applicants: Please check your names in the published list.'
+        },
+        {
+            title: 'Contact & Location',
+            text: 'Contact us at +256 39-4568-890, "www.info@ckoils.com" Location: P.O Box 1234, Kampala, Uganda.'
+        }
+    ];
+    const [index, setIndex] = useState(0);
+    const prev = () => setIndex((i) => (i === 0 ? messages.length - 1 : i - 1));
+    const next = () => setIndex((i) => (i === messages.length - 1 ? 0 : i + 1));
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            next();
+        }, 9000);
+        return () => clearTimeout(timer);
+    }, [index]);
+
+    return (
+        <div className="w-full flex justify-center mt-8">
+            <div className="relative bg-gray-900 dark:bg-black rounded-lg shadow-lg p-6 w-full flex items-center">
+                <button
+                    onClick={prev}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-700 rounded-full p-2 hover:bg-gray-400 dark:hover:bg-gray-600 focus:outline-none"
+                    aria-label="Previous"
+                >
+                    <span className="text-xl">&#8592;</span>
+                </button>
+                <div className="flex-1 text-center">
+                    <h3 className="text-lg font-bold mb-2 text-white">{messages[index].title}</h3>
+                    <p className="text-white">{messages[index].text}</p>
+                </div>
+                <button
+                    onClick={next}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-700 rounded-full p-2 hover:bg-gray-400 dark:hover:bg-gray-600 focus:outline-none"
+                    aria-label="Next"
+                >
+                    <span className="text-xl">&#8594;</span>
+                </button>
+            </div>
+        </div>
     );
 }

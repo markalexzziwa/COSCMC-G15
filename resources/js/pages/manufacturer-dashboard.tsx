@@ -30,6 +30,77 @@ const products: Product[] = [
     { name: 'Margarine', unit: 'g', packageSize: 400, packageUnit: 'container', image: '/soft magarine.jpg' },
 ];
 
+function DistributorOrdersForecastCard() {
+    const [orders, setOrders] = React.useState<any[]>([]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed.slice(-6) : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+    const chartData = orders.map(order => {
+        const data: any = { date: new Date(order.date).toLocaleDateString() };
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+                data[item.name] = item.quantity;
+            });
+        }
+        return data;
+    });
+    function linearForecast(values: number[]) {
+        const n = values.length;
+        if (n < 2) return values[n - 1] || 0;
+        const xSum = (n * (n - 1)) / 2;
+        const ySum = values.reduce((a, b) => a + b, 0);
+        const xxSum = (n * (n - 1) * (2 * n - 1)) / 6;
+        const xySum = values.reduce((sum, y, i) => sum + i * y, 0);
+        const denominator = n * xxSum - xSum * xSum;
+        if (denominator === 0) return values[n - 1] || 0;
+        const slope = (n * xySum - xSum * ySum) / denominator;
+        const intercept = (ySum - slope * xSum) / n;
+        return Math.round(slope * n + intercept);
+    }
+    const productNames = ['Cooking Oil', 'Shampoo', 'Soft Margarine'];
+    const forecasts: { [key: string]: number } = {};
+    productNames.forEach(name => {
+        const vals = chartData.map(d => d[name] ?? 0);
+        forecasts[name] = linearForecast(vals);
+    });
+    return (
+        <div className="w-full flex flex-row items-center justify-center mb-8">
+            <div className="w-full max-w-xs flex flex-col items-center justify-center">
+                <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-4 py-3 shadow font-semibold w-full">
+                    <div className="text-base font-bold mb-1">Expected future Demand</div>
+                    {productNames.map((name) => {
+                        const vals = chartData.map(d => d[name] ?? 0);
+                        const lastVal = vals.length > 0 ? vals[vals.length - 1] : 0;
+                        const forecastVal = forecasts[name];
+                        let arrow = null;
+                        if (forecastVal > lastVal) {
+                            arrow = <span className="ml-1 text-green-600" title="Up">▲</span>;
+                        } else if (forecastVal < lastVal) {
+                            arrow = <span className="ml-1 text-red-600" title="Down">▼</span>;
+                        }
+                        return (
+                            <div key={name} className="mb-1 flex justify-between items-center">
+                                <span>{name}:</span>
+                                <span className="font-mono flex items-center">{forecastVal}{arrow}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ManufacturerDashboard() {
     const [productionRecords, setProductionRecords] = useState<ProductionRecord[]>([]);
     const [newProduction, setNewProduction] = useState<Record<string, number>>({});
@@ -126,8 +197,8 @@ export default function ManufacturerDashboard() {
             timestamp: new Date().toISOString(),
             type: 'raw_materials',
             items: [
-                ...(rawMaterialOrder.palmOil > 0 ? [{ name: 'Palm Oil', quantity: rawMaterialOrder.palmOil, unit: 'L' }] : []),
-                ...(rawMaterialOrder.coconutOil > 0 ? [{ name: 'Coconut Oil', quantity: rawMaterialOrder.coconutOil, unit: 'L' }] : [])
+                ...(rawMaterialOrder.palmOil > 0 ? [{ name: 'Palm Oil', quantity: rawMaterialOrder.palmOil, unit: 'kg' }] : []),
+                ...(rawMaterialOrder.coconutOil > 0 ? [{ name: 'Coconut', quantity: rawMaterialOrder.coconutOil, unit: 'kg' }] : [])
             ],
             totalPalmOil: rawMaterialOrder.palmOil,
             totalCoconutOil: rawMaterialOrder.coconutOil
@@ -141,7 +212,7 @@ export default function ManufacturerDashboard() {
         // Reset form
         setRawMaterialOrder({ palmOil: 0, coconutOil: 0 });
         
-        setNotification(`Raw materials order placed: ${rawMaterialOrder.palmOil}L Palm Oil, ${rawMaterialOrder.coconutOil}L Coconut Oil`);
+        setNotification(`Raw materials order placed: ${rawMaterialOrder.palmOil}kg Palm Oil, ${rawMaterialOrder.coconutOil}kg Coconut`);
         setTimeout(() => setNotification(null), 3000);
     };
 
@@ -270,6 +341,7 @@ export default function ManufacturerDashboard() {
 
                 <div className="container mx-auto px-4 py-8">
                     <h1 className="text-3xl font-bold mb-6">Manufacturer Dashboard</h1>
+                    <DistributorOrdersForecastCard />
                     <div className="mb-8">
                         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
                             <CardHeader>
@@ -519,7 +591,7 @@ export default function ManufacturerDashboard() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-700">Palm Oil (Liters)</label>
+                                            <label className="text-sm font-medium text-gray-700">Palm Oil (kg)</label>
                                             <Input
                                                 type="number"
                                                 value={rawMaterialOrder.palmOil || ''}
@@ -530,7 +602,7 @@ export default function ManufacturerDashboard() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-700">Coconut Oil (Liters)</label>
+                                            <label className="text-sm font-medium text-gray-700">Coconut (kg)</label>
                                             <Input
                                                 type="number"
                                                 value={rawMaterialOrder.coconutOil || ''}
@@ -616,21 +688,19 @@ export default function ManufacturerDashboard() {
                                                                     </p>
                                                                 )}
                                                             </div>
-                                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                                                Placed
-                                                            </span>
+                                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Needed</span>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div className="text-sm">
                                                                 <span className="font-medium text-gray-700">Palm Oil:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {group.totalPalmOil}L
+                                                                    {group.totalPalmOil}kg
                                                                 </span>
                                                             </div>
                                                             <div className="text-sm">
-                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="font-medium text-gray-700">Coconut:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {group.totalCoconutOil}L
+                                                                    {group.totalCoconutOil}kg
                                                                 </span>
                                                             </div>
                                                         </div>

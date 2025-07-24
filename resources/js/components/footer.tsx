@@ -7,7 +7,7 @@ export default function Footer() {
                     <div className="flex items-center space-x-4 text-center md:text-left">
                         <img src="/footerck.jpg" alt="CK-OILS" className="w-16 h-16 object-cover rounded-lg" />
                         <div>
-                            <h3 className="text-lg font-semibold">CK-OILS COMPANY LTD UGANDA</h3>
+                            <h3 className="text-lg font-semibold">CLASSIC KRAFT OILS COMPANY LTD UGANDA</h3>
                             <p>
                                 Your trusted partner for quality products.
                             </p>

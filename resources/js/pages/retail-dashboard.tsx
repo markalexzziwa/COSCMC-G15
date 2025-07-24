@@ -69,19 +69,21 @@ function AvailableOrdersCard() {
     const [orders, setOrders] = useState<Order[]>([])
     
     useEffect(() => {
-        const stored = localStorage.getItem('customerOrders');
-        if (stored) {
-            setOrders(JSON.parse(stored));
-        }
+        const loadOrders = () => {
+            const stored = localStorage.getItem('customerOrders');
+            if (stored) {
+                setOrders(JSON.parse(stored));
+            }
+        };
+        loadOrders();
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'customerOrders') {
+                loadOrders();
+            }
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
     }, []);
-
-    const updateOrderStatus = (orderId: number, status: string) => {
-        const updatedOrders = orders.map(order => 
-            order.id === orderId ? { ...order, status } : order
-        );
-        setOrders(updatedOrders);
-        localStorage.setItem('customerOrders', JSON.stringify(updatedOrders));
-    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -127,7 +129,7 @@ function AvailableOrdersCard() {
                                 <ul className="list-disc list-inside">
                                     {order.items.map((item: OrderItem) => (
                                         <li key={item.id}>
-                                            {item.name} x {item.quantity} @ Ugx {item.price.toLocaleString()}
+                                            {item.name} x {item.quantity} @ Ugx {item.price != null && !isNaN(Number(item.price)) ? Number(item.price).toLocaleString() : 'N/A'}
                                         </li>
                                     ))}
                                 </ul>
@@ -135,30 +137,26 @@ function AvailableOrdersCard() {
                             
                             <div className="mt-4 flex justify-between items-center">
                                 <div className="flex justify-between w-full">
-                                    <Button
-                                        onClick={() => updateOrderStatus(order.id, 'placed')}
-                                        className="px-4 py-2 text-white rounded-md transition-colors bg-green-600 hover:bg-green-700 flex items-center justify-center w-1/3 mx-1"
-                                    >
-                                        <span className="mr-2">✔</span>Placed
-                                    </Button>
-                                    <Button
-                                        onClick={() => updateOrderStatus(order.id, 'received')}
-                                        className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
-                                    >
-                                        <span className="mr-2">✗</span>Receive
-                                    </Button>
-                                    <Button
-                                        onClick={() => updateOrderStatus(order.id, 'completed')}
-                                        className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
-                                    >
-                                        <span className="mr-2">✗</span>Order Complete
-                                    </Button>
+                                    {/* Removed the three <Button> elements for Placed, Receive, and Order Complete */}
                                 </div>
                                 {order.status && (
                                     <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColor(order.status)}`}>
-                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                        {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                     </span>
                                 )}
+                                <Button
+                                    onClick={() => {
+                                        // Update order status to 'order received' in localStorage and state
+                                        const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'order received' } : o);
+                                        setOrders(updatedOrders);
+                                        if (typeof window !== 'undefined') {
+                                            localStorage.setItem('customerOrders', JSON.stringify(updatedOrders));
+                                        }
+                                    }}
+                                    className="mt-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                                >
+                                    Receive
+                                </Button>
                             </div>
                         </div>
                     ))}
@@ -250,8 +248,8 @@ function PlaceRetailOrderCard({ inventory, onPlaceOrder }: { inventory: Product[
       </div>
       {/* Total Price Display */}
       <div className="w-full flex flex-col items-end mt-6">
-        <span className="text-md text-gray-700">Original Total: <span className="font-semibold">Ugx {originalTotal.toLocaleString()}</span></span>
-        <span className="text-lg font-bold text-blue-700">Discounted Total: Ugx {discountedTotal.toLocaleString()}</span>
+        <span className="text-md text-gray-700">Original Total: <span className="font-semibold">Ugx {Number(originalTotal).toLocaleString()}</span></span>
+        <span className="text-lg font-bold text-blue-700">Discounted Total: Ugx {Number(discountedTotal).toLocaleString()}</span>
         {discountedTotal < originalTotal && (
           <span className="text-green-600 font-medium">25% discount applied for products with quantity &gt; 1</span>
         )}
@@ -270,6 +268,25 @@ function PlaceRetailOrderCard({ inventory, onPlaceOrder }: { inventory: Product[
 
 // Update RetailerOrderHistoryCard to show both totals and discount info
 function RetailerOrderHistoryCard({ orders, setOrders }: { orders: any[], setOrders: React.Dispatch<React.SetStateAction<any[]>> }) {
+  useEffect(() => {
+    const loadOrders = () => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('retailOrders');
+            if (stored) {
+                setOrders(JSON.parse(stored));
+            }
+        }
+    };
+    loadOrders();
+    const handleStorage = (e: StorageEvent) => {
+        if (e.key === 'retailOrders') {
+            loadOrders();
+        }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+}, [setOrders]);
+
   const updateOrderStatus = (orderId: number, status: string) => {
     const updatedOrders = orders.map(order =>
       order.id === orderId ? { ...order, status } : order
@@ -321,11 +338,11 @@ function RetailerOrderHistoryCard({ orders, setOrders }: { orders: any[], setOrd
               </div>
               <div className="flex justify-between">
                 <span>Original Total:</span>
-                <span>Ugx {Number(order.originalTotal).toLocaleString()}</span>
+                <span>Ugx {order.originalTotal != null && !isNaN(Number(order.originalTotal)) ? Number(order.originalTotal).toLocaleString() : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Discounted Total:</span>
-                <span>Ugx {Number(order.discountedTotal).toLocaleString()}</span>
+                <span>Ugx {order.discountedTotal != null && !isNaN(Number(order.discountedTotal)) ? Number(order.discountedTotal).toLocaleString() : 'N/A'}</span>
               </div>
               {order.discountedTotal < order.originalTotal && (
                 <div className="flex justify-end text-green-600 font-medium">25% discount applied for products with quantity &gt; 1</div>
@@ -335,7 +352,7 @@ function RetailerOrderHistoryCard({ orders, setOrders }: { orders: any[], setOrd
                 <ul className="list-disc list-inside">
                   {order.items && order.items.map((item: any) => (
                     <li key={item.id}>
-                      {item.name} x {item.quantity} @ Ugx {item.price.toLocaleString()}
+                      {item.name} x {item.quantity} @ Ugx {item.price != null && !isNaN(Number(item.price)) ? Number(item.price).toLocaleString() : 'N/A'}
                       {item.discountApplied && (
                         <span className="ml-2 text-green-600">(25% discount)</span>
                       )}
@@ -344,23 +361,25 @@ function RetailerOrderHistoryCard({ orders, setOrders }: { orders: any[], setOrd
                 </ul>
               </div>
               <div className="mt-4 flex flex-row gap-2 justify-end items-center">
-                {['placed', 'received', 'completed'].map(statusKey => (
-                  <span
-                    key={statusKey}
-                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors
-                      ${order.status === statusKey
-                        ? statusKey === 'placed' ? 'bg-blue-600 text-white border-blue-600' :
-                          statusKey === 'received' ? 'bg-yellow-500 text-white border-yellow-500' :
-                          'bg-green-600 text-white border-green-600'
-                        : statusKey === 'placed' ? 'text-blue-600 border-blue-600' :
-                          statusKey === 'received' ? 'text-yellow-600 border-yellow-500' :
-                          'text-green-600 border-green-600'
-                      }`}
-                  >
-                    {statusKey === 'placed' ? 'Placed' : statusKey === 'received' ? 'Received' : 'Order Completed'}
-                  </span>
-                ))}
-              </div>
+                {order.status && (
+                    <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColor(order.status)}`}>
+                        {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
+                )}
+                <Button
+                    onClick={() => {
+                        // Update order status to 'products reached' in localStorage and state
+                        const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'products reached' } : o);
+                        setOrders(updatedOrders);
+                        if (typeof window !== 'undefined') {
+                            localStorage.setItem('retailOrders', JSON.stringify(updatedOrders));
+                        }
+                    }}
+                    className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                >
+                    Receive
+                </Button>
+            </div>
             </div>
           ))}
         </div>
@@ -524,7 +543,7 @@ function DailyWeeklySalesCards() {
             <dl>
               <dt className="text-sm font-medium text-gray-500 truncate">Daily Sales</dt>
               <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">Ugx {daily.toLocaleString()}</div>
+                <div className="text-2xl font-semibold text-gray-900">Ugx {Number(daily).toLocaleString()}</div>
               </dd>
             </dl>
           </div>
@@ -539,7 +558,7 @@ function DailyWeeklySalesCards() {
             <dl>
               <dt className="text-sm font-medium text-gray-500 truncate">Weekly Sales</dt>
               <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">Ugx {weekly.toLocaleString()}</div>
+                <div className="text-2xl font-semibold text-gray-900">Ugx {Number(weekly).toLocaleString()}</div>
               </dd>
             </dl>
           </div>
@@ -828,7 +847,7 @@ export default function RetailDashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Price</p>
-                  <p className="font-medium">${selectedProduct.price.toFixed(2)}</p>
+                  <p className="font-medium">Ugx {selectedProduct.price != null && !isNaN(Number(selectedProduct.price)) ? Number(selectedProduct.price).toLocaleString() : 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Status</p>

@@ -217,6 +217,101 @@ function AddProductionDataCard() {
     );
 }
 
+function DistributorOrdersLineGraphCard() {
+    const [orders, setOrders] = React.useState<any[]>([]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('distributorOrders');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    setOrders(Array.isArray(parsed) ? parsed.slice(-6) : []);
+                } catch {
+                    setOrders([]);
+                }
+            }
+        }
+    }, []);
+    // Prepare data for line chart
+    const chartData = orders.map(order => {
+        const data: any = { date: new Date(order.date).toLocaleDateString() };
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item: any) => {
+                data[item.name] = item.quantity;
+            });
+        }
+        return data;
+    });
+    // --- Forecast calculation using simple linear regression ---
+    function linearForecast(values: number[]) {
+        const n = values.length;
+        if (n < 2) return values[n - 1] || 0;
+        // x: [0, 1, ..., n-1], y: values
+        const xSum = (n * (n - 1)) / 2;
+        const ySum = values.reduce((a, b) => a + b, 0);
+        const xxSum = (n * (n - 1) * (2 * n - 1)) / 6;
+        const xySum = values.reduce((sum, y, i) => sum + i * y, 0);
+        const denominator = n * xxSum - xSum * xSum;
+        if (denominator === 0) return values[n - 1] || 0;
+        const slope = (n * xySum - xSum * ySum) / denominator;
+        const intercept = (ySum - slope * xSum) / n;
+        return Math.round(slope * n + intercept);
+    }
+    const productNames = ['Cooking Oil', 'Shampoo', 'Soft Margarine'];
+    const forecasts: { [key: string]: number } = {};
+    productNames.forEach(name => {
+        const vals = chartData.map(d => d[name] ?? 0);
+        forecasts[name] = linearForecast(vals);
+    });
+    // --- End forecast calculation ---
+    return (
+        <div className="bg-white rounded shadow p-6 col-span-2">
+            <h3 className="text-xl font-semibold mb-2">Distributor Orders (Last 6 Orders)</h3>
+            <p className="mb-4 text-gray-600">Line graph of product quantities in the last 6 distributor orders.</p>
+            <div className="flex flex-row items-center w-full h-80">
+                {/* Graph on the left (3/4 width) */}
+                <div className="w-3/4 h-full relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="Cooking Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} name="Cooking Oil" />
+                            <Line type="monotone" dataKey="Shampoo" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} name="Shampoo" />
+                            <Line type="monotone" dataKey="Soft Margarine" stroke="#f59e0b" strokeWidth={2} activeDot={{ r: 8 }} name="Soft Margarine" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+                {/* Forecast annotation card on the right (1/4 width) */}
+                <div className="w-1/4 flex flex-col items-center justify-center pl-4 h-full">
+                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-4 py-3 shadow font-semibold w-full">
+                        <div className="text-base font-bold mb-1">Expected future Demand</div>
+                        {productNames.map((name) => {
+                            const vals = chartData.map(d => d[name] ?? 0);
+                            const lastVal = vals.length > 0 ? vals[vals.length - 1] : 0;
+                            const forecastVal = forecasts[name];
+                            let arrow = null;
+                            if (forecastVal > lastVal) {
+                                arrow = <span className="ml-1 text-green-600" title="Up">▲</span>;
+                            } else if (forecastVal < lastVal) {
+                                arrow = <span className="ml-1 text-red-600" title="Down">▼</span>;
+                            }
+                            return (
+                                <div key={name} className="mb-1 flex justify-between items-center">
+                                    <span>{name}:</span>
+                                    <span className="font-mono flex items-center">{forecastVal}{arrow}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function DashboardAnalytics({ dashboard }: { dashboard: string }) {
     const [productionData, setProductionData] = useState<ProductionEntry[]>(initialProductionData);
     // Always call useStockStore at the top
@@ -539,6 +634,8 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                             </ResponsiveContainer>
                         </div>
                     </div>
+                    {/* New Distributor Orders Line Graph Card for admin */}
+                    <DistributorOrdersLineGraphCard />
                 </div>
             );
         }
@@ -561,36 +658,59 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                         <StockByBoxGraphCard data={stockByBoxData} />
                         <AvailableStockBarGraph />
+                        {/* New Distributor Orders Line Graph Card */}
+                        <DistributorOrdersLineGraphCard />
                     </div>
                 </div>
             );
         case 'farmer':
-            // Farmer: show Monthly Production (litres) bar chart from localStorage
+            // Farmer: show Monthly Production (kg) bar chart from localStorage
             const [editableHarvestData, setEditableHarvestData] = React.useState<any[]>([]);
+            const [harvestHistory, setHarvestHistory] = React.useState<any[]>([]);
             React.useEffect(() => {
                 if (typeof window !== 'undefined') {
                     const saved = localStorage.getItem('editableHarvestData');
                     if (saved) setEditableHarvestData(JSON.parse(saved));
+                    const savedHarvest = localStorage.getItem('harvestHistory');
+                    if (savedHarvest) setHarvestHistory(JSON.parse(savedHarvest));
                 }
             }, []);
             return (
                 <div className="bg-yellow-50 p-6 rounded shadow">
                     <h2 className="text-4xl font-extrabold mb-2 text-center">Farmer Analytics</h2>
                     <p className="text-lg text-gray-700 text-center mb-6">Production trends and harvest analytics for your farm.</p>
-                    <div className="bg-white rounded shadow p-4">
-                        <h3 className="text-xl font-semibold mb-2">Monthly Production (litres)</h3>
-                        <p className="mb-4 text-gray-600">Coconut Oil and Crude Palm Oil production for the last 6 months.</p>
+                    <div className="bg-white rounded shadow p-4 mb-8">
+                        <h3 className="text-xl font-semibold mb-2">Monthly Production (kg)</h3>
+                        <p className="mb-4 text-gray-600">Coconut Oil and Palm Oil Fruits production for the last 6 months.</p>
                         <div className="h-[400px] w-full">
                             <ResponsiveContainer>
                                 <BarChart data={editableHarvestData.slice(-6)}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="month" />
-                                    <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
+                                    <YAxis label={{ value: 'Monthly Production (kg)', angle: -90, position: 'insideLeft' }} />
                                     <Tooltip />
                                     <Legend />
                                     <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
-                                    <Bar dataKey="crudePalmOil" fill="#2196F3" name="Crude Palm Oil" />
+                                    <Bar dataKey="crudePalmOil" fill="#2196F3" name="Palm Oil Fruits" />
                                 </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                    {/* Harvest Bunches Card */}
+                    <div className="bg-white rounded shadow p-4">
+                        <h3 className="text-xl font-semibold mb-2">Harvest Bunches (Last 10 Harvests)</h3>
+                        <p className="mb-4 text-gray-600">Number of bunches harvested for Palm Oil Fruits and Coconut for the last 10 harvests.</p>
+                        <div className="h-[400px] w-full">
+                            <ResponsiveContainer>
+                                <LineChart data={harvestHistory.slice(0, 10).reverse()}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" />
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="palmBatches" stroke="#2196F3" name="Palm Oil Fruits Bunches" strokeWidth={2} activeDot={{ r: 8 }} />
+                                    <Line type="monotone" dataKey="coconutBatches" stroke="#4CAF50" name="Coconut Bunches" strokeWidth={2} activeDot={{ r: 8 }} />
+                                </LineChart>
                             </ResponsiveContainer>
                         </div>
                     </div>

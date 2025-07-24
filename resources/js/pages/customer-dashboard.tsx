@@ -137,10 +137,13 @@ export default function CustomerDashboard() {
             <AppLayout>
                 <Head title="Customer Dashboard" />
 
-                {/* Shop Now Banner */}
-                <div className="w-full flex flex-col items-center justify-center py-8 bg-pink-50 border-b border-yellow-300 mb-8 rounded-xl shadow">
-                    <h1 className="text-4xl font-extrabold text-black mb-2">Shop Now!</h1>
-                    <p className="text-lg text-black">Order your favorite!</p>
+                {/* Shop Now Banner and Average Order Card */}
+                <div className="w-full flex flex-row items-center justify-center gap-6 py-8 mb-8 rounded-xl shadow">
+                    <div className="flex-1 flex flex-col items-center justify-center bg-blue-200 border-b border-yellow-300 rounded-xl h-full">
+                        <h1 className="text-4xl font-extrabold text-black mb-2">Shop Now!</h1>
+                        <p className="text-lg text-black">Order your favorite!</p>
+                    </div>
+                    <AverageOrderCard />
                 </div>
 
                 {notification && (
@@ -349,19 +352,21 @@ function OrderStatusCard() {
     const [orders, setOrders] = useState<Order[]>([])
     
     useEffect(() => {
-        const stored = localStorage.getItem('customerOrders');
-        if (stored) {
-            setOrders(JSON.parse(stored));
-        }
+        const loadOrders = () => {
+            const stored = localStorage.getItem('customerOrders');
+            if (stored) {
+                setOrders(JSON.parse(stored));
+            }
+        };
+        loadOrders();
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'customerOrders') {
+                loadOrders();
+            }
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
     }, []);
-
-    const updateOrderStatus = (orderId: number, status: string) => {
-        const updatedOrders = orders.map(order => 
-            order.id === orderId ? { ...order, status } : order
-        );
-        setOrders(updatedOrders);
-        localStorage.setItem('customerOrders', JSON.stringify(updatedOrders));
-    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -419,32 +424,25 @@ function OrderStatusCard() {
                                 </div>
                                 
                                 <div className="mt-4 flex justify-between items-center">
-                                    <div className="flex justify-between w-full">
-                                        <Button
-                                            onClick={() => updateOrderStatus(order.id, 'placed')}
-                                            className="px-4 py-2 text-white rounded-md transition-colors bg-green-600 hover:bg-green-700 flex items-center justify-center w-1/3 mx-1"
-                                        >
-                                            <span className="mr-2">✔</span>Placed
-                                        </Button>
-                                        <Button
-                                            onClick={() => updateOrderStatus(order.id, 'received')}
-                                            className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
-                                        >
-                                            <span className="mr-2">✗</span>Received
-                                        </Button>
-                                        <Button
-                                            onClick={() => updateOrderStatus(order.id, 'completed')}
-                                            className="px-4 py-2 text-white rounded-md transition-colors bg-red-600 hover:bg-red-700 flex items-center justify-center w-1/3 mx-1"
-                                        >
-                                            <span className="mr-2">✗</span>Order Completed
-                                        </Button>
-                                    </div>
                                     {order.status && (
                                         <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColor(order.status)}`}>
-                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                            {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                         </span>
                                     )}
                                 </div>
+                                <Button
+                                    onClick={() => {
+                                        // Update order status to 'products reached' in localStorage and state
+                                        const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'products reached' } : o);
+                                        setOrders(updatedOrders);
+                                        if (typeof window !== 'undefined') {
+                                            localStorage.setItem('customerOrders', JSON.stringify(updatedOrders));
+                                        }
+                                    }}
+                                    className="mt-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+                                >
+                                    Receive
+                                </Button>
                             </div>
                         ))}
                     </div>
@@ -452,4 +450,46 @@ function OrderStatusCard() {
             </CardContent>
         </Card>
     )
-} 
+}
+
+function AverageOrderCard() {
+    const [average, setAverage] = useState(0);
+    const [customerClass, setCustomerClass] = useState('Bronze');
+    useEffect(() => {
+        function calculate() {
+            if (typeof window !== 'undefined') {
+                const savedOrders = localStorage.getItem('customerOrders');
+                if (savedOrders) {
+                    const orders = JSON.parse(savedOrders);
+                    if (orders.length > 0) {
+                        const total = orders.reduce((sum: number, order: any) => sum + (order.discountedAmount || 0), 0);
+                        const avg = total / orders.length;
+                        setAverage(avg);
+                        if (avg < 75000) setCustomerClass('Bronze');
+                        else if (avg < 195000) setCustomerClass('Silver');
+                        else setCustomerClass('Gold');
+                        return;
+                    }
+                }
+            }
+            setAverage(0);
+            setCustomerClass('Bronze');
+        }
+        calculate();
+        const handleStorage = () => calculate();
+        window.addEventListener('storage', handleStorage);
+        window.addEventListener('localStorageChange', handleStorage);
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            window.removeEventListener('localStorageChange', handleStorage);
+        };
+    }, []);
+    return (
+        <div className="flex-1 flex flex-col items-center justify-center bg-blue-100 rounded-xl h-full p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Current Class</h2>
+            <div className="text-3xl font-extrabold text-blue-700 mb-1">Ugx {average.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+            <div className="text-lg font-semibold text-gray-700 mb-2">Customer Class: <span className={`px-3 py-1 rounded-full font-bold text-white ${customerClass === 'Gold' ? 'bg-yellow-500' : customerClass === 'Silver' ? 'bg-gray-400' : 'bg-orange-700'}`}>{customerClass}</span></div>
+            <div className="text-xs text-gray-500">Bronze: &lt; 75,000 | Silver: &lt; 195,000 | Gold: ≥ 195,000</div>
+        </div>
+    );
+}

@@ -74,20 +74,39 @@ interface DashboardData {
 
 // Add RetailOrderHistory component for distributor dashboard
 function RetailOrderHistory() {
-  const [orders, setOrders] = useState<any[]>([]);
-  useEffect(() => {
+  const [orders, setOrders] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('retailOrders');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          setOrders(Array.isArray(parsed) ? parsed : []);
+          return Array.isArray(parsed) ? parsed.reverse() : [];
         } catch {
-          setOrders([]);
+          return [];
         }
       }
     }
-  }, []);
+    return [];
+  });
+
+  useEffect(() => {
+    const loadOrders = () => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('retailOrders');
+            if (stored) {
+                setOrders(JSON.parse(stored));
+            }
+        }
+    };
+    loadOrders();
+    const handleStorage = (e: StorageEvent) => {
+        if (e.key === 'retailOrders') {
+            loadOrders();
+        }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+}, []);
   return (
     <div className="px-8 py-6 flex flex-col items-center w-full mb-8 relative">
       <span className="text-lg font-semibold text-gray-700 mb-4">Retail Order History</span>
@@ -126,23 +145,25 @@ function RetailOrderHistory() {
                 </ul>
               </div>
               <div className="mt-4 flex flex-row gap-2 justify-end items-center">
-                {['placed', 'received', 'completed'].map(statusKey => (
-                  <span
-                    key={statusKey}
-                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors
-                      ${order.status === statusKey
-                        ? statusKey === 'placed' ? 'bg-blue-600 text-white border-blue-600' :
-                          statusKey === 'received' ? 'bg-yellow-500 text-white border-yellow-500' :
-                          'bg-green-600 text-white border-green-600'
-                        : statusKey === 'placed' ? 'text-blue-600 border-blue-600' :
-                          statusKey === 'received' ? 'text-yellow-600 border-yellow-500' :
-                          'text-green-600 border-green-600'
-                    }`}
-                  >
-                    {statusKey === 'placed' ? 'Placed' : statusKey === 'received' ? 'Received' : 'Order Completed'}
-                  </span>
-                ))}
-              </div>
+    {order.status && (
+        <span className={`px-3 py-1 rounded-full text-white text-sm font-medium bg-blue-600`}>
+            {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+        </span>
+    )}
+    <Button
+        onClick={() => {
+            // Update order status to 'order received' in localStorage and state
+            const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'order received' } : o);
+            setOrders(updatedOrders);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('retailOrders', JSON.stringify(updatedOrders));
+            }
+        }}
+        className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+    >
+        Receive
+    </Button>
+</div>
             </div>
           ))}
         </div>
@@ -934,7 +955,20 @@ function DistributorOrderCard({ distributorOrders, setDistributorOrders }: { dis
 }
 
 function DistributorOrderHistory({ distributorOrders }: { distributorOrders: any[] }) {
-  const orders = distributorOrders;
+  const [orders, setOrders] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('distributorOrders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? parsed.reverse() : [];
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
   if (orders.length === 0) {
     return <div className="px-8 py-6 text-gray-500">No distributor orders found.</div>;
   }
@@ -965,8 +999,25 @@ function DistributorOrderHistory({ distributorOrders }: { distributorOrders: any
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ugx {order.total ? Number(order.total).toLocaleString() : ''}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-green-700">Ugx {order.discountedTotal ? Number(order.discountedTotal).toLocaleString() : ''}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">Placed</span>
-                                                        </td>
+    {order.status && (
+        <span className="px-3 py-1 rounded-full text-white text-sm font-medium bg-blue-600">
+            {order.status === 'products reached' ? 'Products Reached' : order.status === 'order received' ? 'Order Received' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+        </span>
+    )}
+    <Button
+        onClick={() => {
+            // Update order status to 'products reached' in localStorage and state
+            const updatedOrders = orders.map(o => o.id === order.id ? { ...o, status: 'products reached' } : o);
+            setOrders(updatedOrders);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('distributorOrders', JSON.stringify(updatedOrders));
+            }
+        }}
+        className="ml-2 px-4 py-2 text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+    >
+        Receive
+    </Button>
+</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
