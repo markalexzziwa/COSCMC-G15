@@ -741,7 +741,7 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
             }, []);
             const updatedOilTypesData = [
                 { name: 'Palm Oil', value: palmOilStock },
-                { name: 'Coconut Oil', value: coconutOilStock },
+                { name: 'Coconut', value: coconutOilStock },
             ];
             // Turnover data (mock or from localStorage)
             const turnoverData = [
@@ -783,7 +783,7 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                                             <Tooltip />
                                             <Legend />
                                             <Line type="monotone" dataKey="Palm Oil" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
-                                            <Line type="monotone" dataKey="Coconut Oil" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} />
+                                            <Line type="monotone" dataKey="Coconut Oil" stroke="#10b981" strokeWidth={2} activeDot={{ r: 8 }} name="Coconut" />
                                         </LineChart>
                                     </ResponsiveContainer>
                 </div>
@@ -851,7 +851,7 @@ function DashboardAnalytics({ dashboard }: { dashboard: string }) {
                                                 'Expected Today': todayInventoryDeliveries.palmOil + todayManufacturerDeliveries.palmOil,
                                             },
                                             {
-                                                category: 'Coconut Oil',
+                                                category: 'Coconut',
                                                 'Expected Today': todayInventoryDeliveries.coconutOil + todayManufacturerDeliveries.coconutOil,
                                             }
                                         ];

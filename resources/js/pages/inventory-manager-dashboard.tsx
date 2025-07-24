@@ -37,7 +37,7 @@ const oilTypesData = [
   { name: 'Sunflower Oil', value: 25 },
   { name: 'Olive Oil', value: 20 },
   { name: 'Canola Oil', value: 15 },
-  { name: 'Coconut Oil', value: 5 },
+  { name: 'Coconut', value: 5 },
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -61,18 +61,8 @@ const turnoverData = [
 // Updated oil types data based on current stock
 const updatedOilTypesData = [
   { name: 'Palm Oil', value: 35 },
-  { name: 'Coconut Oil', value: 20 },
-  { name: 'Sunflower Oil', value: 25 },
-  { name: 'Olive Oil', value: 15 },
-  { name: 'Canola Oil', value: 5 },
+  { name: 'Coconut', value: 20 },
 ];
-
-// Mock farmer data
-const farmerData = {
-  name: 'John Mukiibi',
-  location: 'Kampala, Uganda',
-  produce: 'Palm Oil',
-};
 
 const AvailableRawMaterialsCard = ({ 
   palmOilStock, 
@@ -288,7 +278,7 @@ export default function InventoryManagerDashboard() {
     },
     {
       id: 2,
-      name: 'Coconut Oil',
+      name: 'Coconut',
       current: coconutOilStock,
       threshold: thresholds.coconutOil,
       isCritical: coconutOilStock < thresholds.coconutOil,
@@ -302,7 +292,7 @@ export default function InventoryManagerDashboard() {
   // Update oil types data based on current stock
   const updatedOilTypesData = [
     { name: 'Palm Oil', value: Math.round((palmOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
-    { name: 'Coconut Oil', value: Math.round((coconutOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
+    { name: 'Coconut', value: Math.round((coconutOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
   ];
 
   return (
@@ -340,7 +330,7 @@ export default function InventoryManagerDashboard() {
             color={palmOilStock < thresholds.palmOil ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600"}
           />
           <StatCard
-            title="Coconut Oil Stock"
+            title="Coconut Stock"
             value={`${coconutOilStock} kg`}
             change={coconutOilStock < thresholds.coconutOil ? "Low Stock" : "Adequate Stock"}
             icon={<AlertCircle className="h-6 w-6" />}
@@ -397,7 +387,7 @@ export default function InventoryManagerDashboard() {
                     .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
                   return (
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                    <div className="space-y-3">
                       {sortedGroups.map((group: any, index: number) => (
                         <div key={group.timestamp} className="p-4 bg-gray-50 rounded-lg border">
                           <div className="flex justify-between items-start mb-2">
@@ -424,7 +414,7 @@ export default function InventoryManagerDashboard() {
                               </span>
                             </div>
                             <div className="text-sm">
-                              <span className="font-medium text-gray-700">Coconut Oil:</span>
+                              <span className="font-medium text-gray-700">Coconut:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
                                 {group.totalCoconutOil}kg
                               </span>
@@ -461,7 +451,7 @@ export default function InventoryManagerDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Coconut Oil Quantity (kg)</label>
+                    <label className="text-sm font-medium text-gray-700">Coconut Quantity (kg)</label>
                     <Input
                       type="number"
                       value={farmOrder.coconutOilQuantity}
@@ -507,7 +497,7 @@ export default function InventoryManagerDashboard() {
                     No farm orders placed yet.
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                  <div className="space-y-3">
                     {inventoryOrders
                       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                       .map((order) => (
@@ -551,7 +541,7 @@ export default function InventoryManagerDashboard() {
                               </span>
                             </div>
                             <div className="text-sm">
-                              <span className="font-medium text-gray-700">Coconut Oil:</span>
+                              <span className="font-medium text-gray-700">Coconut:</span>
                               <span className="ml-2 text-blue-600 font-semibold">
                                 {order.coconutOilQuantity}kg
                               </span>

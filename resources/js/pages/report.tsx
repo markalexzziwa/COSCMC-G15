@@ -1267,8 +1267,8 @@ function getDashboardReport(dashboard: string) {
                                         <CardTitle className="text-xl font-bold text-amber-800">Average Monthly Palm Oil Production</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-3xl font-bold text-amber-600">{avgCPO} litres</div>
-                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                                        <div className="text-3xl font-bold text-amber-600">{avgCPO} kg</div>
+                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (kg)</p>
                                     </CardContent>
                                 </Card>
                                 <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50 h-full">
@@ -1276,22 +1276,22 @@ function getDashboardReport(dashboard: string) {
                                         <CardTitle className="text-xl font-bold text-purple-800">Average Monthly Coconut Oil</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} litres</div>
-                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (litres)</p>
+                                        <div className="text-3xl font-bold text-purple-600">{avgCoconutOil} kg</div>
+                                        <p className="text-sm text-gray-500 mt-2">Average monthly production (kg)</p>
                                     </CardContent>
                                 </Card>
                 </div>
                             <div className="mb-8">
                                 <Card className="h-full">
                                     <CardHeader>
-                                        <CardTitle className="text-xl font-bold">Monthly Production (litres)</CardTitle>
+                                        <CardTitle className="text-xl font-bold">Monthly Production (kg)</CardTitle>
                                     </CardHeader>
                                     <CardContent className="h-64">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={lastSix}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="month" />
-                                                <YAxis label={{ value: 'Monthly Production (litres)', angle: -90, position: 'insideLeft' }} />
+                                                <YAxis label={{ value: 'Monthly Production (kg)', angle: -90, position: 'insideLeft' }} />
                                                 <Tooltip />
                                                 <Legend />
                                                 <Bar dataKey="coconutOil" fill="#4CAF50" name="Coconut Oil" />
@@ -1428,7 +1428,7 @@ function getDashboardReport(dashboard: string) {
                                                     No farm orders placed yet.
                                                 </div>
                                             ) : (
-                                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                                <div className="space-y-3">
                                                     {inventoryOrders
                                                         .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                                                         .map((order: any) => (
@@ -1455,13 +1455,13 @@ function getDashboardReport(dashboard: string) {
                                                                     <div className="text-sm">
                                                                         <span className="font-medium text-gray-700">Palm Oil:</span>
                                                                         <span className="ml-2 text-blue-600 font-semibold">
-                                                                            {order.palmOilQuantity}L
+                                                                            {order.palmOilQuantity}kg
                                                                         </span>
                                                                     </div>
                                                                     <div className="text-sm">
-                                                                        <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                        <span className="font-medium text-gray-700">Coconut:</span>
                                                                         <span className="ml-2 text-blue-600 font-semibold">
-                                                                            {order.coconutOilQuantity}L
+                                                                            {order.coconutOilQuantity}kg
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -1667,7 +1667,7 @@ function getDashboardReport(dashboard: string) {
                 },
                 {
                     id: 2,
-                    name: 'Coconut Oil',
+                    name: 'Coconut',
                     current: coconutOilStock,
                     threshold: thresholds.coconutOil,
                     isCritical: coconutOilStock < thresholds.coconutOil,
@@ -1677,7 +1677,7 @@ function getDashboardReport(dashboard: string) {
             const allInventoryItems = criticalItems;
             const updatedOilTypesData = [
                 { name: 'Palm Oil', value: Math.round((palmOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
-                { name: 'Coconut Oil', value: Math.round((coconutOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
+                { name: 'Coconut', value: Math.round((coconutOilStock / (palmOilStock + coconutOilStock)) * 100) || 0 },
             ];
             return (
                 <>
@@ -1695,21 +1695,21 @@ function getDashboardReport(dashboard: string) {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                             <div className="bg-white rounded shadow p-6 flex flex-col items-center">
                                 <div className="text-sm font-medium text-gray-500">Total Stock</div>
-                                <div className="text-2xl font-bold mt-1">{palmOilStock + coconutOilStock} L</div>
+                                <div className="text-2xl font-bold mt-1">{palmOilStock + coconutOilStock} kg</div>
                             </div>
                             <div className="bg-white rounded shadow p-6 flex flex-col items-center">
                                 <div className="text-sm font-medium text-gray-500">Palm Oil Stock</div>
-                                <div className="text-2xl font-bold mt-1">{palmOilStock} L</div>
+                                <div className="text-2xl font-bold mt-1">{palmOilStock} kg</div>
                                 <div className={`text-sm mt-1 ${palmOilStock < thresholds.palmOil ? 'text-yellow-600' : 'text-green-600'}`}>{palmOilStock < thresholds.palmOil ? 'Low Stock' : 'Adequate Stock'}</div>
                             </div>
                             <div className="bg-white rounded shadow p-6 flex flex-col items-center">
-                                <div className="text-sm font-medium text-gray-500">Coconut Oil Stock</div>
-                                <div className="text-2xl font-bold mt-1">{coconutOilStock} L</div>
+                                <div className="text-sm font-medium text-gray-500">Coconut Stock</div>
+                                <div className="text-2xl font-bold mt-1">{coconutOilStock} kg</div>
                                 <div className={`text-sm mt-1 ${coconutOilStock < thresholds.coconutOil ? 'text-red-600' : 'text-green-600'}`}>{coconutOilStock < thresholds.coconutOil ? 'Low Stock' : 'Adequate Stock'}</div>
                             </div>
                             <div className="bg-white rounded shadow p-6 flex flex-col items-center">
                                 <div className="text-sm font-medium text-gray-500">Expected Deliveries</div>
-                                <div className="text-2xl font-bold mt-1">{expectedDeliveries.total} L</div>
+                                <div className="text-2xl font-bold mt-1">{expectedDeliveries.total} kg</div>
                             </div>
                         </div>
                         {/* Raw Material Order History */}
@@ -1746,7 +1746,7 @@ function getDashboardReport(dashboard: string) {
                                         const sortedGroups = Object.values(groupedOrders)
                                             .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
                                         return (
-                                            <div className="space-y-3 max-h-64 overflow-y-auto">
+                                            <div className="space-y-3">
                                                 {sortedGroups.map((group: any, index: number) => (
                                                     <div key={group.timestamp} className="p-4 bg-gray-50 rounded-lg border">
                                                         <div className="flex justify-between items-start mb-2">
@@ -1771,13 +1771,13 @@ function getDashboardReport(dashboard: string) {
                                                             <div className="text-sm">
                                                                 <span className="font-medium text-gray-700">Palm Oil:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {group.totalPalmOil}L
+                                                                    {group.totalPalmOil}kg
                                                                 </span>
                                                             </div>
                                                             <div className="text-sm">
-                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="font-medium text-gray-700">Coconut:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {group.totalCoconutOil}L
+                                                                    {group.totalCoconutOil}kg
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1799,7 +1799,7 @@ function getDashboardReport(dashboard: string) {
                                             No farm orders placed yet.
                                         </div>
                                     ) : (
-                                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                                        <div className="space-y-3">
                                             {inventoryOrders
                                                 .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                                                 .map((order: any) => (
@@ -1826,13 +1826,13 @@ function getDashboardReport(dashboard: string) {
                                                             <div className="text-sm">
                                                                 <span className="font-medium text-gray-700">Palm Oil:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {order.palmOilQuantity}L
+                                                                    {order.palmOilQuantity}kg
                                                                 </span>
                                                             </div>
                                                             <div className="text-sm">
-                                                                <span className="font-medium text-gray-700">Coconut Oil:</span>
+                                                                <span className="font-medium text-gray-700">Coconut:</span>
                                                                 <span className="ml-2 text-blue-600 font-semibold">
-                                                                    {order.coconutOilQuantity}L
+                                                                    {order.coconutOilQuantity}kg
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1865,7 +1865,7 @@ function getDashboardReport(dashboard: string) {
                                                 <div>
                                                     <p className="font-medium">{item.name}</p>
                                                     <p className="text-sm text-gray-600">
-                                                        Current: {item.current}L | Threshold: {item.threshold}L
+                                                        Current: {item.current}kg | Threshold: {item.threshold}kg
                                                     </p>
                                                     <p className={`text-xs mt-1 font-semibold ${getStatusColor()}`}>
                                                         Status: {item.status}
